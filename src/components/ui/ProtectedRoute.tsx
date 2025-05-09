@@ -1,29 +1,52 @@
-// src/routes/ProtectedRoute.tsx
+import React, { createContext, useContext, useState, ReactNode } from "react";
 
-import React from "react";
-import { Navigate, Outlet } from "react-router-dom";
-import { useAuth } from "../../context/authContext"; // ✅ Auth context
-import type { UserRole } from "../../pages/types/user"; // ✅ User role type
+export type UserRole = "admin" | "employee" | "customer";
 
-interface ProtectedRouteProps {
-  allowedRoles?: UserRole[]; // Optional allowed roles
+export interface User {
+  id: string;
+  username: string;
+  name: string;
+  email: string;
+  role: UserRole;
+  token: string;
 }
 
-const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ allowedRoles }) => {
-  const { isAuthenticated, user } = useAuth();
+interface AuthContextType {
+  user: User | null;
+  isAuthenticated: boolean;
+  login: (userData: User) => void;
+  logout: () => void;
+}
 
-  // 🚫 User is not authenticated
-  if (!isAuthenticated || !user) {
-    return <Navigate to="/auth/login" replace />;
-  }
+// ✅ Create the context
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-  // 🚫 User is authenticated but role is not authorized
-  if (allowedRoles && !allowedRoles.includes(user.role)) {
-    return <Navigate to="/" replace />;
-  }
+// ✅ Provide the context
+export const AuthProvider = ({ children }: { children: ReactNode }) => {
+  const [user, setUser] = useState<User | null>(null);
 
-  // ✅ User is authenticated and authorized
-  return <Outlet />;
+  const login = (userData: User) => {
+    setUser(userData);
+  };
+
+  const logout = () => {
+    setUser(null);
+  };
+
+  const isAuthenticated = !!user;
+
+  return (
+    <AuthContext.Provider value={{ user, isAuthenticated, login, logout }}>
+      {children}
+    </AuthContext.Provider>
+  );
 };
 
-export default ProtectedRoute;
+// ✅ useAuth hook
+export const useAuth = (): AuthContextType => {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error("useAuth must be used within an AuthProvider");
+  }
+  return context;
+};
