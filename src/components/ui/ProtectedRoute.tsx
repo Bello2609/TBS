@@ -2,27 +2,27 @@
 
 import React from "react";
 import { Navigate, Outlet } from "react-router-dom";
-import { useAuth } from "../../context/authContext"; // ✅ correct
-import type { UserRole } from "../../pages/types/user"; // fixed import path
+import { useAuth } from "../../context/authContext"; // ✅ Auth context
+import type { UserRole } from "../../pages/types/user"; // ✅ User role type
 
 interface ProtectedRouteProps {
-  allowedRoles?: UserRole[]; // 👈 Use your unified type
+  allowedRoles?: UserRole[]; // Optional allowed roles
 }
 
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ allowedRoles }) => {
   const { isAuthenticated, user } = useAuth();
 
-  // Not logged in at all
+  // 🚫 User is not authenticated
   if (!isAuthenticated || !user) {
     return <Navigate to="/auth/login" replace />;
   }
 
-  // Logged in, but role is not allowed
+  // 🚫 User is authenticated but role is not authorized
   if (allowedRoles && !allowedRoles.includes(user.role)) {
     return <Navigate to="/" replace />;
   }
 
-  // All checks passed
+  // ✅ User is authenticated and authorized
   return <Outlet />;
 };
 

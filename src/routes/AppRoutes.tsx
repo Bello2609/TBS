@@ -29,12 +29,11 @@ import ProtectedRoute from "../components/ui/protectedRoute";
 const AppRoutes: React.FC = () => {
   return (
     <Routes>
-      {/* 🌐 Public Routes */}
+      {/* 🌐 Public routes */}
       <Route path="/" element={<Home />} />
       <Route path="/auth/login" element={<Login />} />
-      
 
-      {/* 🔐 Admin-only */}
+      {/* 🔐 Admin-only routes */}
       <Route element={<ProtectedRoute allowedRoles={["admin"]} />}>
         <Route path="/settings" element={<Settings />} />
         <Route path="/settings/security" element={<SecuritySettings />} />
@@ -45,7 +44,7 @@ const AppRoutes: React.FC = () => {
         <Route path="/users/create" element={<CreateUser mode="create" />} />
       </Route>
 
-      {/* 🔐 Admin + Employee */}
+      {/* 🔐 Admin and Employee routes */}
       <Route element={<ProtectedRoute allowedRoles={["admin", "employee"]} />}>
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/inventory" element={<InventoryList />} />
@@ -54,12 +53,12 @@ const AppRoutes: React.FC = () => {
         <Route path="/invoices/create" element={<CreateInvoice />} />
       </Route>
 
-      {/* 🔐 Admin + Employee + Customer */}
+      {/* 🔐 Admin, Employee, and Customer routes */}
       <Route element={<ProtectedRoute allowedRoles={["admin", "employee", "customer"]} />}>
         <Route path="/invoices" element={<InvoiceList />} />
       </Route>
 
-      {/* ❌ Not Found */}
+      {/* ❌ Catch-all route for 404 */}
       <Route path="*" element={<NotFound />} />
     </Routes>
   );
