@@ -9,7 +9,7 @@ import {
   Input,
   SubmitButton,
   MessageBox,
-} from "../../../styles/SecurityStyles";
+} from "../../../styles/securityStyles";
 
 const generateStrongPassword = () => {
   const uppercase = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";

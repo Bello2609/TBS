@@ -1,11 +1,11 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { DetailRow } from "@/styles/UserStyles";
-import { Input, Select } from "@/styles/InvoiceStyles";
-import { Button } from "@/components/ui/Button";
+import { DetailRow } from "@/styles/userStyles";
+import { Input, Select } from "@/styles/invoiceStyles";
+import { Button } from "@/components/ui/button";
 import { toast } from "react-toastify";
-import { useAuth } from "@/context/AuthContext";
-import type { User, UserRole } from "../types/User";
+import { useAuth } from "@/context/authContext";
+import type { User, UserRole } from "../types/user";
 import { fakeCustomers, Customer } from "../data/fakeCustomers";
 
 interface CreateUserProps {

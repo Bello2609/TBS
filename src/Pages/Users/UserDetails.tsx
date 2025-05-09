@@ -1,10 +1,10 @@
 // src/pages/Users/UserDetails.tsx
 
 import React from "react";
-import { ModalOverlay, ModalContainer } from "@/styles/InvoiceStyles";
-import { ModalContentScrollable, DetailRow } from "@/styles/UserStyles";
-import { Button } from "@/components/ui/Button";
-import type { User } from "../types/User";
+import { ModalOverlay, ModalContainer } from "@/styles/invoiceStyles";
+import { ModalContentScrollable, DetailRow } from "@/styles/userStyles";
+import { Button } from "@/components/ui/button";
+import type { User } from "../types/user";
 
 interface Props {
   user: User;

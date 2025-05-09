@@ -4,29 +4,27 @@ import React from "react";
 import { Routes, Route } from "react-router-dom";
 
 // Public pages
-import Home from "../pages/Home/Home";
-import Login from "../pages/Auth/Login";
-import ForgotPassword from "../pages/Auth/ForgotPassword";
-import ResetPassword from "../pages/Auth/ResetPassword";
-import NotFound from "../pages/NotFound/NotFound";
+import Home from "../pages/home/home";
+import Login from "../pages/auth/login";
+import NotFound from "../pages/notFound/notFound";
 
 // Protected pages
-import Dashboard from "../pages/Dashboard/Dashboard";
-import InvoiceList from "../pages/Invoices/InvoiceList";
-import CreateInvoice from "../pages/Invoices/CreateInvoice";
-import InventoryList from "../pages/Inventory/InventoryList";
-import Reports from "../pages/Reports/Reports";
-import Notifications from "../pages/Notifications/Notifications";
-import UserManagement from "../pages/Users/UserManagement";
-import CreateUser from "../pages/Users/CreateUser";
-import Settings from "../pages/Settings/Settings";
-import SecuritySettings from "../pages/Settings/Security/SecuritySettings";
-import Enable2FA from "../pages/Settings/Security/Enable2FA";
-import ActivityLogs from "../pages/Settings/Security/ActivityLogs";
-import ChangePassword from "../pages/Settings/Security/ChangePassword";
+import Dashboard from "../pages/dashboard/dashboard";
+import InvoiceList from "../pages/invoices/invoiceList";
+import CreateInvoice from "../pages/invoices/createInvoice";
+import InventoryList from "../pages/inventory/inventoryList";
+import Reports from "../pages/reports/reports";
+import Notifications from "../pages/notifications/notifications";
+import UserManagement from "../pages/users/userManagement";
+import CreateUser from "../pages/users/createUser";
+import Settings from "../pages/settings/settings";
+import SecuritySettings from "../pages/settings/security/securitySettings";
+import Enable2FA from "../pages/settings/security/enable2FA";
+import ActivityLogs from "../pages/settings/security/activityLogs";
+import ChangePassword from "../pages/settings/security/changePassword";
 
 // Route protection
-import ProtectedRoute from "../components/ui/ProtectedRoute";
+import ProtectedRoute from "../components/ui/protectedRoute";
 
 const AppRoutes: React.FC = () => {
   return (
@@ -34,8 +32,7 @@ const AppRoutes: React.FC = () => {
       {/* 🌐 Public Routes */}
       <Route path="/" element={<Home />} />
       <Route path="/auth/login" element={<Login />} />
-      <Route path="/auth/forgot-password" element={<ForgotPassword />} />
-      <Route path="/auth/reset-password" element={<ResetPassword />} />
+      
 
       {/* 🔐 Admin-only */}
       <Route element={<ProtectedRoute allowedRoles={["admin"]} />}>

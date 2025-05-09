@@ -5,10 +5,10 @@ import {
   BrowserRouter as Router,
   useLocation,
 } from "react-router-dom";
-import Sidebar from "./components/Sidebar";
-import AppRoutes from "./routes/AppRoutes";
+import Sidebar from "./components/sidebar";
+import AppRoutes from "./routes/appRoutes";
 import { ToastContainer } from "react-toastify";
-import { AuthProvider, useAuth } from "./context/AuthContext";
+import { AuthProvider, useAuth } from "./context/authContext";
 import "react-toastify/dist/ReactToastify.css";
 
 // ✅ Layout wrapper: handles sidebar visibility + padding

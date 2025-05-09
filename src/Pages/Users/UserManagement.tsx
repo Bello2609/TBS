@@ -20,15 +20,15 @@ import {
   ViewButton,
   EditButton,
   DeleteButton,
-} from "@/styles/UserStyles";
+} from "@/styles/userStyles";
 import { FiEye, FiEdit, FiTrash2 } from "react-icons/fi";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
-import UserModal from "./UserModal";
-import UserDetailsModal from "./UserDetailsModal";
+import UserModal from "./userModal";
+import UserDetailsModal from "./userDetailsModal";
 import { fakeUsers } from "../data/fakeUsers";
 import { fakeCustomers, Customer } from "../data/fakeCustomers";
-import type { User } from "../types/User";
+import type { User } from "../types/user";
 
 // Simulated current user role
 const currentUserRole: string = "admin";

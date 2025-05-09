@@ -11,7 +11,7 @@ import {
   Input,
   SubmitButton,
   ForgotPasswordLink,
-} from "../../styles/LoginStyles";
+} from "../../styles/loginStyles";
 
 const Login: React.FC = () => {
   const navigate = useNavigate();

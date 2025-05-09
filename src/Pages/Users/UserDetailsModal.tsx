@@ -5,10 +5,10 @@ import {
   ModalOverlay,
   ModalContainer,
   ModalContentScrollable,
-} from "@/styles/UserStyles";
-import { DetailRow } from "@/styles/UserStyles";
-import { Button } from "@/components/ui/Button";
-import type { User } from "../types/User";
+} from "@/styles/userStyles";
+import { DetailRow } from "@/styles/userStyles";
+import { Button } from "@/components/ui/button";
+import type { User } from "../types/user";
 
 interface Props {
   user: Partial<User> & {

@@ -2,7 +2,7 @@ import {
     FilterContainer,
     FilterInput,
     ApplyFilterButton
-  } from "../../styles/ReportStyles";
+  } from "../../styles/reportStyles";
   import { useState } from "react";
   
   const ReportFilters = ({ setFilters }) => {

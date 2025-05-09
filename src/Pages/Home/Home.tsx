@@ -16,7 +16,7 @@ import {
   HeroSection,
   Section,
   Footer
-} from "../../styles/HomeStyles";
+} from "../../styles/homeStyles";
 
 // Import contact form styles
 import {
@@ -24,7 +24,7 @@ import {
   ContactInput,
   ContactTextarea,
   SendButton
-} from "../../styles/KontaktStyles";
+} from "../../styles/kontaktStyles";
 
 const Home: React.FC = () => {
   const navigate = useNavigate();

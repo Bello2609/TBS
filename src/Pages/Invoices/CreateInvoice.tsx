@@ -6,8 +6,8 @@ import {
   InvoiceContainer,
   Input,
   Select,
-} from "../../styles/InvoiceStyles";
-import { Button } from "../../components/ui/Button";
+} from "../../styles/invoiceStyles";
+import { Button } from "../../components/ui/button";
 import { toast } from "react-toastify";
 import { fakeCustomers, Customer } from "../data/fakeCustomers";
 

@@ -7,8 +7,8 @@ import {
     TableBody,
     TableData,
     UserTable
-  } from "../../../styles/UserStyles";
-  import AnimatedCard from "../../../components/ui/AnimatedCard";
+  } from "../../../styles/userStyles";
+  import AnimatedCard from "../../../components/ui/animatedCard";
   
   interface Invoice {
     id: number;

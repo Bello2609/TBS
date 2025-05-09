@@ -13,11 +13,11 @@ import {
   SettingDescription,
   SettingAction,
   ToggleWrapper,
-} from "../../styles/SettingsStyles";
+} from "../../styles/settingsStyles";
 
 // ✅ Import components
-import LoginSessions from "./Security/LoginSessions";
-import ActivityLogs from "./Security/ActivityLogs";
+import LoginSessions from "./security/loginSessions";
+import ActivityLogs from "./security/activityLogs";
 
 const Settings = () => {
   const [isSecurityExpanded, setIsSecurityExpanded] = useState(true);

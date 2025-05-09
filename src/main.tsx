@@ -1,7 +1,7 @@
 // src/main.tsx
 import React from "react";
 import ReactDOM from "react-dom/client";
-import App from "./App";
+import App from "./app";
 import "./styles/App.css";
 
 // Get the root element from the HTML file

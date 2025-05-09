@@ -1,14 +1,14 @@
 // 📁 src/pages/Dashboard/components/StatCards.tsx
 
 import { FileText, Users, DollarSign } from "lucide-react";
-import AnimatedCard from "../../../components/ui/AnimatedCard";
+import AnimatedCard from "../../../components/ui/animatedCard";
 import {
   StatCardsGrid,
   StyledCard,
   IconWrapper,
   StatDetails,
   CardInnerContent,
-} from "../../../styles/DashboardStyles/StatCardsStyles";
+} from "../../../styles/dashboardStyles/statCardsStyles";
 
 interface StatCardsProps {
   totalInvoices: number;

@@ -20,7 +20,7 @@ import {
   CancelButton,
   ActionButtons,
   IconButton,
-} from '../../styles/InventoryStyles';
+} from '../../styles/inventoryStyles';
 
 import { fakeCustomers, Customer } from "../data/fakeCustomers"; // Import Customer
 import { fetchSenders, Sender } from '../../api/fetchSenders';

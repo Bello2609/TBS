@@ -5,10 +5,10 @@ import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
-import { InvoiceContainer } from "@/styles/InvoiceStyles";
-import { Button } from "@/components/ui/Button";
+import { InvoiceContainer } from "@/styles/invoiceStyles";
+import { Button } from "@/components/ui/button";
 import { useAuth } from "@/context/AuthContext";
-import InvoiceView from "./InvoiceView";
+import InvoiceView from "./invoiceView";
 
 interface jsPDFWithAutoTable extends jsPDF {
   lastAutoTable?: {

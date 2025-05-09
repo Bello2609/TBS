@@ -14,7 +14,7 @@ import {
   SubmitButton,
   ToggleWrapper,
   MessageBox,
-} from "../../../styles/SecurityStyles";
+} from "../../../styles/securityStyles";
 
 const SecuritySettings: React.FC = () => {
   const [settings, setSettings] = useState({

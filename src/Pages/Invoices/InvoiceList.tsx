@@ -17,13 +17,13 @@ import {
   PaginationContainer,
   RowsPerPage,
   PageButtons,
-} from "@/styles/InvoiceStyles";
-import { Button } from "@/components/ui/Button";
+} from "@/styles/invoiceStyles";
+import { Button } from "@/components/ui/button";
 import { toast } from "react-toastify";
 import { useAuth } from "@/context/AuthContext";
 import { fakeInvoices } from "../data/fakeInvoices";
 import { Invoice } from "../types/Invoice"; // Import the Invoice interface
-import InvoiceDetailsModal from "./InvoiceDetailsModal"; // Add this line
+import InvoiceDetailsModal from "./invoiceDetailsModal"; // Add this line
 
 // Extend jsPDF to include lastAutoTable
 interface jsPDFWithAutoTable extends jsPDF {

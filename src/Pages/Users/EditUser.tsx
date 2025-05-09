@@ -5,12 +5,12 @@ import { useParams, useNavigate } from "react-router-dom";
 import {
   UserContainer,
   DetailRow,
-} from "@/styles/UserStyles";
-import { Input, Select } from "@/styles/InvoiceStyles";
-import { Button } from "@/components/ui/Button";
+} from "@/styles/userStyles";
+import { Input, Select } from "@/styles/invoiceStyles";
+import { Button } from "@/components/ui/button";
 import { toast } from "react-toastify";
 import { fakeUsers } from "../data/fakeUsers";
-import type { User, UserRole } from "../types/User";
+import type { User, UserRole } from "../types/user";
 
 // Simulated current user's role (should come from context in real apps)
 const CURRENT_USER_ROLE: UserRole = "admin";

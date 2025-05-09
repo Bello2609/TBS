@@ -8,7 +8,7 @@ import {
     Tooltip,
     Legend
   } from "recharts";
-  import AnimatedCard from "../../../components/ui/AnimatedCard";
+  import AnimatedCard from "../../../components/ui/animatedCard";
   
   interface Invoice {
     id: number;

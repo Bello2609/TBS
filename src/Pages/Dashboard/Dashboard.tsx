@@ -3,18 +3,18 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
 // Importing reusable dashboard components
-import StatCards from "./components/StatCards";
-import RevenueChart from "./components/RevenueChart";
-import StatusPieChart from "./components/StatusPieChart";
-import OverdueInvoicesTable from "./components/OverdueInvoicesTable";
-import TopCustomersTable from "./components/TopCustomersTable";
-import AverageInvoiceCard from "./components/AverageInvoiceCard";
-import StatusCounters from "./components/StatusCounters";
+import StatCards from "./components/statCards";
+import RevenueChart from "./components/revenueChart";
+import StatusPieChart from "./components/statusPieChart";
+import OverdueInvoicesTable from "./components/overdueInvoicesTable";
+import TopCustomersTable from "./components/topCustomersTable";
+import AverageInvoiceCard from "./components/averageInvoiceCard";
+import StatusCounters from "./components/statusCounters";
 
 // Layout and UI
-import { DashboardContainer } from "../../styles/DashboardStyles/DashboardContainer";
-import DashboardSection from "../../styles/DashboardStyles/DashboardSection";
-import { Button } from "../../components/ui/Button";
+import { DashboardContainer } from "../../styles/dashboardStyles/dashboardContainer";
+import DashboardSection from "../../styles/dashboardStyles/dashboardSection";
+import { Button } from "../../components/ui/button";
 
 // Invoice data interface
 interface Invoice {

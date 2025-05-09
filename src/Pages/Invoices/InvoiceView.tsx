@@ -1,7 +1,7 @@
 // src/pages/Invoices/InvoiceView.tsx
 
-import { InvoiceContainer } from "@/styles/InvoiceStyles";
-import { Button } from "@/components/ui/Button";
+import { InvoiceContainer } from "@/styles/invoiceStyles";
+import { Button } from "@/components/ui/button";
 
 interface Customer {
   name: string;

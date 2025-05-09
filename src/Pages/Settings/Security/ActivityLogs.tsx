@@ -10,7 +10,7 @@ import {
   TableCell,
   LogTitle,
   LogEmpty,
-} from "../../../styles/SecurityStyles";
+} from "../../../styles/securityStyles";
 
 interface LogEntry {
   id: string;
