@@ -12,7 +12,7 @@ import {
   MarkAsReadButton,
 } from "@/styles/notificationStyles";
 import { Button } from "@/components/ui/button";
-import { useAuth } from "@/context/AuthContext";
+import { useAuth } from "@/context/authContext";
 
 // Type for notifications
 interface Notification {

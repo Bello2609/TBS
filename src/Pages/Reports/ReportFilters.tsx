@@ -5,10 +5,14 @@ import {
   } from "../../styles/reportStyles";
   import { useState } from "react";
   
-  const ReportFilters = ({ setFilters }) => {
+  interface ReportFiltersProps {
+    setFilters: (filters: { date: string; customer: string; status: string }) => void;
+  }
+  
+  const ReportFilters = ({ setFilters }: ReportFiltersProps) => {
     const [localFilters, setLocalFilters] = useState({ date: "", customer: "", status: "" });
   
-    const handleChange = (e) => {
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       setLocalFilters({ ...localFilters, [e.target.name]: e.target.value });
     };
   

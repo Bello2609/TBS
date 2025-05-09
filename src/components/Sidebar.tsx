@@ -15,7 +15,7 @@ import {
   UserRole,
   AvatarCircle,
   UserMeta,
-} from "../styles/SidebarStyles";
+} from "../styles/sidebarStyles";
 
 import {
   Home,
@@ -31,7 +31,7 @@ import {
 
 import { motion } from "framer-motion";
 import { useLocation, useNavigate } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../context/authContext";
 
 // ✅ Animated Logo with fish icon beside "TBS"
 const AnimatedLogo: React.FC = () => {

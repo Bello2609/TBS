@@ -48,7 +48,7 @@ const SecuritySettings: React.FC = () => {
 
       setMessage("Two-Factor Authentication updated successfully!");
       setError(null);
-    } catch (err) {
+    } catch {
       setError("Failed to update 2FA settings.");
       setMessage(null);
     }

@@ -20,7 +20,7 @@ import {
 } from "@/styles/invoiceStyles";
 import { Button } from "@/components/ui/button";
 import { toast } from "react-toastify";
-import { useAuth } from "@/context/AuthContext";
+import { useAuth } from "@/context/authContext";
 import { fakeInvoices } from "../data/fakeInvoices";
 import { Invoice } from "../types/Invoice"; // Import the Invoice interface
 import InvoiceDetailsModal from "./invoiceDetailsModal"; // Add this line

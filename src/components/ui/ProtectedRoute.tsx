@@ -2,8 +2,8 @@
 
 import React from "react";
 import { Navigate, Outlet } from "react-router-dom";
-import { useAuth } from "../../context/AuthContext"; // ✅ correct
-import type { UserRole } from "../../pages/types/User"; // fixed import path
+import { useAuth } from "../../context/authContext"; // ✅ correct
+import type { UserRole } from "../../pages/types/user"; // fixed import path
 
 interface ProtectedRouteProps {
   allowedRoles?: UserRole[]; // 👈 Use your unified type

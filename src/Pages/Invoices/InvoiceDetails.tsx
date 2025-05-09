@@ -7,7 +7,7 @@ import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { InvoiceContainer } from "@/styles/invoiceStyles";
 import { Button } from "@/components/ui/button";
-import { useAuth } from "@/context/AuthContext";
+import { useAuth } from "@/context/authContext";
 import InvoiceView from "./invoiceView";
 
 interface jsPDFWithAutoTable extends jsPDF {
