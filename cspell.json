@@ -1,0 +1,20 @@
+{
+  "version": "0.2",
+  "language": "en",
+  "dictionaries": ["en", "ar", "nb"],
+  "words": [
+    "tbsbachelor",
+    "jspdf",
+    "autotable",
+    "Toastify",
+    "axios",
+    "vite",
+    "zustand",
+    "yup",
+    "devDependencies",
+    "tsconfig",
+    "reactify",
+    "Fakturaer",
+    "Kunder",
+  ]
+}
