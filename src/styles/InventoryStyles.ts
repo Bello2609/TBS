@@ -1,259 +1,276 @@
-import styled from 'styled-components';
+// src/styles/InventoryStyles.ts
 
-// ✅ Main container for the Inventory page
-export const PageContainer = styled.div`
-  padding: 2rem;
-  background-color: ${({ theme }) => theme.background || "#f9fafb"};
-  min-height: 100vh;
+import styled from "styled-components";
+import DatePicker from "react-datepicker";
+import Select from "react-select";
+
+/* ==== MAIN CONTAINER ==== */
+export const InventoryContainer = styled.div`
+  padding: 24px;
+  width: 100%;
+  background-color: ${({ theme }) => theme.background};
+  color: ${({ theme }) => theme.text};
 `;
 
-// ✅ Page header (title, filters, add button)
-export const PageHeader = styled.div`
+/* ==== HEADER BAR ==== */
+export const TopBar = styled.div`
   display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  margin-bottom: 1.5rem;
-
-  h2 {
-    font-size: 1.8rem;
-    color: ${({ theme }) => theme.text || "#111827"};
-  }
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 24px;
 `;
 
-// ✅ Filters row (Customer select, dates, buttons)
-export const FiltersRow = styled.div`
+/* ==== FILTERS ==== */
+export const FilterRow = styled.div`
   display: flex;
+  gap: 12px;
   flex-wrap: wrap;
   align-items: center;
-  gap: 1rem;
+  margin-bottom: 20px;
 `;
 
-// ✅ Button to add new inventory
+export const SearchSelect = styled(Select)`
+  min-width: 200px;
+  max-width: 260px;
+  font-size: 14px;
+
+  .react-select__control {
+    background-color: ${({ theme }) => theme.inputBackground};
+    border-color: ${({ theme }) => theme.border};
+    color: ${({ theme }) => theme.text};
+  }
+`;
+
+export const DateInput = styled(DatePicker)`
+  padding: 10px 14px;
+  border: 1px solid ${({ theme }) => theme.border};
+  border-radius: 10px;
+  background-color: ${({ theme }) => theme.inputBackground};
+  color: ${({ theme }) => theme.text};
+  font-size: 14px;
+  min-width: 160px;
+
+  &:focus {
+    outline: none;
+    border-color: ${({ theme }) => theme.primary};
+    box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+  }
+`;
+
+/* ==== ADD BUTTON ==== */
 export const AddButton = styled.button`
-  padding: 0.6rem 1.2rem;
-  background-color: ${({ theme }) => theme.primary || "#6366f1"};
-  color: #fff;
+  padding: 10px 20px;
+  font-size: 14px;
+  font-weight: 600;
   border: none;
   border-radius: 10px;
-  font-weight: 600;
+  background-color: ${({ theme }) => theme.primary || "#3b82f6"};
+  color: #fff;
   cursor: pointer;
-  transition: background-color 0.2s;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
 
   &:hover {
-    background-color: ${({ theme }) => theme.primaryHover || "#4f46e5"};
+    background-color: ${({ theme }) => theme.primaryDark || "#2563eb"};
+    transform: translateY(-2px);
+  }
+
+  &:disabled {
+    background-color: #e5e7eb;
+    color: #9ca3af;
+    cursor: not-allowed;
   }
 `;
 
-// ✅ Inventory table
+/* ==== TABLE ==== */
 export const InventoryTable = styled.table`
   width: 100%;
-  border-collapse: collapse;
-  background: ${({ theme }) => theme.card || "#fff"};
-  border-radius: 12px;
-  overflow: hidden;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
-
-  thead {
-    background-color: ${({ theme }) => theme.cardHeader || "#f3f4f6"};
-    color: ${({ theme }) => theme.text || "#374151"};
-  }
-
-  th, td {
-    padding: 1rem;
-    text-align: left;
-    font-size: 0.95rem;
-    border-bottom: 1px solid ${({ theme }) => theme.border || "#e5e7eb"};
-    vertical-align: middle;
-    white-space: nowrap;
-  }
-
-  th {
-    font-weight: 600;
-    text-transform: capitalize;
-  }
+  border-collapse: separate;
+  border-spacing: 0 10px;
+  margin-top: 20px;
 `;
 
-// ✅ Table row with hover effect
+export const TableHead = styled.tr``;
+
 export const TableRow = styled.tr`
-  &:hover {
-    background-color: ${({ theme }) => theme.hover || "#f9fafb"};
-  }
+  border-radius: 12px;
 `;
 
-// ✅ Table cell
 export const TableCell = styled.td`
-  color: ${({ theme }) => theme.text || "#374151"};
+  padding: 16px 18px;
+  font-size: 14px;
+  background-color: ${({ theme }) => theme.cardBackground};
+  color: ${({ theme }) => theme.text};
+  border-top: 1px solid #e5e7eb;
+  border-bottom: 1px solid #e5e7eb;
 `;
 
-// ✅ Action buttons container (aligned under Actions column)
+export const TableHeader = styled.th`
+  padding: 14px 18px;
+  text-align: left;
+  font-size: 13px;
+  font-weight: 600;
+  color: ${({ theme }) => theme.text};
+`;
+
+/* ==== ACTION BUTTONS ==== */
 export const ActionButtons = styled.div`
   display: flex;
-  justify-content: center;
-  gap: 0.5rem;
+  gap: 8px;
+  align-items: center;
+  justify-content: flex-start;
 `;
 
-// ✅ Icon-only button (view, edit, delete)
 export const IconButton = styled.button`
-  background-color: transparent;
+  padding: 6px 10px;
   border: none;
-  cursor: pointer;
-  padding: 6px;
   border-radius: 8px;
+  cursor: pointer;
+  font-size: 16px;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background 0.2s;
+  transition: background-color 0.2s;
 
   svg {
-    width: 20px;
-    height: 20px;
-    color: ${({ theme }) => theme.text};
-  }
-
-  &:hover {
-    background-color: ${({ theme }) => theme.hover || "#f3f4f6"};
+    width: 18px;
+    height: 18px;
   }
 `;
 
-// ✅ Modal overlay background
+export const EditButton = styled(IconButton)`
+  background-color: #fef9c3;
+  color: #92400e;
+
+  &:hover {
+    background-color: #fde68a;
+  }
+`;
+
+export const DeleteButton = styled(IconButton)`
+  background-color: #fee2e2;
+  color: #991b1b;
+
+  &:hover {
+    background-color: #fecaca;
+  }
+`;
+
+/* ==== MODAL ==== */
 export const ModalOverlay = styled.div`
   position: fixed;
   inset: 0;
-  background-color: rgba(0, 0, 0, 0.45);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 999;
 `;
 
-// ✅ Modal container
 export const ModalContainer = styled.div`
-  background: ${({ theme }) => theme.card || "#fff"};
-  padding: 2rem;
-  width: 100%;
-  max-width: 600px;
-  max-height: 90vh;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1000;
+  background-color: ${({ theme }) => theme.cardBackground || "#ffffff"};
   border-radius: 16px;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
-  display: flex;
-  flex-direction: column;
+  max-height: 90vh;
+  overflow: hidden;
+  width: 100%;
+  max-width: 700px;
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
 `;
 
-// ✅ Modal title
-export const ModalTitle = styled.h3`
-  font-size: 1.5rem;
-  margin-bottom: 1.5rem;
-  font-weight: 600;
-  color: ${({ theme }) => theme.text || "#111827"};
-`;
-
-// ✅ Modal form
-export const ModalForm = styled.form`
-  flex: 1;
+export const ModalContentScrollable = styled.div`
+  max-height: 85vh;
   overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-  gap: 1.25rem;
-  padding-right: 0.25rem;
+  padding: 24px;
+  background-color: ${({ theme }) => theme.cardBackground || "#ffffff"};
+  border-radius: 16px;
+
+  &::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background-color: #cbd5e1;
+    border-radius: 8px;
+  }
 `;
 
-// ✅ Form row container
+export const ModalTitle = styled.h3`
+  font-size: 1.4rem;
+  font-weight: 600;
+  margin-bottom: 20px;
+  color: ${({ theme }) => theme.text};
+`;
+
+export const ModalForm = styled.form`
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+`;
+
+/* ==== FORM FIELDS ==== */
 export const FormRow = styled.div`
   display: flex;
   flex-direction: column;
 `;
 
-// ✅ Label for inputs
 export const Label = styled.label`
-  margin-bottom: 0.4rem;
+  margin-bottom: 6px;
   font-size: 0.95rem;
-  color: ${({ theme }) => theme.textSoft || "#6b7280"};
+  color: ${({ theme }) => theme.textSoft};
 `;
 
-// ✅ Input field
 export const Input = styled.input`
-  padding: 0.6rem 1rem;
-  border: 1px solid ${({ theme }) => theme.border || "#d1d5db"};
+  padding: 10px 14px;
+  border: 1px solid ${({ theme }) => theme.border};
   border-radius: 8px;
-  background: ${({ theme }) => theme.inputBackground || "#fff"};
-  color: ${({ theme }) => theme.text || "#111827"};
-  font-size: 1rem;
+  background-color: ${({ theme }) => theme.inputBackground};
+  color: ${({ theme }) => theme.text};
+  font-size: 0.95rem;
 
   &:focus {
     outline: none;
-    border-color: ${({ theme }) => theme.primary || "#6366f1"};
+    border-color: ${({ theme }) => theme.primary};
     box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
   }
 `;
 
-// ✅ Modal actions (buttons) at bottom
+/* ==== ACTIONS IN MODAL ==== */
 export const ModalActions = styled.div`
   display: flex;
   justify-content: flex-end;
   gap: 1rem;
-  margin-top: auto;
-  padding-top: 1rem;
-  background-color: ${({ theme }) => theme.card || "#fff"};
+  padding-top: 16px;
 `;
 
-// ✅ Save button inside modal
 export const SaveButton = styled.button`
-  background-color: ${({ theme }) => theme.primary || "#10b981"};
+  background-color: ${({ theme }) => theme.primary};
   color: #fff;
-  padding: 0.6rem 1.3rem;
-  border: none;
-  border-radius: 8px;
+  padding: 10px 18px;
   font-weight: 600;
   font-size: 1rem;
+  border: none;
+  border-radius: 8px;
   cursor: pointer;
 
   &:hover {
-    background-color: ${({ theme }) => theme.primaryHover || "#059669"};
+    background-color: ${({ theme }) => theme.primaryHover};
   }
 `;
 
-// ✅ Cancel button inside modal
 export const CancelButton = styled.button`
-  background-color: ${({ theme }) => theme.danger || "#ef4444"};
+  background-color: ${({ theme }) => theme.danger};
   color: #fff;
-  padding: 0.6rem 1.3rem;
-  border: none;
-  border-radius: 8px;
+  padding: 10px 18px;
   font-weight: 600;
   font-size: 1rem;
-  cursor: pointer;
-
-  &:hover {
-    background-color: ${({ theme }) => theme.dangerHover || "#dc2626"};
-  }
-`;
-
-// ✅ Pagination wrapper (bottom of the table)
-export const PaginationWrapper = styled.div`
-  margin-top: 20px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-`;
-
-// ✅ Pagination button (Previous/Next)
-export const PaginationButton = styled.button`
-  padding: 6px 14px;
-  background-color: ${({ theme }) => theme.inputBackground || "#fff"};
-  color: ${({ theme }) => theme.text || "#111827"};
-  border: 1px solid ${({ theme }) => theme.border || "#d1d5db"};
+  border: none;
   border-radius: 8px;
   cursor: pointer;
-  font-size: 0.95rem;
-  transition: background-color 0.2s;
 
   &:hover {
-    background-color: ${({ theme }) => theme.hover || "#f3f4f6"};
-  }
-
-  &:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
+    background-color: ${({ theme }) => theme.dangerHover};
   }
 `;
