@@ -76,13 +76,29 @@ const Sidebar: React.FC = () => {
 
   // ✅ Removed "Reports" and "Activity Logs"
   const navLinks = [
-    { to: "/dashboard", label: "Dashboard", icon: <Home />, roles: ["admin", "employee"] },
-    { to: "/invoices", label: "Invoices", icon: <File />, roles: ["admin", "employee", "customer"] },
-    { to: "/inventory", label: "Inventory", icon: <FileText />, roles: ["admin", "employee"] },
-    { to: "/users", label: "Users", icon: <Users />, roles: ["admin"] },
-    { to: "/notifications", label: "Notifications", icon: <Bell />, roles: ["admin", "employee"] },
-    { to: "/settings", label: "Settings", icon: <Settings />, roles: ["admin"] },
-  ];
+  // Dashboard
+  { to: "/dashboard", label: "Dashboard", icon: <Home />, roles: ["admin", "employee"] },
+
+  // Invoices
+  { to: "/invoices", label: "Invoices", icon: <File />, roles: ["admin", "employee", "customer"] },
+  { to: "/invoices/create", label: "New Invoice", icon: <FileText />, roles: ["admin", "employee"] },
+  { to: "/invoices/export", label: "Export", icon: <FileText />, roles: ["admin", "employee"] },
+  { to: "/invoices/reports", label: "Reports", icon: <FileText />, roles: ["admin", "employee"] },
+  { to: "/invoices/stats", label: "Stats", icon: <FileText />, roles: ["admin", "employee"] },
+
+  // Inventory
+  { to: "/inventory", label: "Inventory", icon: <FileText />, roles: ["admin", "employee"] },
+
+  // User Management
+  { to: "/users", label: "Users", icon: <Users />, roles: ["admin"] },
+
+  // Notifications
+  { to: "/notifications", label: "Notifications", icon: <Bell />, roles: ["admin", "employee"] },
+
+  // Settings
+  { to: "/settings", label: "Settings", icon: <Settings />, roles: ["admin"] },
+];
+
 
   const visibleLinks = navLinks.filter((link) => link.roles.includes(user.role));
 

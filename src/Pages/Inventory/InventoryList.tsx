@@ -1,6 +1,7 @@
 // src/pages/Inventory/InventoryList.tsx
 
 import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import {
   PageContainer,
   PageHeader,
@@ -22,23 +23,19 @@ import {
   IconButton,
 } from '../../styles/inventoryStyles';
 
-import { fakeCustomers, Customer } from "../data/fakeCustomers"; // Import Customer
-import { fetchSenders, Sender } from '../../api/fetchSenders';
-import { Eye, Pencil, Trash2 } from 'lucide-react';
+import { Pencil, Trash2 } from 'lucide-react';
 import { toast } from 'react-toastify';
 import ReactSelect, { SingleValue } from 'react-select';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 
-// Inventory item type
+// Types
 interface InventoryItem {
+  _id?: string;
   customerId: string;
   customerName: string;
   senderId: string;
   senderName: string;
-  num: string;
-  phone: string;
-  address: string;
   goods: string;
   type: string;
   weight: string;
@@ -46,8 +43,17 @@ interface InventoryItem {
   departureDate: string;
 }
 
+interface Customer {
+  _id: string;
+  companyName: string;
+}
+
+interface Sender {
+  _id: string;
+  name: string;
+}
+
 const InventoryList: React.FC = () => {
-  // States
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [senders, setSenders] = useState<Sender[]>([]);
   const [inventory, setInventory] = useState<InventoryItem[]>([]);
@@ -56,218 +62,153 @@ const InventoryList: React.FC = () => {
   const [startDate, setStartDate] = useState<Date | null>(null);
   const [endDate, setEndDate] = useState<Date | null>(null);
   const [showModal, setShowModal] = useState<boolean>(false);
-  const [showSenderModal, setShowSenderModal] = useState<boolean>(false);
-  const [newSenderName, setNewSenderName] = useState<string>('');
   const [form, setForm] = useState<InventoryItem>({
     customerId: '',
     customerName: '',
     senderId: '',
     senderName: '',
-    num: '',
-    phone: '',
-    address: '',
     goods: '',
     type: '',
     weight: '',
     arrivalDate: '',
     departureDate: '',
   });
-  const [editIndex, setEditIndex] = useState<number | null>(null);
-  const [selectedItem, setSelectedItem] = useState<InventoryItem | null>(null);
-  const [page, setPage] = useState<number>(0);
-  const [rowsPerPage, setRowsPerPage] = useState<number>(5);
+  const [editId, setEditId] = useState<string | null>(null);
 
-  // Function to fetch customers
-  const fetchCustomers = async (): Promise<Customer[]> => {
-    return fakeCustomers;
-  };
-
-  // Fetch customers and senders on mount
   useEffect(() => {
-    const loadData = async () => {
-      const customerList = await fetchCustomers();
-      const senderList = await fetchSenders();
-      setCustomers(customerList);
-      setSenders(senderList);
+    const fetchData = async () => {
+      try {
+        const [customersRes, sendersRes, inventoryRes] = await Promise.all([
+          axios.get('/api/customers'),
+          axios.get('/api/senders'),
+          axios.get('/api/inventory'),
+        ]);
+
+        setCustomers(customersRes.data);
+        setSenders(sendersRes.data);
+        setInventory(inventoryRes.data);
+      } catch {
+        toast.error('Error fetching data.');
+      }
     };
-    loadData();
+    fetchData();
   }, []);
 
-  // Handle customer selection
   const handleCustomerSelect = (option: SingleValue<{ value: string; label: string }>) => {
-    const value = option?.value || '';
-    const customer = customers.find((c) => c.id.toString() === value);
-    if (customer) {
-      setSelectedCustomerId(customer.id.toString());
-      setSelectedCustomerName(customer.companyName);
+    if (option) {
+      setSelectedCustomerId(option.value);
+      setSelectedCustomerName(option.label);
     } else {
       setSelectedCustomerId('');
       setSelectedCustomerName('');
     }
-    setPage(0);
   };
 
-  // Handle input changes
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setForm((prev) => ({ ...prev, [name]: value }));
+    setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  // Reset form fields
   const resetForm = () => {
     setForm({
       customerId: '',
       customerName: '',
       senderId: '',
       senderName: '',
-      num: '',
-      phone: '',
-      address: '',
       goods: '',
       type: '',
       weight: '',
       arrivalDate: '',
       departureDate: '',
     });
+    setEditId(null);
   };
 
-  // Save inventory item (new or edited)
-  const handleSave = () => {
-    if (!form.senderId) {
-      toast.error('Please select a sender.');
+  const handleSave = async () => {
+    if (!form.senderId || !selectedCustomerId) {
+      toast.error('Please select customer and sender.');
       return;
     }
-    if (editIndex !== null) {
-      const updatedList = [...inventory];
-      updatedList[editIndex] = { ...form, customerId: selectedCustomerId, customerName: selectedCustomerName };
-      setInventory(updatedList);
-      toast.success('Inventory updated successfully!');
-    } else {
-      setInventory((prev) => [...prev, { ...form, customerId: selectedCustomerId, customerName: selectedCustomerName }]);
-      toast.success('Inventory added successfully!');
-    }
-    setShowModal(false);
-    resetForm();
-    setEditIndex(null);
-  };
 
-  // Delete inventory item
-  const handleDelete = (index: number) => {
-    if (window.confirm('Are you sure you want to delete this inventory record?')) {
-      const updatedList = [...inventory];
-      updatedList.splice(index, 1);
-      setInventory(updatedList);
-      toast.success('Inventory deleted.');
-    }
-  };
-
-  // Add a new sender
-  const handleAddNewSender = () => {
-    if (!newSenderName.trim()) {
-      toast.error('Sender name cannot be empty.');
-      return;
-    }
-    const newSender: Sender = {
-      id: Date.now().toString(),
-      name: newSenderName.trim(),
+    const formData = {
+      ...form,
+      customerId: selectedCustomerId,
+      customerName: selectedCustomerName,
     };
-    setSenders((prev) => [...prev, newSender]);
-    setForm((prev) => ({
-      ...prev,
-      senderId: newSender.id,
-      senderName: newSender.name,
-    }));
-    setShowSenderModal(false);
-    setNewSenderName('');
-    toast.success('Sender added successfully!');
+
+    try {
+      if (editId) {
+        await axios.put(`/api/inventory/${editId}`, formData);
+        toast.success('Inventory updated successfully.');
+      } else {
+        await axios.post('/api/inventory', formData);
+        toast.success('Inventory added successfully.');
+      }
+
+      const updatedInventory = await axios.get('/api/inventory');
+      setInventory(updatedInventory.data);
+      setShowModal(false);
+      resetForm();
+    } catch {
+      toast.error('Error saving inventory.');
+    }
   };
 
-  // Reset all filters
-  const handleResetFilters = () => {
-    setSelectedCustomerId('');
-    setSelectedCustomerName('');
-    setStartDate(null);
-    setEndDate(null);
-    setPage(0);
+  const handleDelete = async (id: string) => {
+    if (window.confirm('Are you sure you want to delete this inventory item?')) {
+      try {
+        await axios.delete(`/api/inventory/${id}`);
+        setInventory(inventory.filter((item) => item._id !== id));
+        toast.success('Inventory deleted successfully.');
+      } catch {
+        toast.error('Error deleting inventory.');
+      }
+    }
   };
 
-  // Filter and paginate inventory
-  const filteredInventory = inventory
-    .filter((item) => (selectedCustomerId ? item.customerId === selectedCustomerId : true))
-    .filter((item) => {
-      const arrival = new Date(item.arrivalDate);
-      return (!startDate || arrival >= startDate) && (!endDate || arrival <= endDate);
-    })
-    .sort((a, b) => new Date(b.arrivalDate).getTime() - new Date(a.arrivalDate).getTime());
+  const handleEdit = (item: InventoryItem) => {
+    setForm(item);
+    setEditId(item._id || null);
+    setSelectedCustomerId(item.customerId);
+    setSelectedCustomerName(item.customerName);
+    setShowModal(true);
+  };
 
-  const paginatedInventory = filteredInventory.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
+  const filteredInventory = inventory.filter((item) => {
+    const matchCustomer = selectedCustomerId ? item.customerId === selectedCustomerId : true;
+    const arrival = new Date(item.arrivalDate);
+    const matchDate =
+      (!startDate || arrival >= startDate) && (!endDate || arrival <= endDate);
+    return matchCustomer && matchDate;
+  });
 
   return (
     <PageContainer>
-      {/* Main Title */}
-      <h2 style={{ marginBottom: '1.5rem' }}>Inventory</h2>
+      <h2>Inventory Management</h2>
 
-      {/* Filters */}
       <PageHeader>
-        <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', alignItems: 'center' }}>
-          <div style={{ minWidth: '250px' }}>
-            <ReactSelect
-              options={[
-                { value: '', label: 'Select Customer' },
-                ...customers.map((c) => ({ value: c.id.toString(), label: c.companyName }))
-              ]}
-              value={
-                selectedCustomerId
-                  ? { value: selectedCustomerId, label: selectedCustomerName }
-                  : { value: '', label: 'Select Customer' }
-              }
-              onChange={handleCustomerSelect}
-              isSearchable
-              placeholder="Select Customer"
-            />
-          </div>
-
-          {/* Date Filters */}
-          <div style={{ display: 'flex', gap: '8px' }}>
-            <DatePicker
-              selected={startDate}
-              onChange={(date) => setStartDate(date)}
-              placeholderText="Start Date"
-              dateFormat="yyyy-MM-dd"
-            />
-            <DatePicker
-              selected={endDate}
-              onChange={(date) => setEndDate(date)}
-              placeholderText="End Date"
-              dateFormat="yyyy-MM-dd"
-            />
-          </div>
-
-          {/* Reset Filters Button */}
-          <AddButton type="button" style={{ backgroundColor: '#7c3aed' }} onClick={handleResetFilters}>
-            Reset Filters
-          </AddButton>
-        </div>
-
-        {/* Add New Inventory Button */}
-        <div style={{ marginTop: '10px' }}>
-          <AddButton
-            onClick={() => {
-              resetForm();
-              setEditIndex(null);
-              setShowModal(true);
-            }}
-            disabled={!selectedCustomerId}
-          >
-            + Add New Inventory
-          </AddButton>
-        </div>
+        <ReactSelect
+          options={customers.map((c) => ({ value: c._id, label: c.companyName }))}
+          onChange={handleCustomerSelect}
+          placeholder="Select Customer"
+          isClearable
+        />
+        <DatePicker
+          selected={startDate}
+          onChange={(date) => setStartDate(date)}
+          placeholderText="Start Date"
+          dateFormat="yyyy-MM-dd"
+        />
+        <DatePicker
+          selected={endDate}
+          onChange={(date) => setEndDate(date)}
+          placeholderText="End Date"
+          dateFormat="yyyy-MM-dd"
+        />
+        <AddButton onClick={() => { resetForm(); setShowModal(true); }}>
+          + Add Inventory
+        </AddButton>
       </PageHeader>
 
-      {/* Selected Customer */}
-      {selectedCustomerName && <h3>Inventory for: {selectedCustomerName}</h3>}
-
-      {/* Inventory Table */}
       <InventoryTable>
         <thead>
           <tr>
@@ -277,31 +218,24 @@ const InventoryList: React.FC = () => {
             <th>Type</th>
             <th>Weight</th>
             <th>Departure Date</th>
-            <th style={{ textAlign: 'center' }}>Actions</th>
+            <th>Actions</th>
           </tr>
         </thead>
         <tbody>
-          {paginatedInventory.map((item, index) => (
-            <TableRow key={index}>
+          {filteredInventory.map((item) => (
+            <TableRow key={item._id}>
               <TableCell>{item.arrivalDate}</TableCell>
               <TableCell>{item.senderName}</TableCell>
               <TableCell>{item.goods}</TableCell>
               <TableCell>{item.type}</TableCell>
               <TableCell>{item.weight}</TableCell>
               <TableCell>{item.departureDate}</TableCell>
-              <TableCell style={{ textAlign: 'center' }}>
+              <TableCell>
                 <ActionButtons>
-                  <IconButton onClick={() => setSelectedItem(item)}>
-                    <Eye />
-                  </IconButton>
-                  <IconButton onClick={() => {
-                    setForm(item);
-                    setEditIndex(index);
-                    setShowModal(true);
-                  }}>
+                  <IconButton onClick={() => handleEdit(item)}>
                     <Pencil />
                   </IconButton>
-                  <IconButton onClick={() => handleDelete(index)}>
+                  <IconButton onClick={() => handleDelete(item._id!)}>
                     <Trash2 />
                   </IconButton>
                 </ActionButtons>
@@ -311,125 +245,30 @@ const InventoryList: React.FC = () => {
         </tbody>
       </InventoryTable>
 
-      {/* Pagination */}
-      <div style={{ marginTop: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <div>
-          Rows per page:
-          <select
-            value={rowsPerPage}
-            onChange={(e) => {
-              setRowsPerPage(parseInt(e.target.value));
-              setPage(0);
-            }}
-            style={{ marginLeft: '8px', padding: '4px' }}
-          >
-            {[5, 10, 25].map((size) => (
-              <option key={size} value={size}>{size}</option>
-            ))}
-          </select>
-        </div>
-        <div>
-          <button
-            onClick={() => setPage((prev) => Math.max(prev - 1, 0))}
-            disabled={page === 0}
-            style={{ marginRight: '8px', padding: '4px 10px' }}
-          >
-            Previous
-          </button>
-          <button
-            onClick={() => setPage((prev) => (prev + 1 < Math.ceil(filteredInventory.length / rowsPerPage) ? prev + 1 : prev))}
-            style={{ padding: '4px 10px' }}
-          >
-            Next
-          </button>
-          <span style={{ marginLeft: '12px' }}>
-            Page {page + 1} of {Math.ceil(filteredInventory.length / rowsPerPage)}
-          </span>
-        </div>
-      </div>
-
-      {/* Modals */}
-      {/* View Inventory Modal */}
-      {selectedItem && (
-        <ModalOverlay>
-          <ModalContainer>
-            <ModalTitle>Inventory Details</ModalTitle>
-            <ModalForm>
-              {Object.entries(selectedItem).map(([key, value]) => (
-                <FormRow key={key}>
-                  <Label>{key}</Label>
-                  <Input value={value} readOnly />
-                </FormRow>
-              ))}
-              <ModalActions>
-                <CancelButton onClick={() => setSelectedItem(null)}>Close</CancelButton>
-              </ModalActions>
-            </ModalForm>
-          </ModalContainer>
-        </ModalOverlay>
-      )}
-
-      {/* Create/Edit Inventory Modal */}
       {showModal && (
         <ModalOverlay>
           <ModalContainer>
-            <ModalTitle>{editIndex !== null ? 'Edit Inventory' : 'Add Inventory'}</ModalTitle>
+            <ModalTitle>{editId ? 'Edit Inventory' : 'Add Inventory'}</ModalTitle>
             <ModalForm>
-              {/* Sender selection */}
-              <FormRow>
-                <Label>Sender</Label>
-                <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                  <div style={{ flex: '1' }}>
-                    <ReactSelect
-                      options={[{ value: '', label: 'Select Sender' }, ...senders.map((s) => ({ value: s.id, label: s.name }))]}
-                      value={form.senderId ? { value: form.senderId, label: form.senderName } : { value: '', label: 'Select Sender' }}
-                      onChange={(option) => setForm((prev) => ({
-                        ...prev,
-                        senderId: (option as { value: string; label: string })?.value || '',
-                        senderName: senders.find((s) => s.id === (option as { value: string; label: string })?.value)?.name || '',
-                      }))}
-                      isSearchable
-                      placeholder="Select Sender"
-                    />
-                  </div>
-                  <AddButton type="button" onClick={() => setShowSenderModal(true)}>+ Add Sender</AddButton>
-                </div>
-              </FormRow>
-
-              {/* Other Fields */}
-              <FormRow><Label>Goods</Label><Input type="text" name="goods" value={form.goods} onChange={handleChange} /></FormRow>
-              <FormRow><Label>Type</Label><Input type="text" name="type" value={form.type} onChange={handleChange} /></FormRow>
-              <FormRow><Label>Weight</Label><Input type="text" name="weight" value={form.weight} onChange={handleChange} /></FormRow>
+              <ReactSelect
+                options={senders.map((s) => ({ value: s._id, label: s.name }))}
+                onChange={(option: SingleValue<{ value: string; label: string }>) => {
+                  if (option) {
+                    setForm({ ...form, senderId: option.value, senderName: option.label });
+                  }
+                }}
+                placeholder="Select Sender"
+                value={{ value: form.senderId, label: form.senderName }}
+              />
+              <FormRow><Label>Goods</Label><Input name="goods" value={form.goods} onChange={handleChange} /></FormRow>
+              <FormRow><Label>Type</Label><Input name="type" value={form.type} onChange={handleChange} /></FormRow>
+              <FormRow><Label>Weight</Label><Input name="weight" value={form.weight} onChange={handleChange} /></FormRow>
               <FormRow><Label>Arrival Date</Label><Input type="date" name="arrivalDate" value={form.arrivalDate} onChange={handleChange} /></FormRow>
               <FormRow><Label>Departure Date</Label><Input type="date" name="departureDate" value={form.departureDate} onChange={handleChange} /></FormRow>
 
               <ModalActions>
-                <CancelButton onClick={() => { setShowModal(false); setEditIndex(null); }}>Cancel</CancelButton>
-                <SaveButton onClick={handleSave}>{editIndex !== null ? 'Update' : 'Save'}</SaveButton>
-              </ModalActions>
-            </ModalForm>
-          </ModalContainer>
-        </ModalOverlay>
-      )}
-
-      {/* Add New Sender Modal */}
-      {showSenderModal && (
-        <ModalOverlay>
-          <ModalContainer>
-            <ModalTitle>Add New Sender</ModalTitle>
-            <ModalForm>
-              <FormRow>
-                <Label>Sender Name</Label>
-                <Input
-                  type="text"
-                  value={newSenderName}
-                  onChange={(e) => setNewSenderName(e.target.value)}
-                  placeholder="Enter new sender name"
-                />
-              </FormRow>
-              <ModalActions>
-                <CancelButton onClick={() => setShowSenderModal(false)}>Cancel</CancelButton>
-                <SaveButton onClick={handleAddNewSender}>Save</SaveButton>
+                <CancelButton onClick={() => setShowModal(false)}>Cancel</CancelButton>
+                <SaveButton onClick={handleSave}>{editId ? 'Update' : 'Save'}</SaveButton>
               </ModalActions>
             </ModalForm>
           </ModalContainer>

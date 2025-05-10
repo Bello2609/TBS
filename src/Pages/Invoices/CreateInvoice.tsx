@@ -9,16 +9,20 @@ import {
 } from "../../styles/invoiceStyles";
 import { Button } from "../../components/ui/button";
 import { toast } from "react-toastify";
-import { fakeCustomers, Customer } from "../data/fakeCustomers";
 
 // ✅ Interfaces
 
 interface Inventory {
-  id: string;
+  _id: string;
   goods: string;
   type: string;
   weight: string;
   arrivalDate: string;
+}
+
+interface Customer {
+  _id: string;
+  companyName: string;
 }
 
 interface InvoiceForm {
@@ -64,33 +68,38 @@ const CreateInvoice: React.FC = () => {
     return newNumber;
   };
 
-  // 📦 Fetch all customers on mount
+  // 📦 Fetch all customers from API
   useEffect(() => {
-    setCustomers(fakeCustomers);
+    const fetchCustomers = async () => {
+      try {
+        const res = await axios.get("/api/customers");
+        setCustomers(res.data);
+      } catch {
+        toast.error("Failed to load customers.");
+      }
+    };
+
+    fetchCustomers();
     const autoNumber = generateNextInvoiceNumber();
     setFormData((prev) => ({ ...prev, invoiceNumber: autoNumber }));
   }, []);
 
-  // 📦 Fetch inventory when a customer is selected
+  // 📦 Fetch inventory based on selected customer
   useEffect(() => {
     const fetchInventoryByCustomer = async () => {
       if (!formData.customerId) return;
       try {
         const res = await axios.get(`/api/inventory?customerId=${formData.customerId}`);
-        if (Array.isArray(res.data)) {
-          setInventoryList(res.data);
-        } else {
-          throw new Error("Invalid inventory data.");
-        }
-      } catch (err) {
-        console.error("Error loading inventory:", err);
+        setInventoryList(res.data);
+      } catch {
         toast.error("Failed to load inventory for this customer.");
       }
     };
+
     fetchInventoryByCustomer();
   }, [formData.customerId]);
 
-  // ✍️ Handle form field changes
+  // ✍️ Handle field changes
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
   ) => {
@@ -98,7 +107,7 @@ const CreateInvoice: React.FC = () => {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  // ✅ Handle form submission
+  // ✅ Submit form to backend
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -117,7 +126,7 @@ const CreateInvoice: React.FC = () => {
 
       toast.success("✅ Invoice created successfully!");
 
-      // Reset form with next invoice number
+      // Reset form and regenerate number
       setFormData({
         customerId: "",
         inventoryId: "",
@@ -129,8 +138,7 @@ const CreateInvoice: React.FC = () => {
         bankAccount: "",
       });
       setInventoryList([]);
-    } catch (err) {
-      console.error("Invoice creation failed:", err);
+    } catch {
       toast.error("❌ Failed to create invoice.");
     } finally {
       setLoading(false);
@@ -151,7 +159,7 @@ const CreateInvoice: React.FC = () => {
         >
           <option value="">Select Customer</option>
           {customers.map((customer) => (
-            <option key={customer.id} value={customer.id}>
+            <option key={customer._id} value={customer._id}>
               {customer.companyName}
             </option>
           ))}
@@ -167,14 +175,14 @@ const CreateInvoice: React.FC = () => {
           >
             <option value="">Select Inventory</option>
             {inventoryList.map((inv) => (
-              <option key={inv.id} value={inv.id}>
+              <option key={inv._id} value={inv._id}>
                 {inv.goods} – {inv.type} – {inv.weight}kg
               </option>
             ))}
           </Select>
         )}
 
-        {/* 🔢 Invoice Number (readonly) */}
+        {/* 🔢 Invoice Number */}
         <Input
           type="text"
           name="invoiceNumber"
@@ -183,7 +191,6 @@ const CreateInvoice: React.FC = () => {
           readOnly
         />
 
-        {/* 💰 Amount */}
         <Input
           type="number"
           name="amount"
@@ -193,7 +200,6 @@ const CreateInvoice: React.FC = () => {
           required
         />
 
-        {/* 🏦 Bank Account */}
         <Input
           type="text"
           name="bankAccount"
@@ -203,7 +209,6 @@ const CreateInvoice: React.FC = () => {
           required
         />
 
-        {/* 🏷️ Status */}
         <Select
           name="status"
           value={formData.status}
@@ -215,7 +220,6 @@ const CreateInvoice: React.FC = () => {
           <option value="Overdue">Overdue</option>
         </Select>
 
-        {/* 📅 Due Date */}
         <Input
           type="date"
           name="dueDate"
@@ -224,7 +228,6 @@ const CreateInvoice: React.FC = () => {
           required
         />
 
-        {/* 📝 Items */}
         <textarea
           name="items"
           placeholder="Invoice items or description"
