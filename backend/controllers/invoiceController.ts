@@ -1,9 +1,11 @@
-import { Request, Response } from "express";
-import Invoice from "../models/invoice.js";
-import Inventory from "../models/inventory.js";
-import mongoose from "mongoose";
+// backend/controllers/invoiceController.ts
 
-// GET /api/invoices
+import { Request, Response } from "express";
+import mongoose from "mongoose";
+import Invoice from "../models/invoice.model.js";
+import Inventory from "../models/inventory.js";
+
+// ✅ GET /api/invoices - Get all invoices (with optional filtering by customerId)
 export const getAllInvoices = async (req: Request, res: Response): Promise<void> => {
   try {
     const { customerId } = req.query;
@@ -14,6 +16,12 @@ export const getAllInvoices = async (req: Request, res: Response): Promise<void>
 
     const invoices = await Invoice.find(filter).sort({ date: -1 });
 
+    // Ensure the response is always an array
+    if (!Array.isArray(invoices)) {
+      res.status(500).json({ message: "Unexpected response format from database." });
+      return;
+    }
+
     res.status(200).json(invoices);
   } catch (error) {
     console.error("Error fetching invoices:", error);
@@ -21,7 +29,7 @@ export const getAllInvoices = async (req: Request, res: Response): Promise<void>
   }
 };
 
-// GET /api/invoices/:id
+// ✅ GET /api/invoices/:id - Get a single invoice by ID
 export const getInvoiceById = async (req: Request, res: Response): Promise<void> => {
   try {
     const invoice = await Invoice.findById(req.params.id);
@@ -38,7 +46,7 @@ export const getInvoiceById = async (req: Request, res: Response): Promise<void>
   }
 };
 
-// POST /api/invoices
+// ✅ POST /api/invoices - Create a new invoice
 export const createInvoice = async (req: Request, res: Response): Promise<void> => {
   try {
     const {
@@ -58,14 +66,14 @@ export const createInvoice = async (req: Request, res: Response): Promise<void> 
       bankInfo,
     } = req.body;
 
-    // Find the selected inventory item and embed its data as snapshot
+    // Lookup inventory snapshot by ID
     const inventory = await Inventory.findById(inventoryId);
-
     if (!inventory) {
       res.status(404).json({ message: "Inventory not found." });
       return;
     }
 
+    // Create invoice with embedded inventory snapshot
     const invoice = new Invoice({
       customerId,
       invoiceNumber,
@@ -91,10 +99,12 @@ export const createInvoice = async (req: Request, res: Response): Promise<void> 
   }
 };
 
-// PUT /api/invoices/:id
+// ✅ PUT /api/invoices/:id - Update an existing invoice
 export const updateInvoice = async (req: Request, res: Response): Promise<void> => {
   try {
-    const updated = await Invoice.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    const updated = await Invoice.findByIdAndUpdate(req.params.id, req.body, {
+      new: true,
+    });
 
     if (!updated) {
       res.status(404).json({ message: "Invoice not found." });
@@ -108,7 +118,7 @@ export const updateInvoice = async (req: Request, res: Response): Promise<void> 
   }
 };
 
-// DELETE /api/invoices/:id
+// ✅ DELETE /api/invoices/:id - Remove invoice
 export const deleteInvoice = async (req: Request, res: Response): Promise<void> => {
   try {
     const deleted = await Invoice.findByIdAndDelete(req.params.id);

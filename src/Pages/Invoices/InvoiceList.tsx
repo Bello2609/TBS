@@ -39,11 +39,18 @@ const InvoiceList = () => {
     const fetchInvoices = async () => {
       try {
         const res = await axios.get("/api/invoices");
-        setInvoices(res.data);
+        if (Array.isArray(res.data)) {
+          setInvoices(res.data);
+        } else {
+          console.error("Expected array but got:", res.data);
+          toast.error("Unexpected response format from API.");
+          setInvoices([]); // fallback to empty array
+        }
       } catch {
         toast.error("Error fetching invoices.");
       }
     };
+
     fetchInvoices();
   }, []);
 
@@ -61,17 +68,25 @@ const InvoiceList = () => {
 
   const filteredInvoices = invoices
     .filter((inv) => {
-      const matchSearch = inv.invoiceNumber.toLowerCase().includes(searchQuery.toLowerCase());
-      const customerName =
-        typeof inv.customer === "string" ? inv.customer : inv.customer?.name;
+      const matchSearch = inv.invoiceNumber
+        .toLowerCase()
+        .includes(searchQuery.toLowerCase());
+
       const isCustomerAllowed =
-        user?.role === "customer" ? customerName === user.name : true;
+        user?.role === "customer"
+          ? typeof inv.customer === "string"
+            ? inv.customer === user.id
+            : inv.customer?._id === user.id
+          : true;
+
       return matchSearch && isCustomerAllowed;
     })
     .filter((inv) => {
-      if (!startDate || !endDate) return true;
+      if (!startDate || !endDate || !inv.date) return true;
       const invoiceDate = new Date(inv.date);
-      return invoiceDate >= new Date(startDate) && invoiceDate <= new Date(endDate);
+      return (
+        invoiceDate >= new Date(startDate) && invoiceDate <= new Date(endDate)
+      );
     });
 
   const totalPages = Math.ceil(filteredInvoices.length / itemsPerPage);
@@ -87,8 +102,10 @@ const InvoiceList = () => {
 
     const tableData = filteredInvoices.map((inv) => [
       inv.invoiceNumber,
-      typeof inv.customer === "string" ? inv.customer : inv.customer?.name || "N/A",
-      format(new Date(inv.date), "yyyy-MM-dd"),
+      typeof inv.customer === "string"
+        ? inv.customer
+        : inv.customer?.name || "N/A",
+      inv.date ? format(new Date(inv.date), "yyyy-MM-dd") : "N/A",
       `${inv.total.toFixed(2)} kr`,
       `${inv.grandTotal.toFixed(2)} kr`,
     ]);
@@ -123,9 +140,19 @@ const InvoiceList = () => {
       />
 
       <ActionButtons>
-        <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
-        <input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} />
-        <Button $variant="ghost" onClick={exportFilteredToPDF}>Export by Date</Button>
+        <input
+          type="date"
+          value={startDate}
+          onChange={(e) => setStartDate(e.target.value)}
+        />
+        <input
+          type="date"
+          value={endDate}
+          onChange={(e) => setEndDate(e.target.value)}
+        />
+        <Button $variant="ghost" onClick={exportFilteredToPDF}>
+          Export by Date
+        </Button>
       </ActionButtons>
 
       <div style={{ overflowX: "auto" }}>
@@ -159,13 +186,27 @@ const InvoiceList = () => {
                   <TableData>{inv.total.toFixed(2)} kr</TableData>
                   <TableData>{inv.grandTotal.toFixed(2)} kr</TableData>
                   <TableData>{inv.status}</TableData>
-                  <TableData>{inv.dueDate}</TableData>
-                  <TableData>{inv.date}</TableData>
+                  <TableData>{inv.dueDate || "N/A"}</TableData>
+                  <TableData>
+                    {inv.date
+                      ? format(new Date(inv.date), "yyyy-MM-dd")
+                      : "N/A"}
+                  </TableData>
                   <TableData>
                     <div style={{ display: "flex", gap: "6px", flexWrap: "wrap" }}>
-                      <Button $variant="ghost" onClick={() => setSelectedInvoice(inv)}>View</Button>
+                      <Button
+                        $variant="ghost"
+                        onClick={() => setSelectedInvoice(inv)}
+                      >
+                        View
+                      </Button>
                       {user?.role === "admin" && (
-                        <Button $variant="ghost" onClick={() => handleDelete(inv._id!)}>Delete</Button>
+                        <Button
+                          $variant="ghost"
+                          onClick={() => handleDelete(inv._id!)}
+                        >
+                          Delete
+                        </Button>
                       )}
                     </div>
                   </TableData>
@@ -185,15 +226,24 @@ const InvoiceList = () => {
       <PaginationContainer>
         <RowsPerPage>
           <label>Rows per page:</label>
-          <select value={itemsPerPage} onChange={(e) => setItemsPerPage(Number(e.target.value))}>
+          <select
+            value={itemsPerPage}
+            onChange={(e) => setItemsPerPage(Number(e.target.value))}
+          >
             {[5, 10, 25].map((num) => (
-              <option key={num} value={num}>{num}</option>
+              <option key={num} value={num}>
+                {num}
+              </option>
             ))}
           </select>
         </RowsPerPage>
         <PageButtons>
           {Array.from({ length: totalPages }, (_, i) => (
-            <button key={i} onClick={() => setCurrentPage(i + 1)} className={currentPage === i + 1 ? "active" : ""}>
+            <button
+              key={i}
+              onClick={() => setCurrentPage(i + 1)}
+              className={currentPage === i + 1 ? "active" : ""}
+            >
               {i + 1}
             </button>
           ))}

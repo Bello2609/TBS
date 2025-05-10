@@ -1,5 +1,3 @@
-// src/pages/Invoices/CreateInvoice.tsx
-
 import { useState, useEffect } from "react";
 import axios from "axios";
 import {
@@ -10,8 +8,7 @@ import {
 import { Button } from "../../components/ui/button";
 import { toast } from "react-toastify";
 
-// ✅ Interfaces
-
+// Interfaces
 interface Inventory {
   _id: string;
   goods: string;
@@ -51,7 +48,6 @@ const CreateInvoice: React.FC = () => {
   });
   const [loading, setLoading] = useState(false);
 
-  // 📌 Generate next invoice number
   const generateNextInvoiceNumber = () => {
     const current = localStorage.getItem("lastInvoiceNumber");
     let nextNumber = 1;
@@ -68,29 +64,42 @@ const CreateInvoice: React.FC = () => {
     return newNumber;
   };
 
-  // 📦 Fetch all customers from API
   useEffect(() => {
     const fetchCustomers = async () => {
       try {
         const res = await axios.get("/api/customers");
-        setCustomers(res.data);
+
+        if (Array.isArray(res.data)) {
+          setCustomers(res.data);
+        } else {
+          console.error("Unexpected customer data format:", res.data);
+          setCustomers([]);
+          toast.error("Unexpected customer data format.");
+        }
       } catch {
         toast.error("Failed to load customers.");
       }
     };
 
     fetchCustomers();
-    const autoNumber = generateNextInvoiceNumber();
-    setFormData((prev) => ({ ...prev, invoiceNumber: autoNumber }));
+    setFormData((prev) => ({
+      ...prev,
+      invoiceNumber: generateNextInvoiceNumber(),
+    }));
   }, []);
 
-  // 📦 Fetch inventory based on selected customer
   useEffect(() => {
     const fetchInventoryByCustomer = async () => {
       if (!formData.customerId) return;
       try {
         const res = await axios.get(`/api/inventory?customerId=${formData.customerId}`);
-        setInventoryList(res.data);
+        if (Array.isArray(res.data)) {
+          setInventoryList(res.data);
+        } else {
+          console.error("Unexpected inventory data:", res.data);
+          setInventoryList([]);
+          toast.error("Invalid inventory data.");
+        }
       } catch {
         toast.error("Failed to load inventory for this customer.");
       }
@@ -99,7 +108,6 @@ const CreateInvoice: React.FC = () => {
     fetchInventoryByCustomer();
   }, [formData.customerId]);
 
-  // ✍️ Handle field changes
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
   ) => {
@@ -107,7 +115,6 @@ const CreateInvoice: React.FC = () => {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  // ✅ Submit form to backend
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -126,7 +133,6 @@ const CreateInvoice: React.FC = () => {
 
       toast.success("✅ Invoice created successfully!");
 
-      // Reset form and regenerate number
       setFormData({
         customerId: "",
         inventoryId: "",
@@ -150,7 +156,6 @@ const CreateInvoice: React.FC = () => {
       <h1>Create Invoice</h1>
 
       <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-        {/* 🔽 Customer Selector */}
         <Select
           name="customerId"
           value={formData.customerId}
@@ -165,7 +170,6 @@ const CreateInvoice: React.FC = () => {
           ))}
         </Select>
 
-        {/* 📦 Inventory Selector */}
         {formData.customerId && (
           <Select
             name="inventoryId"
@@ -182,7 +186,6 @@ const CreateInvoice: React.FC = () => {
           </Select>
         )}
 
-        {/* 🔢 Invoice Number */}
         <Input
           type="text"
           name="invoiceNumber"

@@ -19,53 +19,50 @@ import {
 
 import {
   Home,
-  Users,
+  File,
   FileText,
-  Settings,
+  Users,
   Bell,
+  Settings,
   Menu,
   X,
   LogOut,
-  File,
 } from "lucide-react";
 
 import { motion } from "framer-motion";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/authContext";
 
-// ✅ Animated Logo with fish icon beside "TBS"
-const AnimatedLogo: React.FC = () => {
-  return (
-    <motion.div
-      animate={{ x: [0, 6, -6, 0] }}
-      transition={{ repeat: Infinity, duration: 3.5, ease: "easeInOut" }}
-      style={{
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        margin: "0 auto 32px auto",
-        fontWeight: 900,
-        fontSize: "22px",
-        textTransform: "uppercase",
-        background: "linear-gradient(90deg, #00bcd4, #6a11cb)",
-        WebkitBackgroundClip: "text",
-        WebkitTextFillColor: "transparent",
-        gap: "10px",
-      }}
-    >
-      <span role="img" aria-label="fish" style={{ fontSize: "22px" }}>
-        🐟
-      </span>
-      TBS
-    </motion.div>
-  );
-};
+const AnimatedLogo: React.FC = () => (
+  <motion.div
+    animate={{ x: [0, 6, -6, 0] }}
+    transition={{ repeat: Infinity, duration: 3.5, ease: "easeInOut" }}
+    style={{
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      margin: "0 auto 32px auto",
+      fontWeight: 900,
+      fontSize: 22,
+      textTransform: "uppercase",
+      background: "linear-gradient(90deg, #00bcd4, #6a11cb)",
+      WebkitBackgroundClip: "text",
+      WebkitTextFillColor: "transparent",
+      gap: 10,
+    }}
+  >
+    <span role="img" aria-label="fish" style={{ fontSize: 22 }}>
+      🐟
+    </span>
+    TBS
+  </motion.div>
+);
 
 const Sidebar: React.FC = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
-  const { logout, user } = useAuth();
+  const { user, logout } = useAuth();
 
   if (!user) return null;
 
@@ -74,47 +71,79 @@ const Sidebar: React.FC = () => {
     navigate("/auth/login");
   };
 
-  // ✅ Removed "Reports" and "Activity Logs"
   const navLinks = [
-  // Dashboard
-  { to: "/dashboard", label: "Dashboard", icon: <Home />, roles: ["admin", "employee"] },
+    {
+      to: "/dashboard",
+      label: "Dashboard",
+      icon: <Home size={20} />,
+      roles: ["admin", "employee", "customer"],
+    },
+    {
+      to: "/invoices",
+      label: "Invoices",
+      icon: <File size={20} />,
+      roles: ["admin", "employee", "customer"],
+    },
+    {
+      to: "/inventory",
+      label: "Inventory",
+      icon: <FileText size={20} />,
+      roles: ["admin", "employee"],
+    },
+    {
+      to: "/users",
+      label: "Users",
+      icon: <Users size={20} />,
+      roles: ["admin"],
+    },
+    {
+      to: "/notifications",
+      label: "Notifications",
+      icon: <Bell size={20} />,
+      roles: ["admin", "employee"],
+    },
+    {
+      to: "/settings",
+      label: "Settings",
+      icon: <Settings size={20} />,
+      roles: ["admin"],
+    },
+  ];
 
-  // Invoices
-  { to: "/invoices", label: "Invoices", icon: <File />, roles: ["admin", "employee", "customer"] },
-  { to: "/invoices/create", label: "New Invoice", icon: <FileText />, roles: ["admin", "employee"] },
-  { to: "/invoices/export", label: "Export", icon: <FileText />, roles: ["admin", "employee"] },
-  { to: "/invoices/reports", label: "Reports", icon: <FileText />, roles: ["admin", "employee"] },
-  { to: "/invoices/stats", label: "Stats", icon: <FileText />, roles: ["admin", "employee"] },
+  const visibleLinks = navLinks.filter((link) =>
+    link.roles.includes(user.role)
+  );
 
-  // Inventory
-  { to: "/inventory", label: "Inventory", icon: <FileText />, roles: ["admin", "employee"] },
-
-  // User Management
-  { to: "/users", label: "Users", icon: <Users />, roles: ["admin"] },
-
-  // Notifications
-  { to: "/notifications", label: "Notifications", icon: <Bell />, roles: ["admin", "employee"] },
-
-  // Settings
-  { to: "/settings", label: "Settings", icon: <Settings />, roles: ["admin"] },
-];
-
-
-  const visibleLinks = navLinks.filter((link) => link.roles.includes(user.role));
+  const logoutButtonStyles: React.CSSProperties = {
+    display: "flex",
+    alignItems: "center",
+    gap: 12,
+    padding: "10px 12px",
+    borderRadius: 8,
+    background: "none",
+    border: "none",
+    cursor: "pointer",
+    color: "#374151",
+    width: "100%",
+    fontSize: "1rem",
+  };
 
   return (
     <>
-      {/* Mobile Toggle Button */}
+      {/* Mobile hamburger */}
       <HamburgerButton onClick={() => setIsSidebarOpen(!isSidebarOpen)}>
         {isSidebarOpen ? <X size={24} /> : <Menu size={24} />}
       </HamburgerButton>
 
-      {/* Desktop Sidebar */}
+      {/* Desktop sidebar */}
       <SidebarContainer>
         <AnimatedLogo />
         <Nav>
           {visibleLinks.map((link) => (
-            <NavItem key={link.to} className={location.pathname === link.to ? "active" : ""}>
+            <NavItem
+              key={link.to}
+              className={location.pathname === link.to ? "active" : ""}
+            >
               <NavLinkStyled to={link.to}>
                 <IconWrapper>{link.icon}</IconWrapper>
                 {link.label}
@@ -122,29 +151,18 @@ const Sidebar: React.FC = () => {
             </NavItem>
           ))}
           <NavItem>
-            <button
-              onClick={handleLogout}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "12px",
-                padding: "10px 12px",
-                borderRadius: "8px",
-                background: "none",
-                border: "none",
-                cursor: "pointer",
-                color: "#374151",
-                width: "100%",
-                fontSize: "1rem",
-              }}
-            >
-              <IconWrapper><LogOut /></IconWrapper>
+            <button onClick={handleLogout} style={logoutButtonStyles}>
+              <IconWrapper>
+                <LogOut size={20} />
+              </IconWrapper>
               Logout
             </button>
           </NavItem>
         </Nav>
         <UserInfoSection>
-          <AvatarCircle>{user.name.charAt(0).toUpperCase()}</AvatarCircle>
+          <AvatarCircle>
+            {user.name.charAt(0).toUpperCase()}
+          </AvatarCircle>
           <UserMeta>
             <UserName>{user.name}</UserName>
             <UserRole>{user.role.toUpperCase()}</UserRole>
@@ -152,13 +170,19 @@ const Sidebar: React.FC = () => {
         </UserInfoSection>
       </SidebarContainer>
 
-      {/* Mobile Sidebar */}
+      {/* Mobile sidebar */}
       <MobileSidebar $isOpen={isSidebarOpen}>
         <AnimatedLogo />
         <Nav>
           {visibleLinks.map((link) => (
-            <NavItem key={link.to} className={location.pathname === link.to ? "active" : ""}>
-              <NavLinkStyled to={link.to} onClick={() => setIsSidebarOpen(false)}>
+            <NavItem
+              key={link.to}
+              className={location.pathname === link.to ? "active" : ""}
+            >
+              <NavLinkStyled
+                to={link.to}
+                onClick={() => setIsSidebarOpen(false)}
+              >
                 <IconWrapper>{link.icon}</IconWrapper>
                 {link.label}
               </NavLinkStyled>
@@ -170,27 +194,19 @@ const Sidebar: React.FC = () => {
                 handleLogout();
                 setIsSidebarOpen(false);
               }}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "12px",
-                padding: "10px 12px",
-                borderRadius: "8px",
-                background: "none",
-                border: "none",
-                cursor: "pointer",
-                color: "#374151",
-                width: "100%",
-                fontSize: "1rem",
-              }}
+              style={logoutButtonStyles}
             >
-              <IconWrapper><LogOut /></IconWrapper>
+              <IconWrapper>
+                <LogOut size={20} />
+              </IconWrapper>
               Logout
             </button>
           </NavItem>
         </Nav>
         <UserInfoSection>
-          <AvatarCircle>{user.name.charAt(0).toUpperCase()}</AvatarCircle>
+          <AvatarCircle>
+            {user.name.charAt(0).toUpperCase()}
+          </AvatarCircle>
           <UserMeta>
             <UserName>{user.name}</UserName>
             <UserRole>{user.role.toUpperCase()}</UserRole>
@@ -198,7 +214,10 @@ const Sidebar: React.FC = () => {
         </UserInfoSection>
       </MobileSidebar>
 
-      {isSidebarOpen && <MobileOverlay onClick={() => setIsSidebarOpen(false)} />}
+      {/* Overlay to close mobile */}
+      {isSidebarOpen && (
+        <MobileOverlay onClick={() => setIsSidebarOpen(false)} />
+      )}
     </>
   );
 };

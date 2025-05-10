@@ -1,3 +1,5 @@
+// src/pages/inventory/InventoryList.tsx
+
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import {
@@ -19,14 +21,14 @@ import {
   CancelButton,
   ActionButtons,
   IconButton,
-} from "../../styles/inventoryStyles";
+} from "@/styles/inventoryStyles";
 import { Pencil, Trash2 } from "lucide-react";
 import { toast } from "react-toastify";
 import ReactSelect, { SingleValue } from "react-select";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 
-// Types
+// ✅ Interfaces
 interface InventoryItem {
   _id?: string;
   customerId: string;
@@ -57,6 +59,8 @@ const InventoryList: React.FC = () => {
   const [startDate, setStartDate] = useState<Date | null>(null);
   const [endDate, setEndDate] = useState<Date | null>(null);
   const [showModal, setShowModal] = useState<boolean>(false);
+  const [editId, setEditId] = useState<string | null>(null);
+
   const [form, setForm] = useState<InventoryItem>({
     customerId: "",
     customerName: "",
@@ -72,8 +76,8 @@ const InventoryList: React.FC = () => {
       company: "",
     },
   });
-  const [editId, setEditId] = useState<string | null>(null);
 
+  // ✅ Fetch customers and inventory
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -81,23 +85,22 @@ const InventoryList: React.FC = () => {
           axios.get("/api/users?role=customer"),
           axios.get("/api/inventory"),
         ]);
-        setCustomers(customersRes.data);
-        setInventory(inventoryRes.data);
+        if (Array.isArray(customersRes.data) && Array.isArray(inventoryRes.data)) {
+          setCustomers(customersRes.data);
+          setInventory(inventoryRes.data);
+        } else {
+          toast.error("Unexpected data format received from server.");
+        }
       } catch {
-        toast.error("Error loading data.");
+        toast.error("Error loading inventory or customer data.");
       }
     };
     fetchData();
   }, []);
 
   const handleCustomerSelect = (option: SingleValue<{ value: string; label: string }>) => {
-    if (option) {
-      setSelectedCustomerId(option.value);
-      setSelectedCustomerName(option.label);
-    } else {
-      setSelectedCustomerId("");
-      setSelectedCustomerName("");
-    }
+    setSelectedCustomerId(option?.value || "");
+    setSelectedCustomerName(option?.label || "");
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -105,11 +108,10 @@ const InventoryList: React.FC = () => {
   };
 
   const handleSenderChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    const field = name.split(".")[1]; // sender.name → 'name'
+    const [, field] = e.target.name.split(".");
     setForm((prev) => ({
       ...prev,
-      sender: { ...prev.sender, [field]: value },
+      sender: { ...prev.sender, [field]: e.target.value },
     }));
   };
 
@@ -133,16 +135,12 @@ const InventoryList: React.FC = () => {
   };
 
   const handleSave = async () => {
-    if (!selectedCustomerId || !form.sender.name || !form.goods) {
+    if (!selectedCustomerId || !form.goods || !form.sender.name) {
       toast.error("All required fields must be filled.");
       return;
     }
 
-    const payload = {
-      ...form,
-      customerId: selectedCustomerId,
-      customerName: selectedCustomerName,
-    };
+    const payload = { ...form, customerId: selectedCustomerId, customerName: selectedCustomerName };
 
     try {
       if (editId) {
@@ -153,10 +151,10 @@ const InventoryList: React.FC = () => {
         toast.success("Inventory added.");
       }
 
-      const updated = await axios.get("/api/inventory");
-      setInventory(updated.data);
-      setShowModal(false);
+      const refreshed = await axios.get("/api/inventory");
+      setInventory(refreshed.data);
       resetForm();
+      setShowModal(false);
     } catch {
       toast.error("Failed to save inventory.");
     }
@@ -166,10 +164,10 @@ const InventoryList: React.FC = () => {
     if (window.confirm("Are you sure you want to delete this item?")) {
       try {
         await axios.delete(`/api/inventory/${id}`);
-        setInventory(inventory.filter((item) => item._id !== id));
-        toast.success("Deleted.");
+        setInventory((prev) => prev.filter((item) => item._id !== id));
+        toast.success("Deleted successfully.");
       } catch {
-        toast.error("Delete failed.");
+        toast.error("Failed to delete inventory item.");
       }
     }
   };
@@ -178,7 +176,7 @@ const InventoryList: React.FC = () => {
     setForm(item);
     setSelectedCustomerId(item.customerId);
     setSelectedCustomerName(item.customerName);
-    setEditId(item._id || null);
+    setEditId(item._id ?? null);
     setShowModal(true);
   };
 
@@ -201,9 +199,7 @@ const InventoryList: React.FC = () => {
         />
         <DatePicker selected={startDate} onChange={(date) => setStartDate(date)} placeholderText="Start Date" />
         <DatePicker selected={endDate} onChange={(date) => setEndDate(date)} placeholderText="End Date" />
-        <AddButton onClick={() => { resetForm(); setShowModal(true); }}>
-          + Add Inventory
-        </AddButton>
+        <AddButton onClick={() => { resetForm(); setShowModal(true); }}>+ Add Inventory</AddButton>
       </PageHeader>
 
       <InventoryTable>
