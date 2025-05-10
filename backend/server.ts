@@ -8,6 +8,7 @@ import userRoutes from "./routes/userRoutes.js";
 import inventoryRoutes from "./routes/inventoryRoutes.js"; // ✅
 import invoiceRoutes from "./routes/invoiceRoutes.js";
 import customerRoutes from "./routes/customerRoutes.js";
+import dashboardRoutes from "./routes/dashboardRoutes.js"; // ✅
 dotenv.config();
 
 const app = express();
@@ -23,6 +24,7 @@ app.use("/api/users", userRoutes);
 app.use("/api/inventory", inventoryRoutes);
 app.use("/api/invoices", invoiceRoutes);
 app.use("/api/customers", customerRoutes);
+app.use("/api/dashboard", dashboardRoutes);
 // ✅ Connect to MongoDB and start server
 const PORT = process.env.PORT || 5000;
 

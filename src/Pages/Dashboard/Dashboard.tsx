@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
+import axiosInstance from "@/services/axiosInstance";
 
-// Importing reusable dashboard components
+// Dashboard components
 import StatCards from "./components/statCards";
 import RevenueChart from "./components/revenueChart";
 import StatusPieChart from "./components/statusPieChart";
@@ -11,12 +11,12 @@ import TopCustomersTable from "./components/topCustomersTable";
 import AverageInvoiceCard from "./components/averageInvoiceCard";
 import StatusCounters from "./components/statusCounters";
 
-// Layout and UI
-import { DashboardContainer } from "../../styles/dashboardStyles/dashboardContainer";
-import DashboardSection from "../../styles/dashboardStyles/dashboardSection";
-import { Button } from "../../components/ui/button";
+// Layout
+import { DashboardContainer } from "@/styles/dashboardStyles/dashboardContainer";
+import DashboardSection from "@/styles/dashboardStyles/dashboardSection";
+import { Button } from "@/components/ui/button";
 
-// Invoice data interface
+// Invoice interface
 interface Invoice {
   id: number;
   invoiceNumber: string;
@@ -45,7 +45,7 @@ const Dashboard: React.FC = () => {
   const [customerFilter, setCustomerFilter] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
 
-  // Filter invoices based on user input
+  // Filter logic
   const filteredInvoices = recentInvoices.filter((inv) => {
     const date = new Date(inv.dateIssued);
     const inStartRange = startDate ? date >= new Date(startDate) : true;
@@ -57,13 +57,14 @@ const Dashboard: React.FC = () => {
     return inStartRange && inEndRange && matchesCustomer && matchesStatus;
   });
 
-  // Fetch dashboard data
+  // Fetch dashboard data using secure axios instance
   const fetchData = async () => {
     try {
       setIsRefreshing(true);
+
       const [statsRes, invoicesRes] = await Promise.all([
-        axios.get("/api/dashboard/stats"),
-        axios.get("/api/dashboard/recent-invoices"),
+        axiosInstance.get("/api/dashboard/stats"),
+        axiosInstance.get("/api/dashboard/recent-invoices"),
       ]);
 
       setStats(statsRes.data || {
@@ -104,7 +105,7 @@ const Dashboard: React.FC = () => {
 
   return (
     <DashboardContainer>
-      {/* Header Section */}
+      {/* Header */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
         <h1>Dashboard</h1>
         <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
@@ -143,7 +144,7 @@ const Dashboard: React.FC = () => {
         </div>
       </div>
 
-      {/* Action Buttons */}
+      {/* Actions */}
       <div style={{ display: "flex", gap: "12px", marginBottom: "20px", flexWrap: "wrap" }}>
         <Button $variant="primary" onClick={() => navigate("/invoices/create")}>
           + New Invoice
@@ -174,13 +175,15 @@ const Dashboard: React.FC = () => {
         <StatusCounters invoices={recentInvoices} />
       </DashboardSection>
 
-      {/* Stats */}
+      {/* Stats Cards */}
       <StatCards
         totalInvoices={stats.totalInvoices}
         totalCustomers={stats.totalCustomers}
-        totalRevenue={typeof stats.totalRevenue === "number" && !isNaN(stats.totalRevenue)
-          ? stats.totalRevenue
-          : 0}
+        totalRevenue={
+          typeof stats.totalRevenue === "number" && !isNaN(stats.totalRevenue)
+            ? stats.totalRevenue
+            : 0
+        }
       />
 
       {/* Charts */}

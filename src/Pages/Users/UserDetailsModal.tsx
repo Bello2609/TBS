@@ -36,10 +36,10 @@ const UserDetailsModal: React.FC<Props> = ({ user, onClose }) => {
           </h2>
 
           <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-            {user.id && (
+            {user._id && (
               <DetailRow>
                 <strong>ID:</strong>
-                <span>{user.id}</span>
+                <span>{user._id}</span>
               </DetailRow>
             )}
             <DetailRow>

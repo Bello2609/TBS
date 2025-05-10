@@ -1,3 +1,5 @@
+// src/pages/Users/UserDetails.tsx
+
 import React from "react";
 import { ModalOverlay, ModalContainer } from "@/styles/invoiceStyles";
 import { ModalContentScrollable, DetailRow } from "@/styles/userStyles";
@@ -22,10 +24,12 @@ const UserDetails: React.FC<Props> = ({ user, onClose }) => {
 
           {/* Display user information */}
           <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-            <DetailRow>
-              <strong>ID:</strong>
-              <span>{user.id}</span>
-            </DetailRow>
+            {user._id && (
+              <DetailRow>
+                <strong>ID:</strong>
+                <span>{user._id}</span>
+              </DetailRow>
+            )}
             <DetailRow>
               <strong>Name:</strong>
               <span>{user.name}</span>

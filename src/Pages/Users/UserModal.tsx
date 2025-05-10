@@ -33,7 +33,8 @@ const UserModal: React.FC<UserModalProps> = ({
 }) => {
   const { user } = useAuth();
 
-  if (!user || user.role !== "admin") return null;
+  // ✅ Show modal only if user is authorized (admin or employee)
+  if (!user || (user.role !== "admin" && user.role !== "employee")) return null;
 
   return (
     <ModalOverlay>

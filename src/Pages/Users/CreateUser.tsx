@@ -7,7 +7,7 @@ import { Input, Select } from "@/styles/invoiceStyles";
 import { Button } from "@/components/ui/button";
 import { toast } from "react-toastify";
 import { useAuth } from "@/context/authContext";
-import axios from "axios";
+import axiosInstance from "@/services/axiosInstance";
 import type { User, UserRole } from "../types/user";
 
 interface CreateUserProps {
@@ -25,7 +25,6 @@ interface UserFormData {
   role: UserRole;
 }
 
-// Generate a strong password with uppercase, lowercase, and digits
 const generateStrongPassword = (): string => {
   const upper = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
   const lower = "abcdefghijklmnopqrstuvwxyz";
@@ -59,14 +58,14 @@ const CreateUser: React.FC<CreateUserProps> = ({ mode, initialUser, onCancel, on
         email: initialUser.email,
         phoneNumber: initialUser.phone,
         role: initialUser.role,
-        password: "", // Password not shown in edit mode
+        password: "",
       });
     }
   }, [mode, initialUser]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       [name]: name === "role" ? (value as UserRole) : value,
     }));
@@ -74,7 +73,7 @@ const CreateUser: React.FC<CreateUserProps> = ({ mode, initialUser, onCancel, on
 
   const handleGeneratePassword = () => {
     const generated = generateStrongPassword();
-    setFormData(prev => ({ ...prev, password: generated }));
+    setFormData((prev) => ({ ...prev, password: generated }));
     toast.info(`Generated password: ${generated}`);
   };
 
@@ -93,7 +92,7 @@ const CreateUser: React.FC<CreateUserProps> = ({ mode, initialUser, onCancel, on
       let savedUser: User;
 
       if (mode === "create") {
-        const response = await axios.post("/api/users", {
+        const response = await axiosInstance.post("/api/users", {
           username: formData.email.split("@")[0],
           email: formData.email,
           name: formData.name,
@@ -104,7 +103,7 @@ const CreateUser: React.FC<CreateUserProps> = ({ mode, initialUser, onCancel, on
         savedUser = response.data;
         toast.success("User created successfully");
       } else if (mode === "edit" && initialUser) {
-        const response = await axios.put(`/api/users/${initialUser.id}`, {
+        const response = await axiosInstance.put(`/api/users/${initialUser._id}`, {
           email: formData.email,
           name: formData.name,
           phone: formData.phoneNumber,

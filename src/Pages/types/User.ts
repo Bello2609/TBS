@@ -1,15 +1,18 @@
 // src/pages/types/user.ts
 
-// Define available user roles
+// ✅ Define allowed user roles
 export type UserRole = "admin" | "employee" | "customer";
 
-// Type for individual user data (used throughout the app)
+// ✅ Define user model shape used across the frontend
 export interface User {
-  id: string;                        // MongoDB ObjectId as string
+  _id?: string;                       // Optional: MongoDB _id (used in API responses)
+  id?: string;                        // Optional: frontend-mapped ID
+  username?: string;                 // Optional: username (may exist in some views)
   name: string;
   email: string;
   phone: string;
   role: UserRole;
-  createdAt?: string;               // ISO string (optional)
-  status?: "active" | "inactive";   // Optional user status
+  status?: "active" | "inactive";     // Optional user status
+  createdAt?: string;                 // Optional: ISO date string
+  token?: string;                     // Optional: used for authentication/session
 }

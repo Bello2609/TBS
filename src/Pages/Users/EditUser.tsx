@@ -1,6 +1,7 @@
+// src/pages/Users/EditUser.tsx
+
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import axios from "axios";
 import {
   UserContainer,
   DetailRow,
@@ -9,54 +10,67 @@ import { Input, Select } from "@/styles/invoiceStyles";
 import { Button } from "@/components/ui/button";
 import { toast } from "react-toastify";
 import type { User } from "../types/user";
+import axiosInstance from "@/services/axiosInstance";
 
 const EditUser = () => {
-  const { id } = useParams();
+  const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+
   const [formData, setFormData] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
-  // Fetch user data by ID from backend
+  // ✅ Fetch user by ID
   useEffect(() => {
+    if (!id) {
+      toast.error("Invalid user ID.");
+      setLoading(false);
+      return;
+    }
+
     const fetchUser = async () => {
       try {
-        const res = await axios.get(`/api/users/${id}`);
+        const res = await axiosInstance.get(`/api/users/${id}`);
         setFormData(res.data);
-      } catch {
+      } catch (err) {
         toast.error("Failed to load user data.");
+        console.error("User fetch error:", err);
       } finally {
         setLoading(false);
       }
     };
 
-    if (id) fetchUser();
+    fetchUser();
   }, [id]);
 
-  // Handle input change in the form
+  // ✅ Handle changes
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => (prev ? { ...prev, [name]: value } : null));
   };
 
-  // Submit the updated user data
+  // ✅ Submit form
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData || !id) return;
+
+    if (!formData || !id) {
+      toast.error("Missing user data or ID.");
+      return;
+    }
 
     setSaving(true);
     try {
-      await axios.put(`/api/users/${id}`, formData);
+      await axiosInstance.put(`/api/users/${id}`, formData);
       toast.success("User updated successfully!");
       navigate("/users");
-    } catch {
+    } catch (err) {
+      console.error("Update error:", err);
       toast.error("Failed to update user.");
     } finally {
       setSaving(false);
     }
   };
 
-  // Loading state
   if (loading) {
     return (
       <UserContainer>
@@ -65,7 +79,6 @@ const EditUser = () => {
     );
   }
 
-  // If user not found
   if (!formData) {
     return (
       <UserContainer>

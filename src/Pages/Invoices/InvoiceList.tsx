@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { format } from "date-fns";
@@ -23,6 +22,9 @@ import { useAuth } from "@/context/authContext";
 import { Invoice } from "../types/invoice";
 import InvoiceDetailsModal from "./invoiceDetailsModal";
 
+// ✅ Import axios instance that includes JWT token
+import axiosInstance from "@/services/axiosInstance";
+
 const InvoiceList = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -35,16 +37,17 @@ const InvoiceList = () => {
   const [endDate, setEndDate] = useState("");
   const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
 
+  // ✅ Fetch invoices from API
   useEffect(() => {
     const fetchInvoices = async () => {
       try {
-        const res = await axios.get("/api/invoices");
+        const res = await axiosInstance.get("/api/invoices");
         if (Array.isArray(res.data)) {
           setInvoices(res.data);
         } else {
           console.error("Expected array but got:", res.data);
           toast.error("Unexpected response format from API.");
-          setInvoices([]); // fallback to empty array
+          setInvoices([]);
         }
       } catch {
         toast.error("Error fetching invoices.");
@@ -54,10 +57,11 @@ const InvoiceList = () => {
     fetchInvoices();
   }, []);
 
+  // ✅ Delete invoice by ID
   const handleDelete = async (id: string) => {
     if (window.confirm("Are you sure you want to delete this invoice?")) {
       try {
-        await axios.delete(`/api/invoices/${id}`);
+        await axiosInstance.delete(`/api/invoices/${id}`);
         setInvoices((prev) => prev.filter((inv) => inv._id !== id));
         toast.success("Invoice deleted successfully.");
       } catch {
@@ -66,6 +70,7 @@ const InvoiceList = () => {
     }
   };
 
+  // ✅ Filter invoices by search and date
   const filteredInvoices = invoices
     .filter((inv) => {
       const matchSearch = inv.invoiceNumber
@@ -95,6 +100,7 @@ const InvoiceList = () => {
     currentPage * itemsPerPage
   );
 
+  // ✅ Export filtered results to PDF
   const exportFilteredToPDF = () => {
     const doc = new jsPDF();
     doc.setFontSize(14);

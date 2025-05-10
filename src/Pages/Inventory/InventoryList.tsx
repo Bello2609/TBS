@@ -1,7 +1,6 @@
 // src/pages/inventory/InventoryList.tsx
 
 import React, { useState, useEffect } from "react";
-import axios from "axios";
 import {
   PageContainer,
   PageHeader,
@@ -27,6 +26,9 @@ import { toast } from "react-toastify";
 import ReactSelect, { SingleValue } from "react-select";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
+
+// ✅ Import axiosInstance with JWT token support
+import axiosInstance from "@/services/axiosInstance";
 
 // ✅ Interfaces
 interface InventoryItem {
@@ -77,13 +79,13 @@ const InventoryList: React.FC = () => {
     },
   });
 
-  // ✅ Fetch customers and inventory
+  // ✅ Fetch customers and inventory on mount
   useEffect(() => {
     const fetchData = async () => {
       try {
         const [customersRes, inventoryRes] = await Promise.all([
-          axios.get("/api/users?role=customer"),
-          axios.get("/api/inventory"),
+          axiosInstance.get("/api/users?role=customer"),
+          axiosInstance.get("/api/inventory"),
         ]);
         if (Array.isArray(customersRes.data) && Array.isArray(inventoryRes.data)) {
           setCustomers(customersRes.data);
@@ -134,6 +136,7 @@ const InventoryList: React.FC = () => {
     setEditId(null);
   };
 
+  // ✅ Save or update inventory record
   const handleSave = async () => {
     if (!selectedCustomerId || !form.goods || !form.sender.name) {
       toast.error("All required fields must be filled.");
@@ -144,14 +147,14 @@ const InventoryList: React.FC = () => {
 
     try {
       if (editId) {
-        await axios.put(`/api/inventory/${editId}`, payload);
+        await axiosInstance.put(`/api/inventory/${editId}`, payload);
         toast.success("Inventory updated.");
       } else {
-        await axios.post("/api/inventory", payload);
+        await axiosInstance.post("/api/inventory", payload);
         toast.success("Inventory added.");
       }
 
-      const refreshed = await axios.get("/api/inventory");
+      const refreshed = await axiosInstance.get("/api/inventory");
       setInventory(refreshed.data);
       resetForm();
       setShowModal(false);
@@ -160,10 +163,11 @@ const InventoryList: React.FC = () => {
     }
   };
 
+  // ✅ Delete inventory by ID
   const handleDelete = async (id: string) => {
     if (window.confirm("Are you sure you want to delete this item?")) {
       try {
-        await axios.delete(`/api/inventory/${id}`);
+        await axiosInstance.delete(`/api/inventory/${id}`);
         setInventory((prev) => prev.filter((item) => item._id !== id));
         toast.success("Deleted successfully.");
       } catch {

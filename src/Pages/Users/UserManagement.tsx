@@ -1,5 +1,6 @@
+// src/pages/Users/UserManagement.tsx
+
 import { useEffect, useState } from "react";
-import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { FiEye, FiEdit, FiTrash2 } from "react-icons/fi";
@@ -29,6 +30,7 @@ import UserModal from "./userModal";
 import UserDetailsModal from "./userDetailsModal";
 import type { User } from "../types/user";
 import { useAuth } from "@/context/authContext";
+import axiosInstance from "@/services/axiosInstance";
 
 const UserManagement = () => {
   const [users, setUsers] = useState<User[]>([]);
@@ -44,10 +46,9 @@ const UserManagement = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
 
-  // ✅ Load users from API
   const fetchUsers = async () => {
     try {
-      const res = await axios.get("/api/users");
+      const res = await axiosInstance.get("/api/users");
       setUsers(res.data);
       setFilteredUsers(res.data);
     } catch (error) {
@@ -66,12 +67,12 @@ const UserManagement = () => {
 
   useEffect(() => {
     const query = searchQuery.toLowerCase();
-    const filtered = users.filter((user) => {
+    const filtered = users.filter((u) => {
       const matchesQuery =
-        user.name.toLowerCase().includes(query) ||
-        user.email.toLowerCase().includes(query) ||
-        user.phone.toLowerCase().includes(query);
-      const matchesRole = roleFilter ? user.role === roleFilter : true;
+        u.name.toLowerCase().includes(query) ||
+        u.email.toLowerCase().includes(query) ||
+        u.phone.toLowerCase().includes(query);
+      const matchesRole = roleFilter ? u.role === roleFilter : true;
       return matchesQuery && matchesRole;
     });
 
@@ -79,14 +80,19 @@ const UserManagement = () => {
     setCurrentPage(1);
   }, [searchQuery, roleFilter, users]);
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = async (id: string | undefined) => {
+    if (!id) {
+      toast.error("Invalid user ID.");
+      return;
+    }
+
     const confirmDelete = window.confirm("Are you sure you want to delete this user?");
     if (!confirmDelete) return;
 
     try {
-      await axios.delete(`/api/users/${id}`);
+      await axiosInstance.delete(`/api/users/${id}`);
       toast.success("User deleted.");
-      fetchUsers(); // Refresh list
+      fetchUsers();
     } catch (error) {
       toast.error("Error deleting user.");
       console.error(error);
@@ -141,34 +147,37 @@ const UserManagement = () => {
               </TableRow>
             </TableHead>
             <TableBody>
-              {paginatedUsers.map((user) => (
-                <TableRow key={user.id}>
-                  <TableData>{user.id}</TableData>
-                  <TableData>{user.name}</TableData>
-                  <TableData>{user.email}</TableData>
-                  <TableData>{user.phone}</TableData>
-                  <TableData>{user.role}</TableData>
-                  <TableData>
-                    <ActionButtons>
-                      <ViewButton onClick={() => {
-                        setSelectedUser(user);
-                        setShowUserDetails(true);
-                      }}>
-                        <FiEye />
-                      </ViewButton>
-                      <EditButton onClick={() => {
-                        setSelectedUser(user);
-                        setIsModalOpen(true);
-                      }}>
-                        <FiEdit />
-                      </EditButton>
-                      <DeleteButton onClick={() => handleDelete(user.id)}>
-                        <FiTrash2 />
-                      </DeleteButton>
-                    </ActionButtons>
-                  </TableData>
-                </TableRow>
-              ))}
+              {paginatedUsers.map((u) => {
+                const userId = u._id ?? u.id;
+                return (
+                  <TableRow key={userId}>
+                    <TableData>{userId}</TableData>
+                    <TableData>{u.name}</TableData>
+                    <TableData>{u.email}</TableData>
+                    <TableData>{u.phone}</TableData>
+                    <TableData>{u.role}</TableData>
+                    <TableData>
+                      <ActionButtons>
+                        <ViewButton onClick={() => {
+                          setSelectedUser(u);
+                          setShowUserDetails(true);
+                        }}>
+                          <FiEye />
+                        </ViewButton>
+                        <EditButton onClick={() => {
+                          setSelectedUser(u);
+                          setIsModalOpen(true);
+                        }}>
+                          <FiEdit />
+                        </EditButton>
+                        <DeleteButton onClick={() => handleDelete(userId)}>
+                          <FiTrash2 />
+                        </DeleteButton>
+                      </ActionButtons>
+                    </TableData>
+                  </TableRow>
+                );
+              })}
             </TableBody>
           </UserTable>
 
@@ -179,8 +188,12 @@ const UserManagement = () => {
               ))}
             </RowsPerPage>
             <PageButtons>
-              <button onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))} disabled={currentPage === 1}>Previous</button>
-              <button onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))} disabled={currentPage === totalPages}>Next</button>
+              <button onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))} disabled={currentPage === 1}>
+                Previous
+              </button>
+              <button onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))} disabled={currentPage === totalPages}>
+                Next
+              </button>
             </PageButtons>
           </PaginationContainer>
         </>
