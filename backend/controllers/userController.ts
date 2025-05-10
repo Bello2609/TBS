@@ -2,7 +2,7 @@
 
 import { Request, Response } from "express";
 import bcrypt from "bcryptjs";
-import User from "../models/user";
+import User from "../models/user.model.js";
 
 // ✅ GET /api/users - Fetch all users
 export const getUsers = async (req: Request, res: Response): Promise<void> => {

@@ -1,12 +1,10 @@
-// backend/controllers/invoiceController.ts
-
 import { Request, Response } from "express";
-import Invoice from "../models/invoice";
-import Inventory from "../models/inventory";
+import Invoice from "../models/invoice.js";
+import Inventory from "../models/inventory.js";
 import mongoose from "mongoose";
 
-// ✅ GET /api/invoices
-export const getAllInvoices = async (req: Request, res: Response) => {
+// GET /api/invoices
+export const getAllInvoices = async (req: Request, res: Response): Promise<void> => {
   try {
     const { customerId } = req.query;
 
@@ -23,13 +21,14 @@ export const getAllInvoices = async (req: Request, res: Response) => {
   }
 };
 
-// ✅ GET /api/invoices/:id
-export const getInvoiceById = async (req: Request, res: Response) => {
+// GET /api/invoices/:id
+export const getInvoiceById = async (req: Request, res: Response): Promise<void> => {
   try {
     const invoice = await Invoice.findById(req.params.id);
 
     if (!invoice) {
-      return res.status(404).json({ message: "Invoice not found." });
+      res.status(404).json({ message: "Invoice not found." });
+      return;
     }
 
     res.status(200).json(invoice);
@@ -39,8 +38,8 @@ export const getInvoiceById = async (req: Request, res: Response) => {
   }
 };
 
-// ✅ POST /api/invoices
-export const createInvoice = async (req: Request, res: Response) => {
+// POST /api/invoices
+export const createInvoice = async (req: Request, res: Response): Promise<void> => {
   try {
     const {
       customerId,
@@ -57,14 +56,14 @@ export const createInvoice = async (req: Request, res: Response) => {
       tax,
       grandTotal,
       bankInfo,
-      items,
     } = req.body;
 
-    // Fetch the inventory item and embed snapshot
+    // Find the selected inventory item and embed its data as snapshot
     const inventory = await Inventory.findById(inventoryId);
 
     if (!inventory) {
-      return res.status(404).json({ message: "Inventory not found." });
+      res.status(404).json({ message: "Inventory not found." });
+      return;
     }
 
     const invoice = new Invoice({
@@ -81,7 +80,7 @@ export const createInvoice = async (req: Request, res: Response) => {
       tax,
       grandTotal,
       bankInfo,
-      inventoryItems: [inventory.toObject()], // embed snapshot
+      inventoryItems: [inventory.toObject()],
     });
 
     const saved = await invoice.save();
@@ -92,15 +91,14 @@ export const createInvoice = async (req: Request, res: Response) => {
   }
 };
 
-// ✅ PUT /api/invoices/:id
-export const updateInvoice = async (req: Request, res: Response) => {
+// PUT /api/invoices/:id
+export const updateInvoice = async (req: Request, res: Response): Promise<void> => {
   try {
-    const updated = await Invoice.findByIdAndUpdate(req.params.id, req.body, {
-      new: true,
-    });
+    const updated = await Invoice.findByIdAndUpdate(req.params.id, req.body, { new: true });
 
     if (!updated) {
-      return res.status(404).json({ message: "Invoice not found." });
+      res.status(404).json({ message: "Invoice not found." });
+      return;
     }
 
     res.status(200).json(updated);
@@ -110,13 +108,14 @@ export const updateInvoice = async (req: Request, res: Response) => {
   }
 };
 
-// ✅ DELETE /api/invoices/:id
-export const deleteInvoice = async (req: Request, res: Response) => {
+// DELETE /api/invoices/:id
+export const deleteInvoice = async (req: Request, res: Response): Promise<void> => {
   try {
     const deleted = await Invoice.findByIdAndDelete(req.params.id);
 
     if (!deleted) {
-      return res.status(404).json({ message: "Invoice not found." });
+      res.status(404).json({ message: "Invoice not found." });
+      return;
     }
 
     res.status(200).json({ message: "Invoice deleted successfully." });

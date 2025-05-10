@@ -62,10 +62,10 @@ const InvoiceList = () => {
   const filteredInvoices = invoices
     .filter((inv) => {
       const matchSearch = inv.invoiceNumber.toLowerCase().includes(searchQuery.toLowerCase());
+      const customerName =
+        typeof inv.customer === "string" ? inv.customer : inv.customer?.name;
       const isCustomerAllowed =
-        user?.role === "customer"
-          ? inv.customer?.name === user.name // assuming customer is an object
-          : true;
+        user?.role === "customer" ? customerName === user.name : true;
       return matchSearch && isCustomerAllowed;
     })
     .filter((inv) => {
@@ -87,7 +87,7 @@ const InvoiceList = () => {
 
     const tableData = filteredInvoices.map((inv) => [
       inv.invoiceNumber,
-      inv.customer?.name || "N/A",
+      typeof inv.customer === "string" ? inv.customer : inv.customer?.name || "N/A",
       format(new Date(inv.date), "yyyy-MM-dd"),
       `${inv.total.toFixed(2)} kr`,
       `${inv.grandTotal.toFixed(2)} kr`,
@@ -148,7 +148,13 @@ const InvoiceList = () => {
               paginatedInvoices.map((inv) => (
                 <TableRow key={inv._id}>
                   <TableData>{inv.invoiceNumber}</TableData>
-                  {user?.role !== "customer" && <TableData>{inv.customer?.name || "N/A"}</TableData>}
+                  {user?.role !== "customer" && (
+                    <TableData>
+                      {typeof inv.customer === "string"
+                        ? inv.customer
+                        : inv.customer?.name || "N/A"}
+                    </TableData>
+                  )}
                   <TableData>{inv.quantity}</TableData>
                   <TableData>{inv.total.toFixed(2)} kr</TableData>
                   <TableData>{inv.grandTotal.toFixed(2)} kr</TableData>

@@ -7,23 +7,23 @@ import {
   createInventory,
   updateInventory,
   deleteInventory,
-} from "../controllers/inventoryController";
+} from "../controllers/inventoryController.js"; // ✅
 
-const router = express.Router();
+const router = express.Router(); // ✅ 
 
-// 📥 GET all inventory (optional ?customerId=)
+// ✅ GET all inventory (optionally filtered by ?customerId)
 router.get("/", getAllInventory);
 
-// 📑 GET single inventory by ID
+// ✅ GET inventory item by ID
 router.get("/:id", getInventoryById);
 
-// ➕ POST create new inventory item
+// ✅ POST create new inventory item
 router.post("/", createInventory);
 
-// ✏️ PUT update inventory item by ID
+// ✅ PUT update inventory item by ID
 router.put("/:id", updateInventory);
 
-// 🗑 DELETE inventory item by ID
+// ✅ DELETE inventory item by ID
 router.delete("/:id", deleteInventory);
 
 export default router;

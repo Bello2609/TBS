@@ -5,8 +5,9 @@ import cors from "cors";
 import connectDB from "./config/db.js"; // ✅ الاتصال بقاعدة البيانات
 import authRoutes from "./routes/authRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
-import inventoryRoutes from "./routes/inventoryRoutes";
-import invoiceRoutes from "./routes/invoiceRoutes";
+import inventoryRoutes from "./routes/inventoryRoutes.js"; // ✅
+import invoiceRoutes from "./routes/invoiceRoutes.js";
+import customerRoutes from "./routes/customerRoutes.js";
 dotenv.config();
 
 const app = express();
@@ -21,6 +22,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/inventory", inventoryRoutes);
 app.use("/api/invoices", invoiceRoutes);
+app.use("/api/customers", customerRoutes);
 // ✅ Connect to MongoDB and start server
 const PORT = process.env.PORT || 5000;
 

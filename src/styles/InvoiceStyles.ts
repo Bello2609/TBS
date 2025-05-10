@@ -2,6 +2,14 @@
 
 import styled, { keyframes } from "styled-components";
 
+// ✅ Add this styled component if not present
+export const ModalTitle = styled.h2`
+  font-size: 20px;
+  font-weight: 700;
+  margin-bottom: 20px;
+  text-align: center;
+  color: ${({ theme }) => theme.text};
+`;
 /* ========== ANIMATIONS ========== */
 const fadeIn = keyframes`
   from {

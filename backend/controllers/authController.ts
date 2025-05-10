@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import bcrypt from "bcryptjs";
 import mongoose from "mongoose";
-import User, { UserDocument } from "../models/user.js";
+import User, { UserDocument } from "../models/user.model.js";
 import { generateToken } from "../utils/generateToken.js";
 
 // POST /api/auth/login
