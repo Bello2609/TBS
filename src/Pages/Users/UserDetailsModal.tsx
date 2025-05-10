@@ -5,8 +5,8 @@ import {
   ModalOverlay,
   ModalContainer,
   ModalContentScrollable,
+  DetailRow,
 } from "@/styles/userStyles";
-import { DetailRow } from "@/styles/userStyles";
 import { Button } from "@/components/ui/button";
 import type { User } from "../types/user";
 
@@ -36,25 +36,27 @@ const UserDetailsModal: React.FC<Props> = ({ user, onClose }) => {
           </h2>
 
           <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-            <DetailRow>
-              <strong>ID:</strong>
-              <span>{user.id}</span>
-            </DetailRow>
+            {user.id && (
+              <DetailRow>
+                <strong>ID:</strong>
+                <span>{user.id}</span>
+              </DetailRow>
+            )}
             <DetailRow>
               <strong>Name:</strong>
-              <span>{user.name}</span>
+              <span>{user.name || "N/A"}</span>
             </DetailRow>
             <DetailRow>
               <strong>Email:</strong>
-              <span>{user.email}</span>
+              <span>{user.email || "N/A"}</span>
             </DetailRow>
             <DetailRow>
               <strong>Phone:</strong>
-              <span>{user.phone}</span>
+              <span>{user.phone || "N/A"}</span>
             </DetailRow>
             <DetailRow>
               <strong>Role:</strong>
-              <span>{user.role}</span>
+              <span>{user.role || "N/A"}</span>
             </DetailRow>
 
             {/* Extra fields for customers */}

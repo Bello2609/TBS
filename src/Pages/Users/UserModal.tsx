@@ -12,7 +12,7 @@ interface UserModalProps {
   mode: "create" | "edit";
   userToEdit?: User;
   onClose: () => void;
-  onUserSaved: (newUser: User) => void;
+  onUserSaved: (user: User) => void;
 }
 
 // Wrapper to center modal content
@@ -24,7 +24,7 @@ const ModalWrapper = styled.div`
   align-items: center;
 `;
 
-// Modal for both creating and editing users
+// Modal for creating or editing users
 const UserModal: React.FC<UserModalProps> = ({
   mode,
   userToEdit,

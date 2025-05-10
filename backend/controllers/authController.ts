@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import bcrypt from "bcryptjs";
+import mongoose from "mongoose";
 import User, { UserDocument } from "../models/user.js";
 import { generateToken } from "../utils/generateToken.js";
 
@@ -7,37 +8,38 @@ import { generateToken } from "../utils/generateToken.js";
 export const loginUser = async (req: Request, res: Response): Promise<void> => {
   const { username, password } = req.body;
 
-  // Validate input fields
+  // ✅ Validate required fields
   if (!username || !password) {
     res.status(400).json({ message: "Username and password are required." });
     return;
   }
 
   try {
-    // Find user by username
+    // ✅ Check if user exists by username
     const user = await User.findOne({ username });
-
     if (!user) {
       res.status(401).json({ message: "Invalid credentials." });
       return;
     }
 
-    // Type assertion after null check
+    // ✅ Cast user to the correct document type
     const typedUser = user as UserDocument;
 
-    // Compare hashed password
+    // ✅ Compare hashed passwords
     const isMatch = await bcrypt.compare(password, typedUser.password);
     if (!isMatch) {
       res.status(401).json({ message: "Invalid credentials." });
       return;
     }
 
-    // Generate JWT token
-    const token = generateToken(typedUser._id.toString(), typedUser.role);
+    // ✅ Convert _id to string for JWT
+    const userId: string = new mongoose.Types.ObjectId(typedUser._id).toString();
 
+    // ✅ Generate token
+    const token = generateToken(userId, typedUser.role);
 
-    // Return user info and token
-    res.json({
+    // ✅ Respond with user data and token
+    res.status(200).json({
       token,
       user: {
         id: typedUser._id,

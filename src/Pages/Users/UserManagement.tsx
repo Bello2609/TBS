@@ -1,6 +1,9 @@
-// src/pages/Users/UserManagement.tsx
-
 import { useEffect, useState } from "react";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
+import { FiEye, FiEdit, FiTrash2 } from "react-icons/fi";
+
 import {
   UserContainer,
   UserTable,
@@ -21,17 +24,11 @@ import {
   EditButton,
   DeleteButton,
 } from "@/styles/userStyles";
-import { FiEye, FiEdit, FiTrash2 } from "react-icons/fi";
-import { toast } from "react-toastify";
-import { useNavigate } from "react-router-dom";
+
 import UserModal from "./userModal";
 import UserDetailsModal from "./userDetailsModal";
-import { fakeUsers } from "../data/fakeUsers";
-import { fakeCustomers, Customer } from "../data/fakeCustomers";
 import type { User } from "../types/user";
-
-// Simulated current user role
-const currentUserRole: string = "admin";
+import { useAuth } from "@/context/authContext";
 
 const UserManagement = () => {
   const [users, setUsers] = useState<User[]>([]);
@@ -39,24 +36,33 @@ const UserManagement = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [roleFilter, setRoleFilter] = useState("");
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
-  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [showUserDetails, setShowUserDetails] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(5);
 
   const navigate = useNavigate();
+  const { user } = useAuth();
 
-  useEffect(() => {
-    if (currentUserRole === "customer") {
-      navigate("/");
+  // ✅ Load users from API
+  const fetchUsers = async () => {
+    try {
+      const res = await axios.get("/api/users");
+      setUsers(res.data);
+      setFilteredUsers(res.data);
+    } catch (error) {
+      toast.error("Failed to load users.");
+      console.error(error);
     }
-  }, [navigate]);
+  };
 
   useEffect(() => {
-    setUsers(fakeUsers);
-    setFilteredUsers(fakeUsers);
-  }, []);
+    if (user?.role === "customer") {
+      navigate("/");
+    } else {
+      fetchUsers();
+    }
+  }, [user]);
 
   useEffect(() => {
     const query = searchQuery.toLowerCase();
@@ -73,14 +79,18 @@ const UserManagement = () => {
     setCurrentPage(1);
   }, [searchQuery, roleFilter, users]);
 
-  const handleDelete = (id: number) => {
+  const handleDelete = async (id: string) => {
     const confirmDelete = window.confirm("Are you sure you want to delete this user?");
     if (!confirmDelete) return;
 
-    const updated = users.filter((user) => user.id !== id);
-    setUsers(updated);
-    setFilteredUsers(updated);
-    toast.success("User deleted successfully.");
+    try {
+      await axios.delete(`/api/users/${id}`);
+      toast.success("User deleted.");
+      fetchUsers(); // Refresh list
+    } catch (error) {
+      toast.error("Error deleting user.");
+      console.error(error);
+    }
   };
 
   const totalPages = Math.ceil(filteredUsers.length / rowsPerPage);
@@ -93,13 +103,11 @@ const UserManagement = () => {
     <UserContainer>
       <TopBar>
         <h1>User Management</h1>
-        {currentUserRole === "admin" && (
-          <AddButton
-            onClick={() => {
-              setSelectedUser(null);
-              setIsModalOpen(true);
-            }}
-          >
+        {user?.role === "admin" && (
+          <AddButton onClick={() => {
+            setSelectedUser(null);
+            setIsModalOpen(true);
+          }}>
             + Add User
           </AddButton>
         )}
@@ -142,39 +150,21 @@ const UserManagement = () => {
                   <TableData>{user.role}</TableData>
                   <TableData>
                     <ActionButtons>
-                      <ViewButton
-                        onClick={() => {
-                          if (user.role === "customer") {
-                            const matchedCustomer = fakeCustomers.find((c) => c.userId === user.id);
-                            if (matchedCustomer) {
-                              setSelectedCustomer(matchedCustomer);
-                            } else {
-                              toast.error("Customer data not found.");
-                            }
-                          } else {
-                            setSelectedUser(user);
-                            setShowUserDetails(true);
-                          }
-                        }}
-                      >
+                      <ViewButton onClick={() => {
+                        setSelectedUser(user);
+                        setShowUserDetails(true);
+                      }}>
                         <FiEye />
                       </ViewButton>
-
-                      {currentUserRole === "admin" && (
-                        <>
-                          <EditButton
-                            onClick={() => {
-                              setSelectedUser(user);
-                              setIsModalOpen(true);
-                            }}
-                          >
-                            <FiEdit />
-                          </EditButton>
-                          <DeleteButton onClick={() => handleDelete(user.id)}>
-                            <FiTrash2 />
-                          </DeleteButton>
-                        </>
-                      )}
+                      <EditButton onClick={() => {
+                        setSelectedUser(user);
+                        setIsModalOpen(true);
+                      }}>
+                        <FiEdit />
+                      </EditButton>
+                      <DeleteButton onClick={() => handleDelete(user.id)}>
+                        <FiTrash2 />
+                      </DeleteButton>
                     </ActionButtons>
                   </TableData>
                 </TableRow>
@@ -185,25 +175,12 @@ const UserManagement = () => {
           <PaginationContainer>
             <RowsPerPage value={rowsPerPage} onChange={(e) => setRowsPerPage(Number(e.target.value))}>
               {[5, 10, 15, 20].map((size) => (
-                <option key={size} value={size}>
-                  {size}
-                </option>
+                <option key={size} value={size}>{size}</option>
               ))}
             </RowsPerPage>
-
             <PageButtons>
-              <button
-                onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-                disabled={currentPage === 1}
-              >
-                Previous
-              </button>
-              <button
-                onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
-                disabled={currentPage === totalPages}
-              >
-                Next
-              </button>
+              <button onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))} disabled={currentPage === 1}>Previous</button>
+              <button onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))} disabled={currentPage === totalPages}>Next</button>
             </PageButtons>
           </PaginationContainer>
         </>
@@ -219,21 +196,7 @@ const UserManagement = () => {
             setIsModalOpen(false);
             setSelectedUser(null);
           }}
-          onUserSaved={(updatedUser: User) => {
-            let updatedList: User[];
-            if (selectedUser) {
-              updatedList = users.map((u) => (u.id === updatedUser.id ? updatedUser : u));
-              toast.success("User updated successfully.");
-            } else {
-              updatedUser.id = users.length + 1;
-              updatedList = [...users, updatedUser];
-              toast.success("User created successfully.");
-            }
-            setUsers(updatedList);
-            setFilteredUsers(updatedList);
-            setIsModalOpen(false);
-            setSelectedUser(null);
-          }}
+          onUserSaved={fetchUsers}
         />
       )}
 
@@ -244,28 +207,6 @@ const UserManagement = () => {
             setShowUserDetails(false);
             setSelectedUser(null);
           }}
-        />
-      )}
-
-      {selectedCustomer && (
-        <UserDetailsModal
-          user={{
-            id: selectedCustomer.userId,
-            name: selectedCustomer.contactPerson,
-            email: selectedCustomer.companyEmail,
-            phone: selectedCustomer.companyPhone,
-            role: "customer",
-            companyName: selectedCustomer.companyName,
-            companyEmail: selectedCustomer.companyEmail,
-            orgNumber: selectedCustomer.orgNumber,
-            zipCode: selectedCustomer.zipCode,
-            city: selectedCustomer.city,
-            address: selectedCustomer.address,
-            contactPerson: selectedCustomer.contactPerson,
-            companyPhone: selectedCustomer.companyPhone,
-            customerType: selectedCustomer.customerType,
-          }}
-          onClose={() => setSelectedCustomer(null)}
         />
       )}
     </UserContainer>

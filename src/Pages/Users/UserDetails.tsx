@@ -1,5 +1,3 @@
-// src/pages/Users/UserDetails.tsx
-
 import React from "react";
 import { ModalOverlay, ModalContainer } from "@/styles/invoiceStyles";
 import { ModalContentScrollable, DetailRow } from "@/styles/userStyles";
@@ -14,11 +12,15 @@ interface Props {
 const UserDetails: React.FC<Props> = ({ user, onClose }) => {
   return (
     <>
+      {/* Overlay behind modal */}
       <ModalOverlay onClick={onClose} />
+
+      {/* Centered modal container */}
       <ModalContainer>
         <ModalContentScrollable style={{ maxWidth: "600px", margin: "auto" }}>
           <h2 style={{ marginBottom: "24px", textAlign: "center" }}>User Details</h2>
 
+          {/* Display user information */}
           <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
             <DetailRow>
               <strong>ID:</strong>
@@ -41,6 +43,7 @@ const UserDetails: React.FC<Props> = ({ user, onClose }) => {
               <span>{user.role}</span>
             </DetailRow>
 
+            {/* Optional user status */}
             {user.status && (
               <DetailRow>
                 <strong>Status:</strong>
@@ -58,6 +61,7 @@ const UserDetails: React.FC<Props> = ({ user, onClose }) => {
               </DetailRow>
             )}
 
+            {/* Optional creation date */}
             {user.createdAt && (
               <DetailRow>
                 <strong>Created At:</strong>
@@ -66,6 +70,7 @@ const UserDetails: React.FC<Props> = ({ user, onClose }) => {
             )}
           </div>
 
+          {/* Close button */}
           <div style={{ textAlign: "center", marginTop: "24px" }}>
             <Button onClick={onClose}>Close</Button>
           </div>

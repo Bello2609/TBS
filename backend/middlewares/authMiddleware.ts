@@ -3,26 +3,29 @@ import jwt from "jsonwebtoken";
 import User from "../models/user.js";
 import { UserDocument } from "../models/user";
 
-// Extend Express Request to include user
+// Extend Express Request to include authenticated user
 export interface AuthRequest extends Request {
   user?: UserDocument;
 }
 
-// ✅ Middleware to verify JWT
+// Middleware to protect routes using JWT
 export const protect = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
-  const authHeader = req.headers.authorization;
-
-  if (!authHeader || !authHeader.startsWith("Bearer ")) {
-    res.status(401).json({ message: "Not authorized, token missing" });
-    return;
-  }
-
-  const token = authHeader.split(" ")[1];
-
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || "") as { id: string };
-    const user = await User.findById(decoded.id).select("-password");
+    const authHeader = req.headers.authorization;
 
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      res.status(401).json({ message: "Not authorized, token missing" });
+      return;
+    }
+
+    const token = authHeader.split(" ")[1];
+    const secret = process.env.JWT_SECRET;
+
+    if (!secret) throw new Error("JWT_SECRET not defined");
+
+    const decoded = jwt.verify(token, secret) as { id: string };
+
+    const user = await User.findById(decoded.id).select("-password");
     if (!user) {
       res.status(401).json({ message: "User not found" });
       return;
@@ -32,11 +35,11 @@ export const protect = async (req: AuthRequest, res: Response, next: NextFunctio
     next();
   } catch (error) {
     console.error("Auth error:", error);
-    res.status(401).json({ message: "Invalid token" });
+    res.status(401).json({ message: "Invalid or expired token" });
   }
 };
 
-// ✅ Middleware to allow only admins
+// Middleware to restrict access to admins only
 export const isAdmin = (req: AuthRequest, res: Response, next: NextFunction): void => {
   if (req.user && req.user.role === "admin") {
     next();

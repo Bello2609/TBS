@@ -1,10 +1,13 @@
-import { useState, useEffect } from "react";
+// src/pages/Users/CreateUser.tsx
+
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { DetailRow } from "@/styles/userStyles";
 import { Input, Select } from "@/styles/invoiceStyles";
 import { Button } from "@/components/ui/button";
 import { toast } from "react-toastify";
 import { useAuth } from "@/context/authContext";
+import axios from "axios";
 import type { User, UserRole } from "../types/user";
 
 interface CreateUserProps {
@@ -22,19 +25,7 @@ interface UserFormData {
   role: UserRole;
 }
 
-interface CustomerFormData {
-  companyName: string;
-  companyEmail: string;
-  orgNumber: string;
-  zipCode: string;
-  city: string;
-  address: string;
-  contactPerson: string;
-  companyPhone: string;
-  customerType: string;
-}
-
-// Utility function to generate a strong password
+// Generate a strong password with uppercase, lowercase, and digits
 const generateStrongPassword = (): string => {
   const upper = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
   const lower = "abcdefghijklmnopqrstuvwxyz";
@@ -59,21 +50,8 @@ const CreateUser: React.FC<CreateUserProps> = ({ mode, initialUser, onCancel, on
     role: (user?.role === "admin" ? "employee" : "customer") as UserRole,
   });
 
-  const [customerData, setCustomerData] = useState<CustomerFormData>({
-    companyName: "",
-    companyEmail: "",
-    orgNumber: "",
-    zipCode: "",
-    city: "",
-    address: "",
-    contactPerson: "",
-    companyPhone: "",
-    customerType: "",
-  });
-
   const [loading, setLoading] = useState(false);
 
-  // Prefill form in edit mode
   useEffect(() => {
     if (mode === "edit" && initialUser) {
       setFormData({
@@ -81,7 +59,7 @@ const CreateUser: React.FC<CreateUserProps> = ({ mode, initialUser, onCancel, on
         email: initialUser.email,
         phoneNumber: initialUser.phone,
         role: initialUser.role,
-        password: "",
+        password: "", // Password not shown in edit mode
       });
     }
   }, [mode, initialUser]);
@@ -91,14 +69,6 @@ const CreateUser: React.FC<CreateUserProps> = ({ mode, initialUser, onCancel, on
     setFormData(prev => ({
       ...prev,
       [name]: name === "role" ? (value as UserRole) : value,
-    }));
-  };
-
-  const handleCustomerChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    setCustomerData(prev => ({
-      ...prev,
-      [name]: value,
     }));
   };
 
@@ -113,40 +83,46 @@ const CreateUser: React.FC<CreateUserProps> = ({ mode, initialUser, onCancel, on
     setLoading(true);
 
     const passwordPattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
-    if (!passwordPattern.test(formData.password)) {
+    if (mode === "create" && !passwordPattern.test(formData.password)) {
       toast.error("Password must include uppercase, lowercase, and numbers (min 8 chars).");
       setLoading(false);
       return;
     }
 
     try {
-      const newUser: User = {
-        id: Date.now(),
-        name: formData.name,
-        email: formData.email,
-        phone: formData.phoneNumber,
-        role: formData.role,
-      };
+      let savedUser: User;
 
-      if (formData.role === "customer") {
-        const newCustomer: Customer = {
-          id: Date.now(),
-          userId: newUser.id,
-          ...customerData,
-        };
-        fakeCustomers.push(newCustomer);
-      }
-
-      toast.success(mode === "edit" ? "User updated" : "User created");
-
-      if (onSuccess) {
-        onSuccess(newUser);
+      if (mode === "create") {
+        const response = await axios.post("/api/users", {
+          username: formData.email.split("@")[0],
+          email: formData.email,
+          name: formData.name,
+          phone: formData.phoneNumber,
+          role: formData.role,
+          password: formData.password,
+        });
+        savedUser = response.data;
+        toast.success("User created successfully");
+      } else if (mode === "edit" && initialUser) {
+        const response = await axios.put(`/api/users/${initialUser.id}`, {
+          email: formData.email,
+          name: formData.name,
+          phone: formData.phoneNumber,
+          role: formData.role,
+        });
+        savedUser = response.data;
+        toast.success("User updated successfully");
       } else {
-        navigate("/users");
+        throw new Error("Invalid operation");
       }
-    } catch (err) {
-      console.error("Error creating user:", err);
-      toast.error("Error processing user.");
+
+      if (onSuccess) onSuccess(savedUser);
+      else navigate("/users");
+
+    } catch (err: unknown) {
+      const error = err as { response?: { data?: { message?: string } } };
+      const message = error?.response?.data?.message || "Error processing request.";
+      toast.error(message);
     } finally {
       setLoading(false);
     }
@@ -159,7 +135,6 @@ const CreateUser: React.FC<CreateUserProps> = ({ mode, initialUser, onCancel, on
       </h2>
 
       <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
-        {/* Role */}
         <DetailRow>
           <strong>Role:</strong>
           <Select
@@ -179,7 +154,6 @@ const CreateUser: React.FC<CreateUserProps> = ({ mode, initialUser, onCancel, on
           </Select>
         </DetailRow>
 
-        {/* User fields */}
         <DetailRow>
           <strong>Name:</strong>
           <Input name="name" value={formData.name} onChange={handleChange} required />
@@ -195,57 +169,32 @@ const CreateUser: React.FC<CreateUserProps> = ({ mode, initialUser, onCancel, on
           <Input name="phoneNumber" value={formData.phoneNumber} onChange={handleChange} required />
         </DetailRow>
 
-        {/* Password with generator */}
-        <DetailRow style={{ flexDirection: "column", alignItems: "flex-start" }}>
-          <strong>Password:</strong>
-          <div style={{ display: "flex", width: "100%", gap: "12px", alignItems: "center" }}>
-            <Input
-              type="text"
-              name="password"
-              value={formData.password}
-              onChange={handleChange}
-              required
-              style={{ flex: 1, minWidth: 0 }}
-            />
-            <div style={{ flexShrink: 0 }}>
-              <Button
-                type="button"
-                $variant="secondary"
-                style={{ minWidth: "100px", padding: "10px 16px" }}
-                onClick={handleGeneratePassword}
-              >
-                Generate
-              </Button>
-            </div>
-          </div>
-        </DetailRow>
-
-        {/* Customer-specific fields */}
-        {(formData.role === "customer") && (
-          ([
-            "companyName",
-            "companyEmail",
-            "orgNumber",
-            "zipCode",
-            "city",
-            "address",
-            "contactPerson",
-            "companyPhone",
-            "customerType",
-          ] as (keyof CustomerFormData)[]).map((field) => (
-            <DetailRow key={field}>
-              <strong>{field.replace(/([A-Z])/g, " $1").replace(/^./, str => str.toUpperCase())}:</strong>
+        {mode === "create" && (
+          <DetailRow style={{ flexDirection: "column", alignItems: "flex-start" }}>
+            <strong>Password:</strong>
+            <div style={{ display: "flex", width: "100%", gap: "12px", alignItems: "center" }}>
               <Input
-                name={field}
-                value={customerData[field]}
-                onChange={handleCustomerChange}
+                type="text"
+                name="password"
+                value={formData.password}
+                onChange={handleChange}
                 required
+                style={{ flex: 1, minWidth: 0 }}
               />
-            </DetailRow>
-          ))
+              <div style={{ flexShrink: 0 }}>
+                <Button
+                  type="button"
+                  $variant="secondary"
+                  style={{ minWidth: "100px", padding: "10px 16px" }}
+                  onClick={handleGeneratePassword}
+                >
+                  Generate
+                </Button>
+              </div>
+            </div>
+          </DetailRow>
         )}
 
-        {/* Actions */}
         <div style={{ display: "flex", justifyContent: "flex-end", gap: "12px" }}>
           <Button
             type="button"
