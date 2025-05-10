@@ -1,5 +1,3 @@
-// src/pages/Invoices/InvoiceList.tsx
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
@@ -37,42 +35,44 @@ const InvoiceList = () => {
   const [endDate, setEndDate] = useState("");
   const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
 
-  // Fetch invoices from API
   useEffect(() => {
     const fetchInvoices = async () => {
       try {
-        const res = await axios.get('/api/invoices');
+        const res = await axios.get("/api/invoices");
         setInvoices(res.data);
       } catch {
-        toast.error('Error fetching invoices.');
+        toast.error("Error fetching invoices.");
       }
     };
     fetchInvoices();
   }, []);
 
-  // Delete Invoice
   const handleDelete = async (id: string) => {
-    if (window.confirm('Are you sure you want to delete this invoice?')) {
+    if (window.confirm("Are you sure you want to delete this invoice?")) {
       try {
         await axios.delete(`/api/invoices/${id}`);
-        setInvoices((prev) => prev.filter((invoice) => invoice._id !== id));
-        toast.success('Invoice deleted successfully.');
+        setInvoices((prev) => prev.filter((inv) => inv._id !== id));
+        toast.success("Invoice deleted successfully.");
       } catch {
-        toast.error('Error deleting invoice.');
+        toast.error("Error deleting invoice.");
       }
     }
   };
 
-  // Filtering logic
-  const filteredInvoices = invoices.filter((inv) => {
-    const matchesSearch = inv.invoiceNumber.toLowerCase().includes(searchQuery.toLowerCase());
-    const isVisibleToCustomer = user?.role === "customer" ? inv.customer === user.name : true;
-    return matchesSearch && isVisibleToCustomer;
-  }).filter((inv) => {
-    if (!startDate || !endDate) return true;
-    const invoiceDate = new Date(inv.date);
-    return invoiceDate >= new Date(startDate) && invoiceDate <= new Date(endDate);
-  });
+  const filteredInvoices = invoices
+    .filter((inv) => {
+      const matchSearch = inv.invoiceNumber.toLowerCase().includes(searchQuery.toLowerCase());
+      const isCustomerAllowed =
+        user?.role === "customer"
+          ? inv.customer?.name === user.name // assuming customer is an object
+          : true;
+      return matchSearch && isCustomerAllowed;
+    })
+    .filter((inv) => {
+      if (!startDate || !endDate) return true;
+      const invoiceDate = new Date(inv.date);
+      return invoiceDate >= new Date(startDate) && invoiceDate <= new Date(endDate);
+    });
 
   const totalPages = Math.ceil(filteredInvoices.length / itemsPerPage);
   const paginatedInvoices = filteredInvoices.slice(
@@ -80,7 +80,6 @@ const InvoiceList = () => {
     currentPage * itemsPerPage
   );
 
-  // Export filtered invoices to PDF
   const exportFilteredToPDF = () => {
     const doc = new jsPDF();
     doc.setFontSize(14);
@@ -88,7 +87,7 @@ const InvoiceList = () => {
 
     const tableData = filteredInvoices.map((inv) => [
       inv.invoiceNumber,
-      inv.customer,
+      inv.customer?.name || "N/A",
       format(new Date(inv.date), "yyyy-MM-dd"),
       `${inv.total.toFixed(2)} kr`,
       `${inv.grandTotal.toFixed(2)} kr`,
@@ -134,7 +133,7 @@ const InvoiceList = () => {
           <TableHead>
             <TableRow>
               <TableHeader>#</TableHeader>
-              <TableHeader>Customer</TableHeader>
+              {user?.role !== "customer" && <TableHeader>Customer</TableHeader>}
               <TableHeader>Qty</TableHeader>
               <TableHeader>Total</TableHeader>
               <TableHeader>Grand Total</TableHeader>
@@ -145,26 +144,32 @@ const InvoiceList = () => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {paginatedInvoices.length > 0 ? paginatedInvoices.map((inv) => (
-              <TableRow key={inv._id}>
-                <TableData>{inv.invoiceNumber}</TableData>
-                <TableData>{inv.customer}</TableData>
-                <TableData>{inv.quantity}</TableData>
-                <TableData>{inv.total.toFixed(2)} kr</TableData>
-                <TableData>{inv.grandTotal.toFixed(2)} kr</TableData>
-                <TableData>{inv.status}</TableData>
-                <TableData>{inv.dueDate}</TableData>
-                <TableData>{inv.date}</TableData>
-                <TableData>
-                  <div style={{ display: "flex", gap: "6px" }}>
-                    <Button $variant="ghost" onClick={() => setSelectedInvoice(inv)}>View</Button>
-                    <Button $variant="ghost" onClick={() => handleDelete(inv._id!)}>Delete</Button>
-                  </div>
-                </TableData>
-              </TableRow>
-            )) : (
+            {paginatedInvoices.length > 0 ? (
+              paginatedInvoices.map((inv) => (
+                <TableRow key={inv._id}>
+                  <TableData>{inv.invoiceNumber}</TableData>
+                  {user?.role !== "customer" && <TableData>{inv.customer?.name || "N/A"}</TableData>}
+                  <TableData>{inv.quantity}</TableData>
+                  <TableData>{inv.total.toFixed(2)} kr</TableData>
+                  <TableData>{inv.grandTotal.toFixed(2)} kr</TableData>
+                  <TableData>{inv.status}</TableData>
+                  <TableData>{inv.dueDate}</TableData>
+                  <TableData>{inv.date}</TableData>
+                  <TableData>
+                    <div style={{ display: "flex", gap: "6px", flexWrap: "wrap" }}>
+                      <Button $variant="ghost" onClick={() => setSelectedInvoice(inv)}>View</Button>
+                      {user?.role === "admin" && (
+                        <Button $variant="ghost" onClick={() => handleDelete(inv._id!)}>Delete</Button>
+                      )}
+                    </div>
+                  </TableData>
+                </TableRow>
+              ))
+            ) : (
               <TableRow>
-                <TableData colSpan={9}>No invoices found.</TableData>
+                <TableData colSpan={9} style={{ textAlign: "center", padding: "20px" }}>
+                  No invoices found.
+                </TableData>
               </TableRow>
             )}
           </TableBody>
@@ -173,16 +178,16 @@ const InvoiceList = () => {
 
       <PaginationContainer>
         <RowsPerPage>
-          Rows per page:
+          <label>Rows per page:</label>
           <select value={itemsPerPage} onChange={(e) => setItemsPerPage(Number(e.target.value))}>
-            <option value={5}>5</option>
-            <option value={10}>10</option>
-            <option value={25}>25</option>
+            {[5, 10, 25].map((num) => (
+              <option key={num} value={num}>{num}</option>
+            ))}
           </select>
         </RowsPerPage>
         <PageButtons>
           {Array.from({ length: totalPages }, (_, i) => (
-            <button key={i} onClick={() => setCurrentPage(i + 1)}>
+            <button key={i} onClick={() => setCurrentPage(i + 1)} className={currentPage === i + 1 ? "active" : ""}>
               {i + 1}
             </button>
           ))}
