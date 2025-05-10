@@ -1,109 +1,54 @@
 import { Request, Response } from "express";
-import User from "../models/user";
 import bcrypt from "bcryptjs";
+import User, { UserDocument } from "../models/user.js";
+import { generateToken } from "../utils/generateToken.js";
 
-// GET /api/users
-export const getUsers = async (req: Request, res: Response): Promise<void> => {
-  try {
-    const users = await User.find().select("-password");
-    res.json(users);
-  } catch (error) {
-    console.error("Error fetching users:", error);
-    res.status(500).json({ message: "Server error while fetching users." });
-  }
-};
+// POST /api/auth/login
+export const loginUser = async (req: Request, res: Response): Promise<void> => {
+  const { username, password } = req.body;
 
-// POST /api/users
-export const createUser = async (req: Request, res: Response): Promise<void> => {
-  const { username, email, name, role, password } = req.body;
-
-  if (!username || !email || !name || !role || !password) {
-    res.status(400).json({ message: "All fields are required." });
+  // Validate input fields
+  if (!username || !password) {
+    res.status(400).json({ message: "Username and password are required." });
     return;
   }
 
   try {
-    const existing = await User.findOne({ $or: [{ username }, { email }] });
-    if (existing) {
-      res.status(409).json({ message: "User already exists." });
-      return;
-    }
+    // Find user by username
+    const user = await User.findOne({ username });
 
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    const user = new User({
-      username,
-      email,
-      name,
-      role,
-      password: hashedPassword,
-    });
-
-    await user.save();
-
-    res.status(201).json({
-      id: user._id,
-      username: user.username,
-      email: user.email,
-      name: user.name,
-      role: user.role,
-    });
-  } catch (error) {
-    console.error("Error creating user:", error);
-    res.status(500).json({ message: "Server error while creating user." });
-  }
-};
-
-// PUT /api/users/:id
-export const updateUser = async (req: Request, res: Response): Promise<void> => {
-  const { id } = req.params;
-  const { username, email, name, role } = req.body;
-
-  try {
-    const user = await User.findById(id);
     if (!user) {
-      res.status(404).json({ message: "User not found." });
+      res.status(401).json({ message: "Invalid credentials." });
       return;
     }
 
-    user.username = username || user.username;
-    user.email = email || user.email;
-    user.name = name || user.name;
-    user.role = role || user.role;
+    // Type assertion after null check
+    const typedUser = user as UserDocument;
 
-    await user.save();
+    // Compare hashed password
+    const isMatch = await bcrypt.compare(password, typedUser.password);
+    if (!isMatch) {
+      res.status(401).json({ message: "Invalid credentials." });
+      return;
+    }
 
+    // Generate JWT token
+    const token = generateToken(typedUser._id.toString(), typedUser.role);
+
+
+    // Return user info and token
     res.json({
-      id: user._id,
-      username: user.username,
-      email: user.email,
-      name: user.name,
-      role: user.role,
+      token,
+      user: {
+        id: typedUser._id,
+        username: typedUser.username,
+        name: typedUser.name,
+        email: typedUser.email,
+        role: typedUser.role,
+      },
     });
   } catch (error) {
-    console.error("Error updating user:", error);
-    res.status(500).json({ message: "Server error while updating user." });
+    console.error("Login error:", error);
+    res.status(500).json({ message: "Server error during login." });
   }
-};
-
-// DELETE /api/users/:id
-export const deleteUser = async (req: Request, res: Response): Promise<void> => {
-  const { id } = req.params;
-
-  try {
-    const user = await User.findByIdAndDelete(id);
-    if (!user) {
-      res.status(404).json({ message: "User not found." });
-      return;
-    }
-
-    res.json({ message: "User deleted successfully." });
-  } catch (error) {
-    console.error("Error deleting user:", error);
-    res.status(500).json({ message: "Server error while deleting user." });
-  }
-};
-
-export const loginUser = (req: Request, res: Response): void => {
-  // ...your login logic...
 };

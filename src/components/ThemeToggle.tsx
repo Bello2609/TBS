@@ -1,6 +1,6 @@
 // src/components/ThemeToggle.tsx
 import { useContext } from "react";
-import { ThemeContext } from "../context/ThemeContext";
+import { ThemeContext } from "../context/themeContext";
 import styled from "styled-components";
 
 const ThemeToggle = () => {

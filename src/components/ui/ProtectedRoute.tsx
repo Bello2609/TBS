@@ -1,52 +1,30 @@
-import React, { createContext, useContext, useState, ReactNode } from "react";
+import React from "react";
+import { Navigate, Outlet } from "react-router-dom";
+import { useAuth } from "../../context/authContext";
 
-export type UserRole = "admin" | "employee" | "customer";
+// Define the local user roles again (no import to avoid circular issues)
+type UserRole = "admin" | "employee" | "customer";
 
-export interface User {
-  id: string;
-  username: string;
-  name: string;
-  email: string;
-  role: UserRole;
-  token: string;
+interface ProtectedRouteProps {
+  allowedRoles?: UserRole[];
 }
 
-interface AuthContextType {
-  user: User | null;
-  isAuthenticated: boolean;
-  login: (userData: User) => void;
-  logout: () => void;
-}
+// Component to protect routes based on authentication and role
+const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ allowedRoles }) => {
+  const { user, isAuthenticated } = useAuth();
 
-// ✅ Create the context
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
-
-// ✅ Provide the context
-export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [user, setUser] = useState<User | null>(null);
-
-  const login = (userData: User) => {
-    setUser(userData);
-  };
-
-  const logout = () => {
-    setUser(null);
-  };
-
-  const isAuthenticated = !!user;
-
-  return (
-    <AuthContext.Provider value={{ user, isAuthenticated, login, logout }}>
-      {children}
-    </AuthContext.Provider>
-  );
-};
-
-// ✅ useAuth hook
-export const useAuth = (): AuthContextType => {
-  const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error("useAuth must be used within an AuthProvider");
+  // Not authenticated: redirect to login
+  if (!isAuthenticated || !user) {
+    return <Navigate to="/auth/login" replace />;
   }
-  return context;
+
+  // Authenticated but role not allowed: redirect to home
+  if (allowedRoles && !allowedRoles.includes(user.role)) {
+    return <Navigate to="/" replace />;
+  }
+
+  // Authenticated and authorized: render children
+  return <Outlet />;
 };
+
+export default ProtectedRoute;

@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import User from "../models/user";
+import User from "../models/user.js";
 import bcrypt from "bcryptjs";
 
 // GET /api/users
@@ -102,4 +102,8 @@ export const deleteUser = async (req: Request, res: Response): Promise<void> => 
     console.error("Error deleting user:", error);
     res.status(500).json({ message: "Server error while deleting user." });
   }
+};
+
+export const someFunction = () => {
+  // implementation
 };

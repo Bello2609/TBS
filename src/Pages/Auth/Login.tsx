@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { useAuth } from "../../context/authContext";
-import { fakeUserAccounts } from "../data/fakeUserAccounts";  
+
 
 import {
   LoginWrapper,
@@ -10,9 +10,8 @@ import {
   Form,
   Input,
   SubmitButton,
-  ForgotPasswordLink,
 } from "../../styles/loginStyles";
-
+import axios from "axios";
 const Login: React.FC = () => {
   const navigate = useNavigate();
   const { login } = useAuth();
@@ -37,33 +36,34 @@ const Login: React.FC = () => {
       return;
     }
 
-    setLoading(true);
+    try {
+      setLoading(true);
 
-    setTimeout(() => {
-      const userData = fakeUserAccounts[username];
+      const response = await axios.post("http://localhost:5000/api/auth/login", {
+        username,
+        password
+      });
 
-      if (userData && userData.password === password) {
-        login({
-          id: Date.now().toString(), // أو يمكنك تعيين ID ثابت لكل مستخدم
-          name: username,
-          email: `${username}@example.com`,
-          role: userData.role,
-        });
+      const { token, user } = response.data;
 
-        toast.success("Login successful!");
+      login({ ...user, token });
 
-        // ✅ توجيه حسب الدور
-        if (userData.role === "customer") {
-          navigate("/invoices");
-        } else {
-          navigate("/dashboard");
-        }
-      } else {
-        toast.error("Invalid username or password.");
+      toast.success("Login successful!");
+
+      const target = user.role === "customer" ? "/invoices" : "/dashboard";
+      navigate(target, { replace: true });
+
+    } catch (error: unknown) {
+      let message = "Login failed. Please try again.";
+
+      if (axios.isAxiosError(error) && error.response?.data?.message) {
+        message = error.response.data.message;
       }
 
+      toast.error(message);
+    } finally {
       setLoading(false);
-    }, 1000);
+    }
   };
 
   return (
@@ -85,10 +85,6 @@ const Login: React.FC = () => {
           onChange={(e) => handleChange("password", e.target.value)}
           required
         />
-
-        <ForgotPasswordLink to="/auth/forgot-password">
-          Forgot your password?
-        </ForgotPasswordLink>
 
         <SubmitButton type="submit" disabled={loading}>
           {loading ? "Logger inn..." : "Logg inn"}

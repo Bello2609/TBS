@@ -1,7 +1,7 @@
 // backend/routes/authRoutes.ts
 
 import express from "express";
-import { loginUser } from "../controllers/authController";
+import { loginUser } from "../controllers/authController.js";
 
 const router = express.Router();
 

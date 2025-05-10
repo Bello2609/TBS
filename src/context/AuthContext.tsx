@@ -1,25 +1,30 @@
-// src/context/authContext.tsx
-
 import React, { createContext, useContext, useState, ReactNode } from "react";
 
-interface User {
+// Define allowed user roles
+export type UserRole = "admin" | "employee" | "customer";
+
+// Define the user object structure
+export interface User {
   id: string;
   username: string;
-  email: string;
   name: string;
-  role: "admin" | "employee" | "customer";
+  email: string;
+  role: UserRole;
   token: string;
 }
 
+// Define the context type
 interface AuthContextType {
   user: User | null;
-  login: (userData: User) => void;
+  isAuthenticated: boolean;
+  login: (user: User) => void;
   logout: () => void;
 }
 
+// Create the context
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// ✅ Provider
+// Provide the context to the app
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
 
@@ -31,14 +36,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setUser(null);
   };
 
+  const isAuthenticated = !!user;
+
   return (
-    <AuthContext.Provider value={{ user, login, logout }}>
+    <AuthContext.Provider value={{ user, isAuthenticated, login, logout }}>
       {children}
     </AuthContext.Provider>
   );
 };
 
-// ✅ Hook to use auth
+// Custom hook to access the auth context
 export const useAuth = (): AuthContextType => {
   const context = useContext(AuthContext);
   if (!context) {
@@ -46,3 +53,4 @@ export const useAuth = (): AuthContextType => {
   }
   return context;
 };
+export { AuthContext };

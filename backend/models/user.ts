@@ -1,21 +1,21 @@
-// backend/models/user.ts
-
 import mongoose, { Schema, Document } from "mongoose";
-
-// ✅ Define allowed roles
+import { ObjectId } from "mongoose";
+// Define allowed user roles
 export type UserRole = "admin" | "employee" | "customer";
 
-// ✅ Interface for TypeScript typing
+// Define the structure of the user document
 export interface UserDocument extends Document {
+  _id: ObjectId;
   username: string;
   password: string;
-  role: UserRole;
+  role: "admin" | "employee" | "customer";
   email: string;
   name: string;
   createdAt: Date;
 }
 
-const userSchema: Schema = new Schema<UserDocument>(
+// Define the user schema
+const userSchema: Schema<UserDocument> = new Schema(
   {
     username: { type: String, required: true, unique: true },
     password: { type: String, required: true },
@@ -27,12 +27,13 @@ const userSchema: Schema = new Schema<UserDocument>(
     },
     email: { type: String, required: true, unique: true },
     name: { type: String, required: true },
-    createdAt: { type: Date, default: Date.now },
+    createdAt: { type: Date, default: Date.now }
   },
   {
-    timestamps: true,
+    timestamps: true
   }
 );
 
+// Export the User model
 const User = mongoose.model<UserDocument>("User", userSchema);
 export default User;

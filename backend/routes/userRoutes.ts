@@ -1,27 +1,21 @@
-// backend/routes/userRoutes.ts
-
 import express from "express";
 import {
   getUsers,
   createUser,
   updateUser,
-  deleteUser,
-} from "../controllers/userController";
+  deleteUser
+} from "../controllers/userController.js"; // 
 
-import { protect, isAdmin } from "../middlewares/authMiddleware";
+import { protect, isAdmin } from "../middlewares/authMiddleware.js";
 
 const router = express.Router();
 
-// ✅ GET all users (admin only)
-router.get("/", protect, isAdmin, getUsers);
+router.route("/")
+  .get(protect, isAdmin, getUsers)
+  .post(protect, isAdmin, createUser);
 
-// ✅ Create new user (admin only)
-router.post("/", protect, isAdmin, createUser);
-
-// ✅ Update user by ID (admin only)
-router.put("/:id", protect, isAdmin, updateUser);
-
-// ✅ Delete user by ID (admin only)
-router.delete("/:id", protect, isAdmin, deleteUser);
+router.route("/:id")
+  .put(protect, isAdmin, updateUser)
+  .delete(protect, isAdmin, deleteUser);
 
 export default router;

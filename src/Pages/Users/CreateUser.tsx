@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button";
 import { toast } from "react-toastify";
 import { useAuth } from "@/context/authContext";
 import type { User, UserRole } from "../types/user";
-import { fakeCustomers, Customer } from "../data/fakeCustomers";
 
 interface CreateUserProps {
   mode: "create" | "edit";
