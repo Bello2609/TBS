@@ -94,14 +94,15 @@ const InventoryList: React.FC = () => {
     setForm((prev) => ({ ...prev, [field]: value }));
   };
 
-  const handleCustomerChange = (option: OptionType | null) => {
-    const customerId = option?.value || "";
-    handleFormChange("customerId", customerId);
-  };
-
   const handleAddNew = () => {
+    if (!selectedCustomer) {
+      toast.error("Please select a customer before adding inventory.");
+      return;
+    }
+
     setEditItem(null);
     resetForm();
+    setForm((prev) => ({ ...prev, customerId: selectedCustomer.value }));
     setModalVisible(true);
   };
 
@@ -206,10 +207,6 @@ const InventoryList: React.FC = () => {
         <InventoryModal
           isEdit={!!editItem}
           form={form}
-          customerOptions={customers.map((c) => ({
-            label: c.companyName,
-            value: c._id,
-          }))}
           senderOptions={senders.map((s) => ({
             label: s.name,
             value: s.name,
@@ -219,7 +216,6 @@ const InventoryList: React.FC = () => {
           onSenderChange={(option) =>
             handleFormChange("senderName", option?.value || "")
           }
-          onCustomerChange={handleCustomerChange}
           onAddSender={handleAddSender}
           onChange={handleFormChange}
           onClose={() => setModalVisible(false)}

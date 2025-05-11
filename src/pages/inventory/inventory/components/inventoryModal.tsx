@@ -29,12 +29,10 @@ interface InventoryModalProps {
     departureDate: string;
     senderName: string;
   };
-  customerOptions: OptionType[]; // ✅ NEW: Customer select options
   senderOptions: OptionType[];
   newSenderName: string;
   onChange: (field: string, value: string | number) => void;
   onSenderChange: (selected: SingleValue<OptionType>) => void;
-  onCustomerChange: (selected: SingleValue<OptionType>) => void; // ✅ NEW
   onAddSender: () => void;
   onNewSenderChange: (value: string) => void;
   onClose: () => void;
@@ -44,12 +42,10 @@ interface InventoryModalProps {
 const InventoryModal: React.FC<InventoryModalProps> = ({
   isEdit,
   form,
-  customerOptions,
   senderOptions,
   newSenderName,
   onChange,
   onSenderChange,
-  onCustomerChange,
   onAddSender,
   onNewSenderChange,
   onClose,
@@ -62,23 +58,7 @@ const InventoryModal: React.FC<InventoryModalProps> = ({
           <ModalTitle>{isEdit ? "Edit Inventory" : "Add Inventory"}</ModalTitle>
           <ModalForm>
 
-            {/* ✅ Customer Selector */}
-            <FormRow>
-              <Label>Customer</Label>
-              <Select<OptionType, false>
-                options={customerOptions}
-                value={
-                  form.customerId
-                    ? customerOptions.find((opt) => opt.value === form.customerId) || null
-                    : null
-                }
-                onChange={onCustomerChange}
-                isClearable
-                placeholder="Select Customer"
-              />
-            </FormRow>
-
-            {/* Sender Selector */}
+            {/* ✅ Sender Selector */}
             <FormRow>
               <Label>Sender</Label>
               <Select<OptionType, false>
@@ -94,7 +74,7 @@ const InventoryModal: React.FC<InventoryModalProps> = ({
               />
             </FormRow>
 
-            {/* Add new sender */}
+            {/* ✅ Add new sender */}
             <FormRow>
               <Label>Add New Sender</Label>
               <Input
@@ -106,7 +86,6 @@ const InventoryModal: React.FC<InventoryModalProps> = ({
                 type="button"
                 onClick={onAddSender}
                 disabled={!newSenderName.trim()}
-                aria-label="Add new sender"
               >
                 + Add Sender
               </AddButton>

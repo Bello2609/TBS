@@ -1,4 +1,4 @@
-// src/styles/InventoryStyles.ts
+// src/styles/inventoryStyles.ts
 
 import styled from "styled-components";
 import DatePicker from "react-datepicker";
@@ -60,20 +60,19 @@ export const DateInput = styled(DatePicker)`
 
 /* ==== ADD BUTTON ==== */
 export const AddButton = styled.button`
-  padding: 10px 20px;
-  font-size: 14px;
+  padding: 10px 18px;
+  font-size: 0.95rem;
   font-weight: 600;
   border: none;
-  border-radius: 10px;
+  border-radius: 8px;
   background-color: ${({ theme }) => theme.primary || "#3b82f6"};
   color: #fff;
   cursor: pointer;
-  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
   transition: all 0.3s ease;
 
   &:hover {
     background-color: ${({ theme }) => theme.primaryDark || "#2563eb"};
-    transform: translateY(-2px);
+    transform: translateY(-1px);
   }
 
   &:disabled {
@@ -157,7 +156,7 @@ export const DeleteButton = styled(IconButton)`
   }
 `;
 
-/* ==== MODAL ==== */
+/* ==== MODAL STYLES ==== */
 export const ModalOverlay = styled.div`
   position: fixed;
   inset: 0;
@@ -210,7 +209,6 @@ export const ModalForm = styled.form`
   gap: 16px;
 `;
 
-/* ==== FORM FIELDS ==== */
 export const FormRow = styled.div`
   display: flex;
   flex-direction: column;
@@ -237,40 +235,44 @@ export const Input = styled.input`
   }
 `;
 
-/* ==== ACTIONS IN MODAL ==== */
+/* ==== MODAL ACTION BUTTONS ==== */
 export const ModalActions = styled.div`
   display: flex;
   justify-content: flex-end;
-  gap: 1rem;
+  align-items: center;
+  gap: 12px;
   padding-top: 16px;
+  flex-wrap: wrap;
 `;
 
 export const SaveButton = styled.button`
-  background-color: ${({ theme }) => theme.primary};
+  background-color: ${({ theme }) => theme.primary || "#3b82f6"};
   color: #fff;
-  padding: 10px 18px;
+  padding: 10px 20px;
   font-weight: 600;
-  font-size: 1rem;
+  font-size: 0.95rem;
   border: none;
   border-radius: 8px;
   cursor: pointer;
+  transition: background-color 0.2s ease;
 
   &:hover {
-    background-color: ${({ theme }) => theme.primaryHover};
+    background-color: ${({ theme }) => theme.primaryHover || "#2563eb"};
   }
 `;
 
 export const CancelButton = styled.button`
-  background-color: ${({ theme }) => theme.danger};
+  background-color: ${({ theme }) => theme.danger || "#ef4444"};
   color: #fff;
-  padding: 10px 18px;
+  padding: 10px 20px;
   font-weight: 600;
-  font-size: 1rem;
+  font-size: 0.95rem;
   border: none;
   border-radius: 8px;
   cursor: pointer;
+  transition: background-color 0.2s ease;
 
   &:hover {
-    background-color: ${({ theme }) => theme.dangerHover};
+    background-color: ${({ theme }) => theme.dangerHover || "#dc2626"};
   }
 `;

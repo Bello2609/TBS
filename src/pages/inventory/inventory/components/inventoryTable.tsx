@@ -8,7 +8,8 @@ import {
   TableHeader,
   TableCell,
   ActionButtons,
-  IconButton,
+  EditButton,
+  DeleteButton,
 } from "@/styles/inventoryStyles";
 import { InventoryItem } from "../types";
 import { Pencil, Trash2 } from "lucide-react";
@@ -40,31 +41,33 @@ const InventoryTableComponent: React.FC<InventoryTableProps> = ({
       </thead>
       <tbody>
         {inventory.map((item) => (
-          <TableRow key={item._id ?? item.goods + item.arrivalDate}>
+          <TableRow key={item._id ?? `${item.goods}-${item.arrivalDate}`}>
             <TableCell>
-              {new Date(item.arrivalDate).toLocaleDateString("en-GB")}
+              {item.arrivalDate
+                ? new Date(item.arrivalDate).toLocaleDateString("nb-NO")
+                : "—"}
             </TableCell>
             <TableCell>
               {item.departureDate
-                ? new Date(item.departureDate).toLocaleDateString("en-GB")
+                ? new Date(item.departureDate).toLocaleDateString("nb-NO")
                 : "—"}
             </TableCell>
-            <TableCell>{item.senderName}</TableCell>
+            <TableCell>{item.senderName || "—"}</TableCell>
             <TableCell>{item.goods}</TableCell>
             <TableCell>{item.type}</TableCell>
             <TableCell>{item.quantity}</TableCell>
             <TableCell>{item.weight}</TableCell>
             <TableCell>
               <ActionButtons>
-                <IconButton title="Edit" onClick={() => onEdit(item)}>
-                  <Pencil size={18} />
-                </IconButton>
-                <IconButton
+                <EditButton title="Edit" onClick={() => onEdit(item)}>
+                  <Pencil size={16} />
+                </EditButton>
+                <DeleteButton
                   title="Delete"
                   onClick={() => item._id && onDelete(item._id)}
                 >
-                  <Trash2 size={18} />
-                </IconButton>
+                  <Trash2 size={16} />
+                </DeleteButton>
               </ActionButtons>
             </TableCell>
           </TableRow>
