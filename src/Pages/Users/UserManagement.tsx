@@ -1,5 +1,3 @@
-// src/pages/Users/UserManagement.tsx
-
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
@@ -99,6 +97,31 @@ const UserManagement = () => {
     }
   };
 
+  const handleViewUser = async (u: User) => {
+    try {
+      let fullUser = u;
+
+      if (u.role === "customer") {
+        const res = await axiosInstance.get("/api/customers");
+        const customerList = res.data;
+        const match = customerList.find((c: { userId: string }) => c.userId === u._id);
+
+        if (match) {
+          fullUser = {
+            ...u,
+            ...match,
+          };
+        }
+      }
+
+      setSelectedUser(fullUser);
+      setShowUserDetails(true);
+    } catch (error) {
+      toast.error("Failed to load customer details.");
+      console.error(error);
+    }
+  };
+
   const totalPages = Math.ceil(filteredUsers.length / rowsPerPage);
   const paginatedUsers = filteredUsers.slice(
     (currentPage - 1) * rowsPerPage,
@@ -162,12 +185,7 @@ const UserManagement = () => {
                     <TableData>{u.role === "customer" ? u.companyName || "-" : "-"}</TableData>
                     <TableData>
                       <ActionButtons>
-                        <ViewButton
-                          onClick={() => {
-                            setSelectedUser(u);
-                            setShowUserDetails(true);
-                          }}
-                        >
+                        <ViewButton onClick={() => handleViewUser(u)}>
                           <FiEye />
                         </ViewButton>
                         <EditButton

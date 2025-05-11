@@ -8,7 +8,7 @@ export const getUsers = async (req: Request, res: Response): Promise<void> => {
     const { role } = req.query;
     const filter = role ? { role } : {};
     const users = await User.find(filter).select("-password");
-    res.json(users);
+    res.status(200).json(users);
   } catch (error) {
     console.error("Error fetching users:", error);
     res.status(500).json({ message: "Server error while fetching users." });
@@ -30,24 +30,24 @@ export const getUserById = async (req: Request, res: Response): Promise<void> =>
   }
 };
 
-// ✅ POST /api/users - Create user
+// ✅ POST /api/users - Create new user
 export const createUser = async (req: Request, res: Response): Promise<void> => {
   const { username, email, name, role, password, phone, companyName } = req.body;
 
   if (!username || !email || !name || !role || !password || !phone) {
-    res.status(400).json({ message: "All fields are required." });
+    res.status(400).json({ message: "All required user fields must be provided." });
     return;
   }
 
   if (role === "customer" && !companyName) {
-    res.status(400).json({ message: "Company name is required for customer role." });
+    res.status(400).json({ message: "Company name is required for customers." });
     return;
   }
 
   try {
     const existing = await User.findOne({ $or: [{ username }, { email }] });
     if (existing) {
-      res.status(409).json({ message: "User already exists." });
+      res.status(409).json({ message: "Username or email already in use." });
       return;
     }
 
@@ -59,20 +59,21 @@ export const createUser = async (req: Request, res: Response): Promise<void> => 
       name,
       role,
       phone,
-      companyName: role === "customer" ? companyName : undefined,
       password: hashedPassword,
+      companyName: role === "customer" ? companyName : undefined,
     });
 
     await user.save();
 
     res.status(201).json({
-      id: user._id,
+      _id: user._id,
       username: user.username,
       email: user.email,
       name: user.name,
       role: user.role,
       phone: user.phone,
       companyName: user.companyName,
+      createdAt: user.createdAt,
     });
   } catch (error) {
     console.error("Error creating user:", error);
@@ -80,7 +81,7 @@ export const createUser = async (req: Request, res: Response): Promise<void> => 
   }
 };
 
-// ✅ PUT /api/users/:id - Update user
+// ✅ PUT /api/users/:id - Update existing user
 export const updateUser = async (req: Request, res: Response): Promise<void> => {
   const { id } = req.params;
   const { username, email, name, role, phone, companyName } = req.body;
@@ -110,14 +111,15 @@ export const updateUser = async (req: Request, res: Response): Promise<void> => 
 
     await user.save();
 
-    res.json({
-      id: user._id,
+    res.status(200).json({
+      _id: user._id,
       username: user.username,
       email: user.email,
       name: user.name,
       role: user.role,
       phone: user.phone,
       companyName: user.companyName,
+      updatedAt: user.updatedAt,
     });
   } catch (error) {
     console.error("Error updating user:", error);
@@ -136,7 +138,7 @@ export const deleteUser = async (req: Request, res: Response): Promise<void> => 
       return;
     }
 
-    res.json({ message: "User deleted successfully." });
+    res.status(200).json({ message: "User deleted successfully." });
   } catch (error) {
     console.error("Error deleting user:", error);
     res.status(500).json({ message: "Server error while deleting user." });

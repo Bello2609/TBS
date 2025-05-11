@@ -24,6 +24,11 @@ interface UserFormData {
   phoneNumber: string;
   role: UserRole;
   companyName?: string;
+  address?: string;
+  city?: string;
+  zipCode?: string;
+  orgNumber?: string;
+  customerType?: string;
 }
 
 const generateStrongPassword = (): string => {
@@ -54,6 +59,11 @@ const CreateUser: React.FC<CreateUserProps> = ({
     phoneNumber: "",
     role: (user?.role === "admin" ? "employee" : "customer") as UserRole,
     companyName: "",
+    address: "",
+    city: "",
+    zipCode: "",
+    orgNumber: "",
+    customerType: "Company",
   });
 
   const [loading, setLoading] = useState(false);
@@ -66,6 +76,11 @@ const CreateUser: React.FC<CreateUserProps> = ({
         phoneNumber: initialUser.phone,
         role: initialUser.role,
         companyName: initialUser.companyName ?? "",
+        address: initialUser.address ?? "",
+        city: initialUser.city ?? "",
+        zipCode: initialUser.zipCode ?? "",
+        orgNumber: initialUser.orgNumber ?? "",
+        customerType: initialUser.customerType ?? "Company",
         password: "",
       });
     }
@@ -97,43 +112,57 @@ const CreateUser: React.FC<CreateUserProps> = ({
     }
 
     try {
-      interface Payload {
-        email: string;
-        name: string;
-        phone: string;
-        role: UserRole;
-        companyName?: string;
-        username?: string;
-        password?: string;
-      }
-
-      const payload: Payload = {
+      const payload = {
         email: formData.email,
         name: formData.name,
         phone: formData.phoneNumber,
         role: formData.role,
+        username: formData.email.split("@")[0],
+        password: formData.password,
+        companyName: formData.role === "customer" ? formData.companyName?.trim() : undefined,
+        address: formData.address?.trim(),
+        city: formData.city?.trim(),
+        zipCode: formData.zipCode?.trim(),
+        orgNumber: formData.orgNumber?.trim(),
+        customerType: formData.customerType,
       };
 
+      const response = await axiosInstance.post("/api/users", payload);
+      const createdUser = response.data;
+
+      const userId = createdUser._id || createdUser.id;
+      if (!userId) {
+        toast.error("Failed to get user ID after creation");
+        setLoading(false);
+        return;
+      }
+
       if (formData.role === "customer" && formData.companyName?.trim()) {
-        payload.companyName = formData.companyName.trim();
+        const customerData = {
+          userId,
+          companyName: formData.companyName.trim(),
+          companyEmail: formData.email.trim(),
+          orgNumber: formData.orgNumber || "N/A",
+          address: formData.address || "N/A",
+          city: formData.city || "N/A",
+          zipCode: formData.zipCode || "N/A",
+          contactPerson: formData.name,
+          companyPhone: formData.phoneNumber,
+          customerType: formData.customerType as "Company" | "Private",
+        };
+
+        try {
+          await axiosInstance.post("/api/customers", customerData);
+          toast.success("Customer profile created successfully");
+        } catch (error: unknown) {
+          const apiError = error as { response?: { data?: { message?: string } } };
+          toast.error(apiError?.response?.data?.message || "Failed to create customer profile");
+        }
       }
 
-      if (mode === "create") {
-        payload.username = formData.email.split("@")[0];
-        payload.password = formData.password;
-
-        const response = await axiosInstance.post("/api/users", payload);
-        toast.success("User created successfully");
-        onSuccess?.(response.data);
-        navigate("/users");
-      } else if (mode === "edit" && initialUser) {
-        const response = await axiosInstance.put(`/api/users/${initialUser._id}`, payload);
-        toast.success("User updated successfully");
-        onSuccess?.(response.data);
-        navigate("/users");
-      } else {
-        throw new Error("Invalid operation");
-      }
+      toast.success("User created successfully");
+      onSuccess?.(createdUser);
+      navigate("/users");
     } catch (err: unknown) {
       const error = err as { response?: { data?: { message?: string } } };
       toast.error(error?.response?.data?.message || "Error processing request.");
@@ -187,15 +216,35 @@ const CreateUser: React.FC<CreateUserProps> = ({
         </DetailRow>
 
         {formData.role === "customer" && (
-          <DetailRow>
-            <strong>Company Name:</strong>
-            <Input
-              name="companyName"
-              value={formData.companyName ?? ""}
-              onChange={handleChange}
-              required
-            />
-          </DetailRow>
+          <>
+            <DetailRow>
+              <strong>Company Name:</strong>
+              <Input name="companyName" value={formData.companyName ?? ""} onChange={handleChange} required />
+            </DetailRow>
+            <DetailRow>
+              <strong>Address:</strong>
+              <Input name="address" value={formData.address ?? ""} onChange={handleChange} required />
+            </DetailRow>
+            <DetailRow>
+              <strong>City:</strong>
+              <Input name="city" value={formData.city ?? ""} onChange={handleChange} required />
+            </DetailRow>
+            <DetailRow>
+              <strong>ZIP Code:</strong>
+              <Input name="zipCode" value={formData.zipCode ?? ""} onChange={handleChange} required />
+            </DetailRow>
+            <DetailRow>
+              <strong>Organization Number:</strong>
+              <Input name="orgNumber" value={formData.orgNumber ?? ""} onChange={handleChange} required />
+            </DetailRow>
+            <DetailRow>
+              <strong>Customer Type:</strong>
+              <Select name="customerType" value={formData.customerType} onChange={handleChange} required>
+                <option value="Company">Company</option>
+                <option value="Private">Private</option>
+              </Select>
+            </DetailRow>
+          </>
         )}
 
         {mode === "create" && (

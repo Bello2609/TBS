@@ -1,5 +1,3 @@
-// src/pages/inventory/InventoryModal.tsx
-
 import React from "react";
 import {
   ModalOverlay,
@@ -22,6 +20,7 @@ import { OptionType } from "../types";
 interface InventoryModalProps {
   isEdit: boolean;
   form: {
+    customerId: string;
     goods: string;
     type: string;
     quantity: number;
@@ -30,10 +29,12 @@ interface InventoryModalProps {
     departureDate: string;
     senderName: string;
   };
+  customerOptions: OptionType[]; // ✅ NEW: Customer select options
   senderOptions: OptionType[];
   newSenderName: string;
   onChange: (field: string, value: string | number) => void;
   onSenderChange: (selected: SingleValue<OptionType>) => void;
+  onCustomerChange: (selected: SingleValue<OptionType>) => void; // ✅ NEW
   onAddSender: () => void;
   onNewSenderChange: (value: string) => void;
   onClose: () => void;
@@ -43,10 +44,12 @@ interface InventoryModalProps {
 const InventoryModal: React.FC<InventoryModalProps> = ({
   isEdit,
   form,
+  customerOptions,
   senderOptions,
   newSenderName,
   onChange,
   onSenderChange,
+  onCustomerChange,
   onAddSender,
   onNewSenderChange,
   onClose,
@@ -58,6 +61,23 @@ const InventoryModal: React.FC<InventoryModalProps> = ({
         <ModalContentScrollable>
           <ModalTitle>{isEdit ? "Edit Inventory" : "Add Inventory"}</ModalTitle>
           <ModalForm>
+
+            {/* ✅ Customer Selector */}
+            <FormRow>
+              <Label>Customer</Label>
+              <Select<OptionType, false>
+                options={customerOptions}
+                value={
+                  form.customerId
+                    ? customerOptions.find((opt) => opt.value === form.customerId) || null
+                    : null
+                }
+                onChange={onCustomerChange}
+                isClearable
+                placeholder="Select Customer"
+              />
+            </FormRow>
+
             {/* Sender Selector */}
             <FormRow>
               <Label>Sender</Label>

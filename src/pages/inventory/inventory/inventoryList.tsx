@@ -23,6 +23,7 @@ const InventoryList: React.FC = () => {
   const [modalVisible, setModalVisible] = useState(false);
 
   const [form, setForm] = useState<{
+    customerId: string;
     goods: string;
     type: string;
     quantity: number;
@@ -31,6 +32,7 @@ const InventoryList: React.FC = () => {
     departureDate: string;
     senderName: string;
   }>({
+    customerId: "",
     goods: "",
     type: "",
     quantity: 0,
@@ -76,6 +78,7 @@ const InventoryList: React.FC = () => {
 
   const resetForm = () => {
     setForm({
+      customerId: "",
       goods: "",
       type: "",
       quantity: 0,
@@ -91,6 +94,11 @@ const InventoryList: React.FC = () => {
     setForm((prev) => ({ ...prev, [field]: value }));
   };
 
+  const handleCustomerChange = (option: OptionType | null) => {
+    const customerId = option?.value || "";
+    handleFormChange("customerId", customerId);
+  };
+
   const handleAddNew = () => {
     setEditItem(null);
     resetForm();
@@ -100,6 +108,7 @@ const InventoryList: React.FC = () => {
   const handleEdit = (item: InventoryItem) => {
     setEditItem(item);
     setForm({
+      customerId: item.customerId,
       goods: item.goods,
       type: item.type,
       quantity: item.quantity,
@@ -123,6 +132,11 @@ const InventoryList: React.FC = () => {
 
   const handleSave = async () => {
     try {
+      if (!form.customerId) {
+        toast.error("Please select a customer.");
+        return;
+      }
+
       if (editItem?._id) {
         await axiosInstance.put(`/api/inventory/${editItem._id}`, form);
         toast.success("Inventory updated.");
@@ -192,6 +206,10 @@ const InventoryList: React.FC = () => {
         <InventoryModal
           isEdit={!!editItem}
           form={form}
+          customerOptions={customers.map((c) => ({
+            label: c.companyName,
+            value: c._id,
+          }))}
           senderOptions={senders.map((s) => ({
             label: s.name,
             value: s.name,
@@ -201,6 +219,7 @@ const InventoryList: React.FC = () => {
           onSenderChange={(option) =>
             handleFormChange("senderName", option?.value || "")
           }
+          onCustomerChange={handleCustomerChange}
           onAddSender={handleAddSender}
           onChange={handleFormChange}
           onClose={() => setModalVisible(false)}

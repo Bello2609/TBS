@@ -1,12 +1,45 @@
-// backend/controllers/customerController.ts
-
 import { Request, Response } from "express";
 import Customer from "../models/customer.model.js";
+import User from "../models/user.model.js";
 
-// GET /api/customers - Get all customers
+// ✅ GET /api/customers - List all customers with user info
 export const getAllCustomers = async (req: Request, res: Response): Promise<void> => {
   try {
-    const customers = await Customer.find().sort({ createdAt: -1 });
+    const customers = await Customer.aggregate([
+      {
+        $lookup: {
+          from: "users",
+          localField: "userId",
+          foreignField: "_id",
+          as: "user",
+        },
+      },
+      { $unwind: "$user" },
+      { $match: { "user.role": "customer" } },
+      {
+        $project: {
+          _id: 1,
+          userId: 1,
+          companyName: 1,
+          companyEmail: 1,
+          orgNumber: 1,
+          zipCode: 1,
+          city: 1,
+          address: 1,
+          contactPerson: 1,
+          companyPhone: 1,
+          customerType: 1,
+          createdAt: 1,
+        },
+      },
+      { $sort: { createdAt: -1 } },
+    ]);
+
+    if (!customers.length) {
+      res.status(404).json({ message: "No customers found." });
+      return;
+    }
+
     res.status(200).json(customers);
   } catch (error) {
     console.error("Error fetching customers:", error);
@@ -14,14 +47,19 @@ export const getAllCustomers = async (req: Request, res: Response): Promise<void
   }
 };
 
-// GET /api/customers/:id - Get customer by ID
+// ✅ GET /api/customers/:id - Get customer by ID
 export const getCustomerById = async (req: Request, res: Response): Promise<void> => {
   try {
-    const customer = await Customer.findById(req.params.id);
+    const customer = await Customer.findById(req.params.id).populate({
+      path: "userId",
+      select: "name email role",
+    });
+
     if (!customer) {
       res.status(404).json({ message: "Customer not found." });
       return;
     }
+
     res.status(200).json(customer);
   } catch (error) {
     console.error("Error fetching customer:", error);
@@ -29,10 +67,55 @@ export const getCustomerById = async (req: Request, res: Response): Promise<void
   }
 };
 
-// POST /api/customers - Create new customer
+// ✅ POST /api/customers - Create a new customer
 export const createCustomer = async (req: Request, res: Response): Promise<void> => {
   try {
-    const newCustomer = new Customer(req.body);
+    const {
+      userId,
+      companyName,
+      companyEmail,
+      orgNumber,
+      zipCode,
+      city,
+      address,
+      contactPerson,
+      companyPhone,
+      customerType,
+    } = req.body;
+
+    if (
+      !userId || !companyName || !orgNumber || !zipCode || !city ||
+      !address || !contactPerson || !companyPhone || !customerType
+    ) {
+      res.status(400).json({ message: "Missing required customer fields." });
+      return;
+    }
+
+    const user = await User.findById(userId);
+    if (!user || user.role !== "customer") {
+      res.status(400).json({ message: "Invalid user or role must be 'customer'." });
+      return;
+    }
+
+    const exists = await Customer.findOne({ userId });
+    if (exists) {
+      res.status(400).json({ message: "Customer already exists for this user." });
+      return;
+    }
+
+    const newCustomer = new Customer({
+      userId,
+      companyName: companyName.trim(),
+      companyEmail: companyEmail?.trim() || undefined,
+      orgNumber: orgNumber.trim(),
+      zipCode: zipCode.trim(),
+      city: city.trim(),
+      address: address.trim(),
+      contactPerson: contactPerson.trim(),
+      companyPhone: companyPhone.trim(),
+      customerType,
+    });
+
     const saved = await newCustomer.save();
     res.status(201).json(saved);
   } catch (error) {
@@ -41,11 +124,12 @@ export const createCustomer = async (req: Request, res: Response): Promise<void>
   }
 };
 
-// PUT /api/customers/:id - Update existing customer
+// ✅ PUT /api/customers/:id - Update customer
 export const updateCustomer = async (req: Request, res: Response): Promise<void> => {
   try {
     const updated = await Customer.findByIdAndUpdate(req.params.id, req.body, {
       new: true,
+      runValidators: true,
     });
 
     if (!updated) {
@@ -60,7 +144,7 @@ export const updateCustomer = async (req: Request, res: Response): Promise<void>
   }
 };
 
-// DELETE /api/customers/:id - Remove a customer
+// ✅ DELETE /api/customers/:id - Delete customer
 export const deleteCustomer = async (req: Request, res: Response): Promise<void> => {
   try {
     const deleted = await Customer.findByIdAndDelete(req.params.id);
@@ -68,6 +152,7 @@ export const deleteCustomer = async (req: Request, res: Response): Promise<void>
       res.status(404).json({ message: "Customer not found." });
       return;
     }
+
     res.status(200).json({ message: "Customer deleted successfully." });
   } catch (error) {
     console.error("Error deleting customer:", error);

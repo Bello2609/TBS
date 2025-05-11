@@ -13,7 +13,13 @@ export interface UserDocument extends Document {
   name: string;
   phone: string;
   companyName?: string;
+  address?: string;
+  city?: string;
+  zipCode?: string;
+  orgNumber?: string;
+  customerType?: "Company" | "Private";
   createdAt: Date;
+  updatedAt: Date;
 }
 
 // ✅ Define the User schema
@@ -51,21 +57,20 @@ const userSchema = new Schema<UserDocument>(
       type: String,
       required: true,
     },
-    // ✅ Optional here; validation is handled in controller
-    companyName: {
-      type: String,
-      trim: true,
-    },
-    createdAt: {
-      type: Date,
-      default: Date.now,
-    },
+
+    // ✅ Optional fields for customer role
+    companyName: { type: String, trim: true },
+    address: { type: String, trim: true },
+    city: { type: String, trim: true },
+    zipCode: { type: String, trim: true },
+    orgNumber: { type: String, trim: true },
+    customerType: { type: String, enum: ["Company", "Private"] },
   },
   {
-    timestamps: true, // includes createdAt and updatedAt
+    timestamps: true, // adds createdAt and updatedAt automatically
   }
 );
 
-// ✅ Export the User model
+// ✅ Export the model
 const User = mongoose.model<UserDocument>("User", userSchema);
 export default User;

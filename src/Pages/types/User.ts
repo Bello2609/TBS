@@ -13,6 +13,11 @@ export interface User {
   phone: string;
   role: UserRole;
   companyName?: string;
+  address?: string;
+  city?: string;
+  zipCode?: string;
+  orgNumber?: string;
+  customerType?: string;
   status?: "active" | "inactive";     // Optional user status
   createdAt?: string;                 // Optional: ISO date string
   token?: string;                     // Optional: used for authentication/session
