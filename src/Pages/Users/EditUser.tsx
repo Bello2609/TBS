@@ -9,7 +9,7 @@ import {
 import { Input, Select } from "@/styles/invoiceStyles";
 import { Button } from "@/components/ui/button";
 import { toast } from "react-toastify";
-import type { User } from "../types/user";
+import type { User, UserRole } from "../types/user";
 import axiosInstance from "@/services/axiosInstance";
 
 const EditUser = () => {
@@ -20,7 +20,6 @@ const EditUser = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
-  // ✅ Fetch user by ID
   useEffect(() => {
     if (!id) {
       toast.error("Invalid user ID.");
@@ -43,13 +42,11 @@ const EditUser = () => {
     fetchUser();
   }, [id]);
 
-  // ✅ Handle changes
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => (prev ? { ...prev, [name]: value } : null));
   };
 
-  // ✅ Submit form
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -58,9 +55,31 @@ const EditUser = () => {
       return;
     }
 
+    if (formData.role === "customer" && !formData.companyName?.trim()) {
+      toast.error("Company name is required for customers.");
+      return;
+    }
+
     setSaving(true);
     try {
-      await axiosInstance.put(`/api/users/${id}`, formData);
+      const payload: {
+        name: string;
+        email: string;
+        phone: string;
+        role: UserRole;
+        companyName?: string;
+      } = {
+        name: formData.name,
+        email: formData.email,
+        phone: formData.phone,
+        role: formData.role,
+      };
+
+      if (formData.role === "customer") {
+        payload.companyName = formData.companyName?.trim() || "";
+      }
+
+      await axiosInstance.put(`/api/users/${id}`, payload);
       toast.success("User updated successfully!");
       navigate("/users");
     } catch (err) {
@@ -129,6 +148,19 @@ const EditUser = () => {
             <option value="customer">Customer</option>
           </Select>
         </DetailRow>
+
+        {formData.role === "customer" && (
+          <DetailRow>
+            <strong>Company Name:</strong>
+            <Input
+              type="text"
+              name="companyName"
+              value={formData.companyName || ""}
+              onChange={handleChange}
+              required
+            />
+          </DetailRow>
+        )}
 
         <div style={{ display: "flex", justifyContent: "flex-end", gap: "12px", marginTop: "20px" }}>
           <Button

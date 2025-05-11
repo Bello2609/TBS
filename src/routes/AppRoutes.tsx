@@ -11,7 +11,7 @@ import Unauthorized from "@/pages/unauthorized";
 
 // 🔐 Core Protected pages
 import Dashboard from "@/pages/dashboard/dashboard";
-import InventoryList from "@/pages/inventory/inventoryList";
+import InventoryList from "@/pages/inventory/inventory/inventoryList";
 import Reports from "@/pages/reports/reports";
 import Notifications from "@/pages/notifications/notifications";
 

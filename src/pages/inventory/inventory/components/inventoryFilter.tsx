@@ -1,10 +1,11 @@
 import React from "react";
-import { SearchSelect, DateInput, FilterRow } from "@/styles/InventoryStyles";
+import { FilterRow } from "@/styles/inventoryStyles";
 import { OptionType } from "../types";
-import Select from "react-select";
+import DateInput from "@/components/dateInput";
+import Select, { SingleValue } from "react-select";
 
 interface InventoryFilterProps {
-  customers: OptionType[];
+  customerOptions: OptionType[];
   selectedCustomer: OptionType | null;
   startDate: Date | null;
   endDate: Date | null;
@@ -14,7 +15,7 @@ interface InventoryFilterProps {
 }
 
 const InventoryFilter: React.FC<InventoryFilterProps> = ({
-  customers,
+  customerOptions,
   selectedCustomer,
   startDate,
   endDate,
@@ -24,23 +25,27 @@ const InventoryFilter: React.FC<InventoryFilterProps> = ({
 }) => {
   return (
     <FilterRow>
-      <SearchSelect<OptionType, false>
-        options={customers}
+      {/* Customer Select */}
+      <Select<OptionType, false>
+        options={customerOptions}
         value={selectedCustomer}
-        onChange={(value) => onCustomerChange(value)}
+        onChange={(option: SingleValue<OptionType>) => onCustomerChange(option)}
         placeholder="Select Customer"
         isClearable
+        classNamePrefix="react-select"
       />
 
+      {/* Start Date */}
       <DateInput
         selected={startDate}
-        onChange={(date: Date | null) => onStartDateChange(date)}
+        onChange={onStartDateChange}
         placeholderText="Start Date"
       />
 
+      {/* End Date */}
       <DateInput
         selected={endDate}
-        onChange={(date: Date | null) => onEndDateChange(date)}
+        onChange={onEndDateChange}
         placeholderText="End Date"
       />
     </FilterRow>

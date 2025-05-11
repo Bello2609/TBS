@@ -12,6 +12,7 @@ export interface User {
   email: string;
   phone: string;
   role: UserRole;
+  companyName?: string;
   status?: "active" | "inactive";     // Optional user status
   createdAt?: string;                 // Optional: ISO date string
   token?: string;                     // Optional: used for authentication/session

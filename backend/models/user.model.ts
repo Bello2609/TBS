@@ -12,6 +12,7 @@ export interface UserDocument extends Document {
   email: string;
   name: string;
   phone: string;
+  companyName?: string;
   createdAt: Date;
 }
 
@@ -50,13 +51,18 @@ const userSchema = new Schema<UserDocument>(
       type: String,
       required: true,
     },
+    // ✅ Optional here; validation is handled in controller
+    companyName: {
+      type: String,
+      trim: true,
+    },
     createdAt: {
       type: Date,
       default: Date.now,
     },
   },
   {
-    timestamps: true, // ⏱ adds createdAt and updatedAt
+    timestamps: true, // includes createdAt and updatedAt
   }
 );
 

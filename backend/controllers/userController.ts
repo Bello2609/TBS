@@ -1,13 +1,13 @@
-// src/controllers/userController.ts
-
 import { Request, Response } from "express";
 import bcrypt from "bcryptjs";
 import User from "../models/user.model.js";
 
-// ✅ GET /api/users - Fetch all users
+// ✅ GET /api/users - Fetch all users or filter by role
 export const getUsers = async (req: Request, res: Response): Promise<void> => {
   try {
-    const users = await User.find().select("-password");
+    const { role } = req.query;
+    const filter = role ? { role } : {};
+    const users = await User.find(filter).select("-password");
     res.json(users);
   } catch (error) {
     console.error("Error fetching users:", error);
@@ -32,10 +32,15 @@ export const getUserById = async (req: Request, res: Response): Promise<void> =>
 
 // ✅ POST /api/users - Create user
 export const createUser = async (req: Request, res: Response): Promise<void> => {
-  const { username, email, name, role, password, phone } = req.body;
+  const { username, email, name, role, password, phone, companyName } = req.body;
 
   if (!username || !email || !name || !role || !password || !phone) {
     res.status(400).json({ message: "All fields are required." });
+    return;
+  }
+
+  if (role === "customer" && !companyName) {
+    res.status(400).json({ message: "Company name is required for customer role." });
     return;
   }
 
@@ -54,6 +59,7 @@ export const createUser = async (req: Request, res: Response): Promise<void> => 
       name,
       role,
       phone,
+      companyName: role === "customer" ? companyName : undefined,
       password: hashedPassword,
     });
 
@@ -66,6 +72,7 @@ export const createUser = async (req: Request, res: Response): Promise<void> => 
       name: user.name,
       role: user.role,
       phone: user.phone,
+      companyName: user.companyName,
     });
   } catch (error) {
     console.error("Error creating user:", error);
@@ -76,7 +83,7 @@ export const createUser = async (req: Request, res: Response): Promise<void> => 
 // ✅ PUT /api/users/:id - Update user
 export const updateUser = async (req: Request, res: Response): Promise<void> => {
   const { id } = req.params;
-  const { username, email, name, role, phone } = req.body;
+  const { username, email, name, role, phone, companyName } = req.body;
 
   try {
     const user = await User.findById(id);
@@ -91,6 +98,16 @@ export const updateUser = async (req: Request, res: Response): Promise<void> => 
     user.role = role || user.role;
     user.phone = phone || user.phone;
 
+    if (role === "customer") {
+      if (!companyName) {
+        res.status(400).json({ message: "Company name is required for customer role." });
+        return;
+      }
+      user.companyName = companyName;
+    } else {
+      user.companyName = undefined;
+    }
+
     await user.save();
 
     res.json({
@@ -100,6 +117,7 @@ export const updateUser = async (req: Request, res: Response): Promise<void> => 
       name: user.name,
       role: user.role,
       phone: user.phone,
+      companyName: user.companyName,
     });
   } catch (error) {
     console.error("Error updating user:", error);

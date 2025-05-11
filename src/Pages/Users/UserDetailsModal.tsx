@@ -10,22 +10,26 @@ import {
 import { Button } from "@/components/ui/button";
 import type { User } from "../types/user";
 
+interface ExtendedCustomerUser extends User {
+  companyEmail?: string;
+  orgNumber?: string;
+  zipCode?: string;
+  city?: string;
+  address?: string;
+  contactPerson?: string;
+  companyPhone?: string;
+  customerType?: string;
+}
+
 interface Props {
-  user: Partial<User> & {
-    companyName?: string;
-    companyEmail?: string;
-    orgNumber?: string;
-    zipCode?: string;
-    city?: string;
-    address?: string;
-    contactPerson?: string;
-    companyPhone?: string;
-    customerType?: string;
-  };
+  user: User | ExtendedCustomerUser;
   onClose: () => void;
 }
 
 const UserDetailsModal: React.FC<Props> = ({ user, onClose }) => {
+  const isCustomer = user.role === "customer";
+  const customer = isCustomer ? (user as ExtendedCustomerUser) : null;
+
   return (
     <>
       <ModalOverlay onClick={onClose} />
@@ -59,63 +63,45 @@ const UserDetailsModal: React.FC<Props> = ({ user, onClose }) => {
               <span>{user.role || "N/A"}</span>
             </DetailRow>
 
-            {/* Extra fields for customers */}
-            {user.role === "customer" && (
+            {/* ✅ Extra fields for customers */}
+            {isCustomer && customer && (
               <>
-                {user.companyName && (
-                  <DetailRow>
-                    <strong>Company Name:</strong>
-                    <span>{user.companyName}</span>
-                  </DetailRow>
-                )}
-                {user.companyEmail && (
-                  <DetailRow>
-                    <strong>Company Email:</strong>
-                    <span>{user.companyEmail}</span>
-                  </DetailRow>
-                )}
-                {user.orgNumber && (
-                  <DetailRow>
-                    <strong>Org Number:</strong>
-                    <span>{user.orgNumber}</span>
-                  </DetailRow>
-                )}
-                {user.zipCode && (
-                  <DetailRow>
-                    <strong>Zip Code:</strong>
-                    <span>{user.zipCode}</span>
-                  </DetailRow>
-                )}
-                {user.city && (
-                  <DetailRow>
-                    <strong>City:</strong>
-                    <span>{user.city}</span>
-                  </DetailRow>
-                )}
-                {user.address && (
-                  <DetailRow>
-                    <strong>Address:</strong>
-                    <span>{user.address}</span>
-                  </DetailRow>
-                )}
-                {user.contactPerson && (
-                  <DetailRow>
-                    <strong>Contact Person:</strong>
-                    <span>{user.contactPerson}</span>
-                  </DetailRow>
-                )}
-                {user.companyPhone && (
-                  <DetailRow>
-                    <strong>Company Phone:</strong>
-                    <span>{user.companyPhone}</span>
-                  </DetailRow>
-                )}
-                {user.customerType && (
-                  <DetailRow>
-                    <strong>Customer Type:</strong>
-                    <span>{user.customerType}</span>
-                  </DetailRow>
-                )}
+                <DetailRow>
+                  <strong>Company Name:</strong>
+                  <span>{customer.companyName || "N/A"}</span>
+                </DetailRow>
+                <DetailRow>
+                  <strong>Company Email:</strong>
+                  <span>{customer.companyEmail || "N/A"}</span>
+                </DetailRow>
+                <DetailRow>
+                  <strong>Org Number:</strong>
+                  <span>{customer.orgNumber || "N/A"}</span>
+                </DetailRow>
+                <DetailRow>
+                  <strong>Zip Code:</strong>
+                  <span>{customer.zipCode || "N/A"}</span>
+                </DetailRow>
+                <DetailRow>
+                  <strong>City:</strong>
+                  <span>{customer.city || "N/A"}</span>
+                </DetailRow>
+                <DetailRow>
+                  <strong>Address:</strong>
+                  <span>{customer.address || "N/A"}</span>
+                </DetailRow>
+                <DetailRow>
+                  <strong>Contact Person:</strong>
+                  <span>{customer.contactPerson || "N/A"}</span>
+                </DetailRow>
+                <DetailRow>
+                  <strong>Company Phone:</strong>
+                  <span>{customer.companyPhone || "N/A"}</span>
+                </DetailRow>
+                <DetailRow>
+                  <strong>Customer Type:</strong>
+                  <span>{customer.customerType || "N/A"}</span>
+                </DetailRow>
               </>
             )}
           </div>

@@ -63,7 +63,7 @@ const UserManagement = () => {
     } else {
       fetchUsers();
     }
-  }, [user]);
+  }, [user, navigate]);
 
   useEffect(() => {
     const query = searchQuery.toLowerCase();
@@ -110,10 +110,12 @@ const UserManagement = () => {
       <TopBar>
         <h1>User Management</h1>
         {user?.role === "admin" && (
-          <AddButton onClick={() => {
-            setSelectedUser(null);
-            setIsModalOpen(true);
-          }}>
+          <AddButton
+            onClick={() => {
+              setSelectedUser(null);
+              setIsModalOpen(true);
+            }}
+          >
             + Add User
           </AddButton>
         )}
@@ -143,6 +145,7 @@ const UserManagement = () => {
                 <TableHeader>Email</TableHeader>
                 <TableHeader>Phone</TableHeader>
                 <TableHeader>Role</TableHeader>
+                <TableHeader>Company</TableHeader>
                 <TableHeader>Actions</TableHeader>
               </TableRow>
             </TableHead>
@@ -156,18 +159,23 @@ const UserManagement = () => {
                     <TableData>{u.email}</TableData>
                     <TableData>{u.phone}</TableData>
                     <TableData>{u.role}</TableData>
+                    <TableData>{u.role === "customer" ? u.companyName || "-" : "-"}</TableData>
                     <TableData>
                       <ActionButtons>
-                        <ViewButton onClick={() => {
-                          setSelectedUser(u);
-                          setShowUserDetails(true);
-                        }}>
+                        <ViewButton
+                          onClick={() => {
+                            setSelectedUser(u);
+                            setShowUserDetails(true);
+                          }}
+                        >
                           <FiEye />
                         </ViewButton>
-                        <EditButton onClick={() => {
-                          setSelectedUser(u);
-                          setIsModalOpen(true);
-                        }}>
+                        <EditButton
+                          onClick={() => {
+                            setSelectedUser(u);
+                            setIsModalOpen(true);
+                          }}
+                        >
                           <FiEdit />
                         </EditButton>
                         <DeleteButton onClick={() => handleDelete(userId)}>
@@ -182,16 +190,27 @@ const UserManagement = () => {
           </UserTable>
 
           <PaginationContainer>
-            <RowsPerPage value={rowsPerPage} onChange={(e) => setRowsPerPage(Number(e.target.value))}>
+            <RowsPerPage
+              value={rowsPerPage}
+              onChange={(e) => setRowsPerPage(Number(e.target.value))}
+            >
               {[5, 10, 15, 20].map((size) => (
-                <option key={size} value={size}>{size}</option>
+                <option key={size} value={size}>
+                  {size}
+                </option>
               ))}
             </RowsPerPage>
             <PageButtons>
-              <button onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))} disabled={currentPage === 1}>
+              <button
+                onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                disabled={currentPage === 1}
+              >
                 Previous
               </button>
-              <button onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))} disabled={currentPage === totalPages}>
+              <button
+                onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+                disabled={currentPage === totalPages}
+              >
                 Next
               </button>
             </PageButtons>

@@ -1,4 +1,4 @@
-// src/pages/inventory/components/inventorytable.tsx
+// src/pages/inventory/components/inventoryTable.tsx
 
 import React from "react";
 import {
@@ -8,8 +8,7 @@ import {
   TableHeader,
   TableCell,
   ActionButtons,
-  EditButton,
-  DeleteButton,
+  IconButton,
 } from "@/styles/inventoryStyles";
 import { InventoryItem } from "../types";
 import { Pencil, Trash2 } from "lucide-react";
@@ -30,31 +29,42 @@ const InventoryTableComponent: React.FC<InventoryTableProps> = ({
       <thead>
         <TableHead>
           <TableHeader>Arrival</TableHeader>
+          <TableHeader>Departure</TableHeader>
           <TableHeader>Sender</TableHeader>
           <TableHeader>Goods</TableHeader>
           <TableHeader>Type</TableHeader>
-          <TableHeader>Weight</TableHeader>
-          <TableHeader>Departure</TableHeader>
+          <TableHeader>Quantity</TableHeader>
+          <TableHeader>Weight (kg)</TableHeader>
           <TableHeader>Actions</TableHeader>
         </TableHead>
       </thead>
       <tbody>
         {inventory.map((item) => (
-          <TableRow key={item._id}>
-            <TableCell>{item.arrivalDate}</TableCell>
+          <TableRow key={item._id ?? item.goods + item.arrivalDate}>
+            <TableCell>
+              {new Date(item.arrivalDate).toLocaleDateString("en-GB")}
+            </TableCell>
+            <TableCell>
+              {item.departureDate
+                ? new Date(item.departureDate).toLocaleDateString("en-GB")
+                : "—"}
+            </TableCell>
             <TableCell>{item.senderName}</TableCell>
             <TableCell>{item.goods}</TableCell>
             <TableCell>{item.type}</TableCell>
+            <TableCell>{item.quantity}</TableCell>
             <TableCell>{item.weight}</TableCell>
-            <TableCell>{item.departureDate}</TableCell>
             <TableCell>
               <ActionButtons>
-                <EditButton onClick={() => onEdit(item)}>
-                  <Pencil />
-                </EditButton>
-                <DeleteButton onClick={() => onDelete(item._id!)}>
-                  <Trash2 />
-                </DeleteButton>
+                <IconButton title="Edit" onClick={() => onEdit(item)}>
+                  <Pencil size={18} />
+                </IconButton>
+                <IconButton
+                  title="Delete"
+                  onClick={() => item._id && onDelete(item._id)}
+                >
+                  <Trash2 size={18} />
+                </IconButton>
               </ActionButtons>
             </TableCell>
           </TableRow>

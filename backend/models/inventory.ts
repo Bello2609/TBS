@@ -2,29 +2,26 @@
 
 import mongoose, { Document, Schema } from "mongoose";
 
-// Define the embedded Sender structure
+// ✅ New Sender structure — only name is required
 interface SenderInfo {
   name: string;
-  email: string;
-  phone: string;
-  company: string;
 }
 
-// Inventory Document Interface
+// ✅ Inventory Document Interface
 export interface InventoryDocument extends Document {
-  customerId: mongoose.Types.ObjectId;     // Linked to User (role: customer)
+  customerId: mongoose.Types.ObjectId;
   goods: string;
   type: string;
   quantity: number;
   weight: number;
   arrivalDate: Date;
   departureDate: Date;
-  sender: SenderInfo;                      // Embedded sender info
+  sender: SenderInfo;
   createdAt: Date;
   updatedAt: Date;
 }
 
-// Define the Schema
+// ✅ Define the Schema
 const inventorySchema = new Schema<InventoryDocument>(
   {
     customerId: {
@@ -38,11 +35,10 @@ const inventorySchema = new Schema<InventoryDocument>(
     weight: { type: Number, required: true },
     arrivalDate: { type: Date, required: true },
     departureDate: { type: Date, required: true },
+
+    // ✅ Updated Sender: only `name` is stored
     sender: {
       name: { type: String, required: true },
-      email: { type: String, required: true },
-      phone: { type: String, required: true },
-      company: { type: String, required: true },
     },
   },
   { timestamps: true }

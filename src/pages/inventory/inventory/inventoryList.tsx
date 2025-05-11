@@ -1,102 +1,76 @@
-// src/pages/inventory/inventorylist.tsx
-
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
+import axiosInstance from "@/services/axiosInstance";
+import { toast } from "react-toastify";
 import InventoryFilter from "./components/inventoryFilter";
 import InventoryTableComponent from "./components/inventoryTable";
 import InventoryModal from "./components/inventoryModal";
-import { InventoryContainer, TopBar, AddButton } from "@/styles/inventoryStyles";
-import axiosInstance from "@/services/axiosInstance";
-import { toast } from "react-toastify";
-import { InventoryItem, Customer, Sender, OptionType } from "./types";
+import {
+  InventoryContainer,
+  TopBar,
+  AddButton,
+} from "@/styles/inventoryStyles";
+import { Customer, InventoryItem, OptionType, Sender } from "./types";
 
 const InventoryList: React.FC = () => {
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [senders, setSenders] = useState<Sender[]>([]);
   const [inventory, setInventory] = useState<InventoryItem[]>([]);
+  const [filteredInventory, setFilteredInventory] = useState<InventoryItem[]>([]);
 
+  const [editItem, setEditItem] = useState<InventoryItem | null>(null);
   const [selectedCustomer, setSelectedCustomer] = useState<OptionType | null>(null);
-  const [startDate, setStartDate] = useState<Date | null>(null);
-  const [endDate, setEndDate] = useState<Date | null>(null);
+  const [newSender, setNewSender] = useState("");
+  const [modalVisible, setModalVisible] = useState(false);
 
-  const [showModal, setShowModal] = useState(false);
-  const [editId, setEditId] = useState<string | null>(null);
-
-  const [form, setForm] = useState<Omit<InventoryItem, "_id" | "customerId" | "customerName">>({
+  const [form, setForm] = useState<{
+    goods: string;
+    type: string;
+    quantity: number;
+    weight: number;
+    arrivalDate: string;
+    departureDate: string;
+    senderName: string;
+  }>({
     goods: "",
     type: "",
-    weight: "",
+    quantity: 0,
+    weight: 0,
     arrivalDate: "",
     departureDate: "",
     senderName: "",
   });
 
-  const [newSenderName, setNewSenderName] = useState("");
-
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const [customerRes, inventoryRes] = await Promise.all([
-          axiosInstance.get("/api/users?role=customer"),
-          axiosInstance.get("/api/inventory"),
-        ]);
-        setCustomers(customerRes.data);
-        setInventory(inventoryRes.data);
-      } catch {
-        toast.error("Failed to load data.");
-      }
-    };
-    fetchData();
+    fetchCustomers();
+    fetchSenders();
+    fetchInventory();
   }, []);
 
-  useEffect(() => {
-    if (selectedCustomer) {
-      axiosInstance
-        .get(`/api/senders?customerId=${selectedCustomer.value}`)
-        .then((res) => setSenders(res.data))
-        .catch(() => toast.error("Failed to load senders."));
-    }
-  }, [selectedCustomer]);
-
-  const handleAddSender = async () => {
-    if (!newSenderName.trim()) return toast.error("Sender name is required");
+  const fetchInventory = async () => {
     try {
-      const res = await axiosInstance.post("/api/senders", {
-        name: newSenderName,
-        customerId: selectedCustomer?.value,
-      });
-      setSenders((prev) => [...prev, res.data]);
-      setForm((prev) => ({ ...prev, senderName: res.data.name }));
-      setNewSenderName("");
-      toast.success("Sender added.");
+      const res = await axiosInstance.get("/api/inventory");
+      setInventory(res.data);
+      setFilteredInventory(res.data);
     } catch {
-      toast.error("Failed to add sender.");
+      toast.error("Failed to fetch inventory.");
     }
   };
 
-  const handleSave = async () => {
-    if (!selectedCustomer) return toast.error("Customer is required.");
-    if (!form.senderName || !form.goods) return toast.error("Required fields are missing.");
-
-    const payload = {
-      ...form,
-      customerId: selectedCustomer.value,
-      customerName: selectedCustomer.label,
-    };
-
+  const fetchCustomers = async () => {
     try {
-      if (editId) {
-        await axiosInstance.put(`/api/inventory/${editId}`, payload);
-        toast.success("Inventory updated.");
-      } else {
-        await axiosInstance.post("/api/inventory", payload);
-        toast.success("Inventory created.");
-      }
-      const updated = await axiosInstance.get("/api/inventory");
-      setInventory(updated.data);
-      setShowModal(false);
-      resetForm();
+      const res = await axiosInstance.get("/api/customers");
+      setCustomers(res.data);
     } catch {
-      toast.error("Failed to save inventory.");
+      toast.error("Failed to fetch customers.");
+    }
+  };
+
+  const fetchSenders = async () => {
+    try {
+      const res = await axiosInstance.get("/api/senders");
+      setSenders(res.data);
+    } catch {
+      toast.error("Failed to fetch senders.");
     }
   };
 
@@ -104,78 +78,109 @@ const InventoryList: React.FC = () => {
     setForm({
       goods: "",
       type: "",
-      weight: "",
+      quantity: 0,
+      weight: 0,
       arrivalDate: "",
       departureDate: "",
       senderName: "",
     });
-    setEditId(null);
-    setNewSenderName("");
+    setNewSender("");
+  };
+
+  const handleFormChange = (field: string, value: string | number) => {
+    setForm((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const handleAddNew = () => {
+    setEditItem(null);
+    resetForm();
+    setModalVisible(true);
   };
 
   const handleEdit = (item: InventoryItem) => {
+    setEditItem(item);
     setForm({
       goods: item.goods,
       type: item.type,
+      quantity: item.quantity,
       weight: item.weight,
       arrivalDate: item.arrivalDate,
-      departureDate: item.departureDate,
+      departureDate: item.departureDate || "",
       senderName: item.senderName,
     });
-    setEditId(item._id || null);
-    const selected = customers.find((c) => c._id === item.customerId);
-    if (selected) {
-      setSelectedCustomer({ value: selected._id, label: selected.companyName });
-    }
-    setShowModal(true);
+    setModalVisible(true);
   };
 
   const handleDelete = async (id: string) => {
-    if (!window.confirm("Are you sure you want to delete this inventory?")) return;
     try {
       await axiosInstance.delete(`/api/inventory/${id}`);
-      setInventory((prev) => prev.filter((item) => item._id !== id));
-      toast.success("Deleted.");
+      toast.success("Inventory deleted.");
+      fetchInventory();
     } catch {
-      toast.error("Delete failed.");
+      toast.error("Failed to delete inventory.");
     }
   };
 
-  const filteredInventory = inventory.filter((item) => {
-    const matchCustomer = selectedCustomer ? item.customerId === selectedCustomer.value : true;
-    const arrival = new Date(item.arrivalDate);
-    const matchDate =
-      (!startDate || arrival >= startDate) && (!endDate || arrival <= endDate);
-    return matchCustomer && matchDate;
-  });
+  const handleSave = async () => {
+    try {
+      if (editItem?._id) {
+        await axiosInstance.put(`/api/inventory/${editItem._id}`, form);
+        toast.success("Inventory updated.");
+      } else {
+        await axiosInstance.post("/api/inventory", form);
+        toast.success("Inventory created.");
+      }
+
+      setModalVisible(false);
+      fetchInventory();
+    } catch {
+      toast.error("Failed to save inventory.");
+    }
+  };
+
+  const handleAddSender = async () => {
+    if (!newSender.trim()) {
+      toast.warning("Sender name cannot be empty.");
+      return;
+    }
+
+    try {
+      const res = await axiosInstance.post("/api/senders", { name: newSender });
+      toast.success("Sender added.");
+      setSenders((prev) => [...prev, res.data]);
+      setNewSender("");
+    } catch {
+      toast.error("Failed to add sender.");
+    }
+  };
+
+  const handleFilter = (customer: OptionType | null) => {
+    setSelectedCustomer(customer);
+
+    const filtered = inventory.filter((item) =>
+      customer ? item.customerId === customer.value : true
+    );
+
+    setFilteredInventory(filtered);
+  };
 
   return (
     <InventoryContainer>
       <TopBar>
-        <h2>Inventory</h2>
-        <AddButton
-          onClick={() => {
-            if (!selectedCustomer) {
-              toast.error("Select a customer first.");
-              return;
-            }
-            resetForm();
-            setShowModal(true);
-          }}
-        >
-          + New Inventory
-        </AddButton>
+        <InventoryFilter
+          customerOptions={customers.map((c) => ({
+            label: c.companyName,
+            value: c._id,
+          }))}
+          selectedCustomer={selectedCustomer}
+          startDate={null}
+          endDate={null}
+          onCustomerChange={handleFilter}
+          onStartDateChange={() => {}}
+          onEndDateChange={() => {}}
+        />
+        <AddButton onClick={handleAddNew}>+ New Inventory</AddButton>
       </TopBar>
-
-      <InventoryFilter
-        customers={customers.map((c) => ({ value: c._id, label: c.companyName }))}
-        selectedCustomer={selectedCustomer}
-        startDate={startDate}
-        endDate={endDate}
-        onCustomerChange={setSelectedCustomer}
-        onStartDateChange={setStartDate}
-        onEndDateChange={setEndDate}
-      />
 
       <InventoryTableComponent
         inventory={filteredInventory}
@@ -183,22 +188,22 @@ const InventoryList: React.FC = () => {
         onDelete={handleDelete}
       />
 
-      {showModal && (
+      {modalVisible && (
         <InventoryModal
-          isEdit={!!editId}
+          isEdit={!!editItem}
           form={form}
-          senderOptions={senders.map((s) => ({ value: s.name, label: s.name }))}
-          newSenderName={newSenderName}
-          onChange={(field, value) => setForm((prev) => ({ ...prev, [field]: value }))}
-          onSenderChange={(selected) =>
-            setForm((prev) => ({
-              ...prev,
-              senderName: selected?.value || "",
-            }))
+          senderOptions={senders.map((s) => ({
+            label: s.name,
+            value: s.name,
+          }))}
+          newSenderName={newSender}
+          onNewSenderChange={setNewSender}
+          onSenderChange={(option) =>
+            handleFormChange("senderName", option?.value || "")
           }
           onAddSender={handleAddSender}
-          onNewSenderChange={setNewSenderName}
-          onClose={() => setShowModal(false)}
+          onChange={handleFormChange}
+          onClose={() => setModalVisible(false)}
           onSave={handleSave}
         />
       )}

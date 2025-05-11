@@ -1,6 +1,6 @@
-// src/pages/inventory/components/inventorymodal.tsx
+// src/pages/inventory/InventoryModal.tsx
 
-import React, { useState } from "react";
+import React from "react";
 import {
   ModalOverlay,
   ModalContainer,
@@ -16,7 +16,7 @@ import {
   AddButton,
 } from "@/styles/inventoryStyles";
 
-import Select, { GroupBase, SingleValue } from "react-select";
+import Select, { SingleValue } from "react-select";
 import { OptionType } from "../types";
 
 interface InventoryModalProps {
@@ -24,14 +24,15 @@ interface InventoryModalProps {
   form: {
     goods: string;
     type: string;
-    weight: string;
+    quantity: number;
+    weight: number;
     arrivalDate: string;
     departureDate: string;
     senderName: string;
   };
   senderOptions: OptionType[];
   newSenderName: string;
-  onChange: (field: string, value: string) => void;
+  onChange: (field: string, value: string | number) => void;
   onSenderChange: (selected: SingleValue<OptionType>) => void;
   onAddSender: () => void;
   onNewSenderChange: (value: string) => void;
@@ -57,13 +58,14 @@ const InventoryModal: React.FC<InventoryModalProps> = ({
         <ModalContentScrollable>
           <ModalTitle>{isEdit ? "Edit Inventory" : "Add Inventory"}</ModalTitle>
           <ModalForm>
+            {/* Sender Selector */}
             <FormRow>
               <Label>Sender</Label>
-              <Select<OptionType, false, GroupBase<OptionType>>
+              <Select<OptionType, false>
                 options={senderOptions}
                 value={
                   form.senderName
-                    ? { value: form.senderName, label: form.senderName }
+                    ? senderOptions.find((opt) => opt.value === form.senderName) || null
                     : null
                 }
                 onChange={onSenderChange}
@@ -71,16 +73,26 @@ const InventoryModal: React.FC<InventoryModalProps> = ({
                 placeholder="Select Sender"
               />
             </FormRow>
+
+            {/* Add new sender */}
             <FormRow>
               <Label>Add New Sender</Label>
               <Input
                 value={newSenderName}
                 onChange={(e) => onNewSenderChange(e.target.value)}
+                placeholder="Enter sender name"
               />
-              <AddButton type="button" onClick={onAddSender}>
+              <AddButton
+                type="button"
+                onClick={onAddSender}
+                disabled={!newSenderName.trim()}
+                aria-label="Add new sender"
+              >
                 + Add Sender
               </AddButton>
             </FormRow>
+
+            {/* Goods */}
             <FormRow>
               <Label>Goods</Label>
               <Input
@@ -88,6 +100,8 @@ const InventoryModal: React.FC<InventoryModalProps> = ({
                 onChange={(e) => onChange("goods", e.target.value)}
               />
             </FormRow>
+
+            {/* Type */}
             <FormRow>
               <Label>Type</Label>
               <Input
@@ -95,13 +109,30 @@ const InventoryModal: React.FC<InventoryModalProps> = ({
                 onChange={(e) => onChange("type", e.target.value)}
               />
             </FormRow>
+
+            {/* Quantity */}
             <FormRow>
-              <Label>Weight</Label>
+              <Label>Quantity</Label>
               <Input
-                value={form.weight}
-                onChange={(e) => onChange("weight", e.target.value)}
+                type="number"
+                min="0"
+                value={form.quantity}
+                onChange={(e) => onChange("quantity", Number(e.target.value))}
               />
             </FormRow>
+
+            {/* Weight */}
+            <FormRow>
+              <Label>Weight (kg)</Label>
+              <Input
+                type="number"
+                min="0"
+                value={form.weight}
+                onChange={(e) => onChange("weight", Number(e.target.value))}
+              />
+            </FormRow>
+
+            {/* Arrival Date */}
             <FormRow>
               <Label>Arrival Date</Label>
               <Input
@@ -110,6 +141,8 @@ const InventoryModal: React.FC<InventoryModalProps> = ({
                 onChange={(e) => onChange("arrivalDate", e.target.value)}
               />
             </FormRow>
+
+            {/* Departure Date */}
             <FormRow>
               <Label>Departure Date</Label>
               <Input
@@ -118,6 +151,8 @@ const InventoryModal: React.FC<InventoryModalProps> = ({
                 onChange={(e) => onChange("departureDate", e.target.value)}
               />
             </FormRow>
+
+            {/* Action Buttons */}
             <ModalActions>
               <CancelButton type="button" onClick={onClose}>
                 Cancel

@@ -39,7 +39,33 @@ export const getInventoryById = async (req: Request, res: Response): Promise<voi
 // ✅ POST /api/inventory
 export const createInventory = async (req: Request, res: Response): Promise<void> => {
   try {
-    const newItem = new Inventory(req.body);
+    const {
+      customerId,
+      goods,
+      type,
+      quantity,
+      weight,
+      arrivalDate,
+      departureDate,
+      senderName,
+    } = req.body;
+
+    if (!senderName) {
+      res.status(400).json({ message: "Sender name is required." });
+      return;
+    }
+
+    const newItem = new Inventory({
+      customerId,
+      goods,
+      type,
+      quantity,
+      weight,
+      arrivalDate,
+      departureDate,
+      sender: { name: senderName }, // ✅ Only name is used
+    });
+
     const saved = await newItem.save();
     res.status(201).json(saved);
   } catch (error) {
@@ -51,11 +77,37 @@ export const createInventory = async (req: Request, res: Response): Promise<void
 // ✅ PUT /api/inventory/:id
 export const updateInventory = async (req: Request, res: Response): Promise<void> => {
   try {
-    const updated = await Inventory.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    const {
+      customerId,
+      goods,
+      type,
+      quantity,
+      weight,
+      arrivalDate,
+      departureDate,
+      senderName,
+    } = req.body;
+
+    const updated = await Inventory.findByIdAndUpdate(
+      req.params.id,
+      {
+        customerId,
+        goods,
+        type,
+        quantity,
+        weight,
+        arrivalDate,
+        departureDate,
+        sender: { name: senderName }, // ✅ Only name is used
+      },
+      { new: true }
+    );
+
     if (!updated) {
       res.status(404).json({ message: "Inventory item not found." });
       return;
     }
+
     res.status(200).json(updated);
   } catch (error) {
     console.error("Error updating inventory:", error);
@@ -71,6 +123,7 @@ export const deleteInventory = async (req: Request, res: Response): Promise<void
       res.status(404).json({ message: "Inventory item not found." });
       return;
     }
+
     res.status(200).json({ message: "Inventory item deleted." });
   } catch (error) {
     console.error("Error deleting inventory:", error);

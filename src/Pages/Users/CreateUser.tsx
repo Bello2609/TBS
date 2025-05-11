@@ -23,6 +23,7 @@ interface UserFormData {
   password: string;
   phoneNumber: string;
   role: UserRole;
+  companyName?: string;
 }
 
 const generateStrongPassword = (): string => {
@@ -37,7 +38,12 @@ const generateStrongPassword = (): string => {
   return pass.split("").sort(() => 0.5 - Math.random()).join("");
 };
 
-const CreateUser: React.FC<CreateUserProps> = ({ mode, initialUser, onCancel, onSuccess }) => {
+const CreateUser: React.FC<CreateUserProps> = ({
+  mode,
+  initialUser,
+  onCancel,
+  onSuccess,
+}) => {
   const { user } = useAuth();
   const navigate = useNavigate();
 
@@ -47,6 +53,7 @@ const CreateUser: React.FC<CreateUserProps> = ({ mode, initialUser, onCancel, on
     password: "",
     phoneNumber: "",
     role: (user?.role === "admin" ? "employee" : "customer") as UserRole,
+    companyName: "",
   });
 
   const [loading, setLoading] = useState(false);
@@ -58,6 +65,7 @@ const CreateUser: React.FC<CreateUserProps> = ({ mode, initialUser, onCancel, on
         email: initialUser.email,
         phoneNumber: initialUser.phone,
         role: initialUser.role,
+        companyName: initialUser.companyName ?? "",
         password: "",
       });
     }
@@ -89,39 +97,46 @@ const CreateUser: React.FC<CreateUserProps> = ({ mode, initialUser, onCancel, on
     }
 
     try {
-      let savedUser: User;
+      interface Payload {
+        email: string;
+        name: string;
+        phone: string;
+        role: UserRole;
+        companyName?: string;
+        username?: string;
+        password?: string;
+      }
+
+      const payload: Payload = {
+        email: formData.email,
+        name: formData.name,
+        phone: formData.phoneNumber,
+        role: formData.role,
+      };
+
+      if (formData.role === "customer" && formData.companyName?.trim()) {
+        payload.companyName = formData.companyName.trim();
+      }
 
       if (mode === "create") {
-        const response = await axiosInstance.post("/api/users", {
-          username: formData.email.split("@")[0],
-          email: formData.email,
-          name: formData.name,
-          phone: formData.phoneNumber,
-          role: formData.role,
-          password: formData.password,
-        });
-        savedUser = response.data;
+        payload.username = formData.email.split("@")[0];
+        payload.password = formData.password;
+
+        const response = await axiosInstance.post("/api/users", payload);
         toast.success("User created successfully");
+        onSuccess?.(response.data);
+        navigate("/users");
       } else if (mode === "edit" && initialUser) {
-        const response = await axiosInstance.put(`/api/users/${initialUser._id}`, {
-          email: formData.email,
-          name: formData.name,
-          phone: formData.phoneNumber,
-          role: formData.role,
-        });
-        savedUser = response.data;
+        const response = await axiosInstance.put(`/api/users/${initialUser._id}`, payload);
         toast.success("User updated successfully");
+        onSuccess?.(response.data);
+        navigate("/users");
       } else {
         throw new Error("Invalid operation");
       }
-
-      if (onSuccess) onSuccess(savedUser);
-      else navigate("/users");
-
     } catch (err: unknown) {
       const error = err as { response?: { data?: { message?: string } } };
-      const message = error?.response?.data?.message || "Error processing request.";
-      toast.error(message);
+      toast.error(error?.response?.data?.message || "Error processing request.");
     } finally {
       setLoading(false);
     }
@@ -133,7 +148,10 @@ const CreateUser: React.FC<CreateUserProps> = ({ mode, initialUser, onCancel, on
         {mode === "edit" ? "Edit User" : "Create New User"}
       </h2>
 
-      <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+      <form
+        onSubmit={handleSubmit}
+        style={{ display: "flex", flexDirection: "column", gap: "20px" }}
+      >
         <DetailRow>
           <strong>Role:</strong>
           <Select
@@ -167,6 +185,18 @@ const CreateUser: React.FC<CreateUserProps> = ({ mode, initialUser, onCancel, on
           <strong>Phone:</strong>
           <Input name="phoneNumber" value={formData.phoneNumber} onChange={handleChange} required />
         </DetailRow>
+
+        {formData.role === "customer" && (
+          <DetailRow>
+            <strong>Company Name:</strong>
+            <Input
+              name="companyName"
+              value={formData.companyName ?? ""}
+              onChange={handleChange}
+              required
+            />
+          </DetailRow>
+        )}
 
         {mode === "create" && (
           <DetailRow style={{ flexDirection: "column", alignItems: "flex-start" }}>
