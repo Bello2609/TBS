@@ -1,14 +1,13 @@
 // backend/models/invoice.ts
-
 import mongoose, { Document, Schema } from "mongoose";
 
-// Bank account info
+// Bank account structure
 interface BankInfo {
   accountNumber: string;
   kidNumber: string;
 }
 
-// Inventory item snapshot (copied from Inventory at time of invoice)
+// Snapshot of an inventory item at time of invoice
 interface InventorySnapshot {
   arrivalDate: string;
   departureDate: string;
@@ -25,7 +24,15 @@ interface InventorySnapshot {
   };
 }
 
-// Invoice Document
+// Single invoice item
+interface InvoiceItem {
+  description: string;
+  quantity: number;
+  unitPrice: number;
+  total: number;
+}
+
+// Invoice document interface
 export interface InvoiceDocument extends Document {
   customerId: mongoose.Types.ObjectId;
   invoiceNumber: string;
@@ -33,22 +40,18 @@ export interface InvoiceDocument extends Document {
   dueDate?: Date;
   status: "Paid" | "Pending" | "Overdue";
 
-  products: string;
-  quantity: number;
-  unit: string;
-  unitPrice: number;
-  total: number;
+  items: InvoiceItem[]; // List of billed items
   tax: number;
   grandTotal: number;
 
-  inventoryItems: InventorySnapshot[]; // Embedded from Inventory
+  inventoryItems: InventorySnapshot[];
   bankInfo: BankInfo;
 
   createdAt: Date;
   updatedAt: Date;
 }
 
-// Schema
+// Invoice schema
 const invoiceSchema = new Schema<InvoiceDocument>(
   {
     customerId: {
@@ -64,11 +67,14 @@ const invoiceSchema = new Schema<InvoiceDocument>(
       enum: ["Paid", "Pending", "Overdue"],
       default: "Pending",
     },
-    products: { type: String, required: true },
-    quantity: { type: Number, required: true },
-    unit: { type: String, required: true },
-    unitPrice: { type: Number, required: true },
-    total: { type: Number, required: true },
+    items: [
+      {
+        description: { type: String, required: true },
+        quantity: { type: Number, required: true },
+        unitPrice: { type: Number, required: true },
+        total: { type: Number, required: true },
+      },
+    ],
     tax: { type: Number, required: true },
     grandTotal: { type: Number, required: true },
     inventoryItems: [

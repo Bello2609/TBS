@@ -1,47 +1,61 @@
 // backend/models/inventory.ts
 
-import mongoose, { Document, Schema } from "mongoose";
+import mongoose, { Schema, Document, Types } from "mongoose";
 
-// ✅ New Sender structure — only name is required
-interface SenderInfo {
-  name: string;
-}
-
-// ✅ Inventory Document Interface
 export interface InventoryDocument extends Document {
-  customerId: mongoose.Types.ObjectId;
+  customerId: Types.ObjectId;
+  senderId: Types.ObjectId;
   goods: string;
   type: string;
   quantity: number;
   weight: number;
   arrivalDate: Date;
-  departureDate: Date;
-  sender: SenderInfo;
-  createdAt: Date;
-  updatedAt: Date;
+  departureDate?: Date;
 }
 
-// ✅ Define the Schema
 const inventorySchema = new Schema<InventoryDocument>(
   {
     customerId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
+      type: Schema.Types.ObjectId,
+      ref: "Customer",
       required: true,
     },
-    goods: { type: String, required: true },
-    type: { type: String, required: true },
-    quantity: { type: Number, required: true },
-    weight: { type: Number, required: true },
-    arrivalDate: { type: Date, required: true },
-    departureDate: { type: Date, required: true },
-
-    // ✅ Updated Sender: only `name` is stored
-    sender: {
-      name: { type: String, required: true },
+    senderId: {
+      type: Schema.Types.ObjectId,
+      ref: "Sender",
+      required: true,
+    },
+    goods: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    type: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    quantity: {
+      type: Number,
+      required: true,
+      min: 0,
+    },
+    weight: {
+      type: Number,
+      required: true,
+      min: 0,
+    },
+    arrivalDate: {
+      type: Date,
+      required: true,
+    },
+    departureDate: {
+      type: Date,
     },
   },
-  { timestamps: true }
+  {
+    timestamps: true,
+  }
 );
 
 export default mongoose.model<InventoryDocument>("Inventory", inventorySchema);

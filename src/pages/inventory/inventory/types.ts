@@ -1,13 +1,12 @@
-// src/pages/inventory/types.ts
-
 /**
  * Represents a single inventory record.
  */
 export interface InventoryItem {
   _id?: string;               // MongoDB document ID
   customerId: string;         // Foreign key reference to Customer
-  customerName: string;       // Display name of the customer
-  senderName: string;         // Name of the sender (string, not senderId)
+  customerName: string;       // Display name of the customer (for UI)
+  senderId: string;           // Foreign key reference to Sender
+  senderName: string;         // Name of the sender (for UI only)
   goods: string;              // Description of goods
   type: string;               // Type/category of goods
   quantity: number;           // Quantity of items

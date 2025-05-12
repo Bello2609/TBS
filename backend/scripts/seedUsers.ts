@@ -30,7 +30,6 @@ const seedUsers = async () => {
     const hashedAdmin = await bcrypt.hash("admin123", saltRounds);
     const hashedEmployee = await bcrypt.hash("employee123", saltRounds);
     const hashedCustomer = await bcrypt.hash("customer123", saltRounds);
-
     // Insert users with hashed passwords
     await User.insertMany([
       {

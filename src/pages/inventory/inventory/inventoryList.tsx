@@ -1,3 +1,5 @@
+// src/pages/inventory/inventoryList.tsx
+
 import React, { useEffect, useState } from "react";
 import axiosInstance from "@/services/axiosInstance";
 import { toast } from "react-toastify";
@@ -24,22 +26,22 @@ const InventoryList: React.FC = () => {
 
   const [form, setForm] = useState<{
     customerId: string;
+    senderId: string;
     goods: string;
     type: string;
     quantity: number;
     weight: number;
     arrivalDate: string;
     departureDate: string;
-    senderName: string;
   }>({
     customerId: "",
+    senderId: "",
     goods: "",
     type: "",
     quantity: 0,
     weight: 0,
     arrivalDate: "",
     departureDate: "",
-    senderName: "",
   });
 
   useEffect(() => {
@@ -79,13 +81,13 @@ const InventoryList: React.FC = () => {
   const resetForm = () => {
     setForm({
       customerId: "",
+      senderId: "",
       goods: "",
       type: "",
       quantity: 0,
       weight: 0,
       arrivalDate: "",
       departureDate: "",
-      senderName: "",
     });
     setNewSender("");
   };
@@ -110,13 +112,13 @@ const InventoryList: React.FC = () => {
     setEditItem(item);
     setForm({
       customerId: item.customerId,
+      senderId: item.senderId,
       goods: item.goods,
       type: item.type,
       quantity: item.quantity,
       weight: item.weight,
       arrivalDate: item.arrivalDate,
       departureDate: item.departureDate || "",
-      senderName: item.senderName,
     });
     setModalVisible(true);
   };
@@ -133,8 +135,8 @@ const InventoryList: React.FC = () => {
 
   const handleSave = async () => {
     try {
-      if (!form.customerId) {
-        toast.error("Please select a customer.");
+      if (!form.customerId || !form.senderId) {
+        toast.error("Please select both customer and sender.");
         return;
       }
 
@@ -163,6 +165,7 @@ const InventoryList: React.FC = () => {
       const res = await axiosInstance.post("/api/senders", { name: newSender });
       toast.success("Sender added.");
       setSenders((prev) => [...prev, res.data]);
+      setForm((prev) => ({ ...prev, senderId: res.data._id }));
       setNewSender("");
     } catch {
       toast.error("Failed to add sender.");
@@ -209,12 +212,12 @@ const InventoryList: React.FC = () => {
           form={form}
           senderOptions={senders.map((s) => ({
             label: s.name,
-            value: s.name,
+            value: s._id,
           }))}
           newSenderName={newSender}
           onNewSenderChange={setNewSender}
           onSenderChange={(option) =>
-            handleFormChange("senderName", option?.value || "")
+            handleFormChange("senderId", option?.value || "")
           }
           onAddSender={handleAddSender}
           onChange={handleFormChange}

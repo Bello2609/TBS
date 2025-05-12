@@ -1,13 +1,11 @@
-// backend/routes/senderRoutes.ts
-
 import express from "express";
-import { getSendersByCustomer, createSender } from "../controllers/senderController.js";
-import { protect } from "../middlewares/authMiddleware.js";
+import { getAllSenders, createSender } from "../controllers/senderController.js"; // Ensure this path is correct
+import { protect } from "../middlewares/authMiddleware.js"; // Ensure this middleware is imported correctly
 
 const router = express.Router();
 
-// ✅ Get senders for a specific customer
-router.get("/", protect, getSendersByCustomer);
+// ✅ Get all senders
+router.get("/", protect, getAllSenders);
 
 // ✅ Add a new sender
 router.post("/", protect, createSender);

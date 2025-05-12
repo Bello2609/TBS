@@ -5,7 +5,11 @@
   "main": "server.ts",
   "scripts": {
     "start": "node --loader ts-node/esm server.ts",
-    "dev": "ts-node-dev --respawn --transpile-only server.ts"
+    "dev": "ts-node-dev --respawn --transpile-only server.ts",
+    "seed:senders": "node --loader ts-node/esm scripts/seedSenders.ts",
+    "seed:customers": "node --loader ts-node/esm scripts/seedcustomers.ts",
+    "seed:inventory": "node --loader ts-node/esm scripts/seedInventory.ts",
+    "seed:invoices": "node --loader ts-node/esm scripts/seedInvoices.ts"
   },
   "dependencies": {
     "bcryptjs": "^3.0.2",

@@ -21,13 +21,13 @@ interface InventoryModalProps {
   isEdit: boolean;
   form: {
     customerId: string;
+    senderId: string;
     goods: string;
     type: string;
     quantity: number;
     weight: number;
     arrivalDate: string;
     departureDate: string;
-    senderName: string;
   };
   senderOptions: OptionType[];
   newSenderName: string;
@@ -58,14 +58,14 @@ const InventoryModal: React.FC<InventoryModalProps> = ({
           <ModalTitle>{isEdit ? "Edit Inventory" : "Add Inventory"}</ModalTitle>
           <ModalForm>
 
-            {/* ✅ Sender Selector */}
+            {/* ✅ Select Sender */}
             <FormRow>
               <Label>Sender</Label>
               <Select<OptionType, false>
                 options={senderOptions}
                 value={
-                  form.senderName
-                    ? senderOptions.find((opt) => opt.value === form.senderName) || null
+                  form.senderId
+                    ? senderOptions.find((opt) => opt.value === form.senderId) || null
                     : null
                 }
                 onChange={onSenderChange}

@@ -1,29 +1,24 @@
-// backend/models/sender.model.ts
-
-import mongoose, { Schema, Document, Types } from "mongoose";
+import mongoose, { Schema, Document } from "mongoose";
 
 export interface SenderDocument extends Document {
   name: string;
-  customerId: Types.ObjectId;
   createdAt: Date;
 }
 
+// Sender schema without customerId since senders are not permanently linked to customers
 const senderSchema: Schema = new Schema<SenderDocument>(
   {
     name: {
       type: String,
       required: true,
       trim: true,
-    },
-    customerId: {
-      type: Schema.Types.ObjectId,
-      ref: "User", // هذا يفترض أن الزبائن موجودين في موديل "User"
-      required: true,
+      unique: true,
     },
   },
-  { timestamps: { createdAt: true, updatedAt: false } }
+  {
+    timestamps: { createdAt: true, updatedAt: false },
+  }
 );
 
 const Sender = mongoose.model<SenderDocument>("Sender", senderSchema);
-
 export default Sender;
