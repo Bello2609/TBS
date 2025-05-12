@@ -2,22 +2,25 @@
 
 import mongoose, { Schema, Document, Types } from "mongoose";
 
+// Inventory document type
 export interface InventoryDocument extends Document {
-  customerId: Types.ObjectId;
-  senderId: Types.ObjectId;
+  customerId: Types.ObjectId;  // Linked to Customer model
+  senderId: Types.ObjectId;    // Linked to Sender model
   goods: string;
   type: string;
   quantity: number;
   weight: number;
   arrivalDate: Date;
   departureDate?: Date;
+  invoiced?: boolean;          // ✅ Added: flag to indicate if invoiced
 }
 
+// Inventory schema definition
 const inventorySchema = new Schema<InventoryDocument>(
   {
     customerId: {
       type: Schema.Types.ObjectId,
-      ref: "Customer",
+      ref: "User", // Use "User" if customers are stored in User model
       required: true,
     },
     senderId: {
@@ -51,6 +54,10 @@ const inventorySchema = new Schema<InventoryDocument>(
     },
     departureDate: {
       type: Date,
+    },
+    invoiced: {
+      type: Boolean,
+      default: false, // ✅ Default to false (not invoiced yet)
     },
   },
   {

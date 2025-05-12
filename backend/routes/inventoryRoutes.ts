@@ -7,9 +7,13 @@ import {
   createInventory,
   updateInventory,
   deleteInventory,
-} from "../controllers/inventoryController.js"; // ✅
+  getUninvoicedInventory, 
+} from "../controllers/inventoryController.js";
 
-const router = express.Router(); // ✅ 
+const router = express.Router();
+
+// ✅ GET uninvoiced inventory for a customer
+router.get("/uninvoiced", getUninvoicedInventory);
 
 // ✅ GET all inventory (optionally filtered by ?customerId)
 router.get("/", getAllInventory);

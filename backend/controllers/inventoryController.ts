@@ -2,13 +2,10 @@
 
 import { Request, Response } from "express";
 import mongoose from "mongoose";
-import Inventory from "../models/inventory.js";
+import Inventory from "../models/inventory.model.js";
 import type { PopulatedCustomer, PopulatedSender } from "../types/populated.js";
 
-/**
- * @desc   Get all inventory items, optionally filtered by customerId
- * @route  GET /api/inventory
- */
+// ✅ Get all inventory items, optionally filtered by customerId
 export const getAllInventory = async (req: Request, res: Response): Promise<void> => {
   try {
     const { customerId } = req.query;
@@ -23,21 +20,29 @@ export const getAllInventory = async (req: Request, res: Response): Promise<void
       .populate("senderId", "name");
 
     const transformed = items.map((item) => {
-      const customer = item.customerId as unknown as PopulatedCustomer;
-      const sender = item.senderId as unknown as PopulatedSender;
+      const customer =
+        item.customerId && typeof item.customerId === "object" && "companyName" in item.customerId
+          ? (item.customerId as PopulatedCustomer)
+          : { _id: new mongoose.Types.ObjectId(), companyName: "Unknown" };
+
+      const sender =
+        item.senderId && typeof item.senderId === "object" && "name" in item.senderId
+          ? (item.senderId as PopulatedSender)
+          : { _id: new mongoose.Types.ObjectId(), name: "Unknown" };
 
       return {
         _id: item._id,
-        customerId: customer?._id ?? "unknown",
-        customerName: customer?.companyName ?? "unknown",
-        senderId: sender?._id ?? "unknown",
-        senderName: sender?.name ?? "unknown",
+        customerId: customer._id,
+        customerName: customer.companyName,
+        senderId: sender._id,
+        senderName: sender.name,
         goods: item.goods,
         type: item.type,
         quantity: item.quantity,
         weight: item.weight,
         arrivalDate: item.arrivalDate,
         departureDate: item.departureDate,
+        invoiced: item.invoiced ?? false,
       };
     });
 
@@ -48,10 +53,49 @@ export const getAllInventory = async (req: Request, res: Response): Promise<void
   }
 };
 
-/**
- * @desc   Get single inventory item by ID
- * @route  GET /api/inventory/:id
- */
+// ✅ Get uninvoiced inventory items for a customer
+export const getUninvoicedInventory = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { customerId } = req.query;
+
+    if (!customerId) {
+      res.status(400).json({ message: "Customer ID is required." });
+      return;
+    }
+
+    const uninvoicedItems = await Inventory.find({
+      customerId: new mongoose.Types.ObjectId(customerId as string),
+      invoiced: { $ne: true },
+    })
+      .populate("senderId", "name")
+      .sort({ arrivalDate: -1 });
+
+    const transformed = uninvoicedItems.map((item) => {
+      const sender =
+        item.senderId && typeof item.senderId === "object" && "name" in item.senderId
+          ? (item.senderId as PopulatedSender)
+          : { _id: new mongoose.Types.ObjectId(), name: "Unknown" };
+
+      return {
+        _id: item._id,
+        goods: item.goods,
+        type: item.type,
+        weight: item.weight,
+        quantity: item.quantity,
+        arrivalDate: item.arrivalDate,
+        departureDate: item.departureDate,
+        senderName: sender.name,
+      };
+    });
+
+    res.status(200).json(transformed);
+  } catch (error) {
+    console.error("❌ Error fetching uninvoiced inventory:", error);
+    res.status(500).json({ message: "Failed to fetch uninvoiced inventory." });
+  }
+};
+
+// ✅ Get inventory by ID
 export const getInventoryById = async (req: Request, res: Response): Promise<void> => {
   try {
     const item = await Inventory.findById(req.params.id)
@@ -63,15 +107,22 @@ export const getInventoryById = async (req: Request, res: Response): Promise<voi
       return;
     }
 
-    const customer = item.customerId as unknown as PopulatedCustomer;
-    const sender = item.senderId as unknown as PopulatedSender;
+    const customer =
+      item.customerId && typeof item.customerId === "object" && "companyName" in item.customerId
+        ? (item.customerId as PopulatedCustomer)
+        : { _id: new mongoose.Types.ObjectId(), companyName: "Unknown" };
+
+    const sender =
+      item.senderId && typeof item.senderId === "object" && "name" in item.senderId
+        ? (item.senderId as PopulatedSender)
+        : { _id: new mongoose.Types.ObjectId(), name: "Unknown" };
 
     res.status(200).json({
       _id: item._id,
-      customerId: customer?._id ?? "unknown",
-      customerName: customer?.companyName ?? "unknown",
-      senderId: sender?._id ?? "unknown",
-      senderName: sender?.name ?? "unknown",
+      customerId: customer._id,
+      customerName: customer.companyName,
+      senderId: sender._id,
+      senderName: sender.name,
       goods: item.goods,
       type: item.type,
       quantity: item.quantity,
@@ -85,10 +136,7 @@ export const getInventoryById = async (req: Request, res: Response): Promise<voi
   }
 };
 
-/**
- * @desc   Create a new inventory item
- * @route  POST /api/inventory
- */
+// ✅ Create new inventory item
 export const createInventory = async (req: Request, res: Response): Promise<void> => {
   try {
     const {
@@ -116,6 +164,7 @@ export const createInventory = async (req: Request, res: Response): Promise<void
       weight,
       arrivalDate,
       departureDate,
+      invoiced: false,
     });
 
     const saved = await newItem.save();
@@ -126,10 +175,7 @@ export const createInventory = async (req: Request, res: Response): Promise<void
   }
 };
 
-/**
- * @desc   Update an existing inventory item
- * @route  PUT /api/inventory/:id
- */
+// ✅ Update inventory item
 export const updateInventory = async (req: Request, res: Response): Promise<void> => {
   try {
     const {
@@ -141,6 +187,7 @@ export const updateInventory = async (req: Request, res: Response): Promise<void
       weight,
       arrivalDate,
       departureDate,
+      invoiced,
     } = req.body;
 
     const updated = await Inventory.findByIdAndUpdate(
@@ -154,6 +201,7 @@ export const updateInventory = async (req: Request, res: Response): Promise<void
         weight,
         arrivalDate,
         departureDate,
+        invoiced,
       },
       { new: true }
     );
@@ -170,10 +218,7 @@ export const updateInventory = async (req: Request, res: Response): Promise<void
   }
 };
 
-/**
- * @desc   Delete an inventory item
- * @route  DELETE /api/inventory/:id
- */
+// ✅ Delete inventory item
 export const deleteInventory = async (req: Request, res: Response): Promise<void> => {
   try {
     const deleted = await Inventory.findByIdAndDelete(req.params.id);

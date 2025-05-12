@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 import dotenv from "dotenv";
 import Invoice from "../models/invoice.model.js";
 import Customer from "../models/customer.model.js";
-import Inventory from "../models/inventory.js";
+import Inventory from "../models/inventory.model.js";
 
 dotenv.config();
 

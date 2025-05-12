@@ -1,7 +1,7 @@
 // scripts/seedInventory.ts
 import mongoose from "mongoose";
 import dotenv from "dotenv";
-import Inventory from "../models/inventory.js";
+import Inventory from "../models/inventory.model.js";
 import Customer from "../models/customer.model.js";
 import Sender from "../models/sender.model.js";
 

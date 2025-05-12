@@ -1,46 +1,53 @@
 import { useState, useEffect } from "react";
-import axios from "axios";
+import { useNavigate } from "react-router-dom";
+import axiosInstance from "@/services/axiosInstance";
+import { toast } from "react-toastify";
 import {
   InvoiceContainer,
+  TopBar,
+  PageTitle,
+  FormSection,
+  FormRow,
   Input,
   Select,
-} from "../../styles/invoiceStyles";
-import { Button } from "../../components/ui/button";
-import { toast } from "react-toastify";
-
-// Interfaces
-interface Inventory {
-  _id: string;
-  goods: string;
-  type: string;
-  weight: string;
-  arrivalDate: string;
-}
+  Textarea,
+} from "@/styles/invoiceStyles";
+import { Button } from "@/components/ui/button";
 
 interface Customer {
   _id: string;
   companyName: string;
 }
 
+interface Inventory {
+  _id: string;
+  goods: string;
+  type: string;
+  weight: number;
+  arrivalDate: string;
+}
+
 interface InvoiceForm {
   customerId: string;
   inventoryId: string;
   invoiceNumber: string;
-  amount: string;
-  status: "Paid" | "Pending" | "Overdue";
+  amount: number;
+  status: "Pending" | "Paid" | "Overdue";
   dueDate: string;
   items: string;
   bankAccount: string;
 }
 
-const CreateInvoice: React.FC = () => {
+const CreateInvoice = () => {
+  const navigate = useNavigate();
+
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [inventoryList, setInventoryList] = useState<Inventory[]>([]);
-  const [formData, setFormData] = useState<InvoiceForm>({
+  const [form, setForm] = useState<InvoiceForm>({
     customerId: "",
     inventoryId: "",
     invoiceNumber: "",
-    amount: "",
+    amount: 0,
     status: "Pending",
     dueDate: "",
     items: "",
@@ -48,209 +55,184 @@ const CreateInvoice: React.FC = () => {
   });
   const [loading, setLoading] = useState(false);
 
-  const generateNextInvoiceNumber = () => {
-    const current = localStorage.getItem("lastInvoiceNumber");
-    let nextNumber = 1;
-
-    if (current) {
-      const match = current.match(/TBS-(\d+)/);
-      if (match) {
-        nextNumber = parseInt(match[1]) + 1;
-      }
-    }
-
-    const newNumber = `TBS-${String(nextNumber).padStart(2, "0")}`;
-    localStorage.setItem("lastInvoiceNumber", newNumber);
-    return newNumber;
+  // Generate invoice number
+  const generateInvoiceNumber = () => {
+    const date = new Date();
+    const datePart = date.toISOString().slice(2, 10).replace(/-/g, "");
+    const randPart = Math.floor(Math.random() * 900 + 100);
+    return `TBS-${datePart}-${randPart}`;
   };
 
+  // Load customers
   useEffect(() => {
-    const fetchCustomers = async () => {
+    const loadCustomers = async () => {
       try {
-        const res = await axios.get("/api/customers");
-
-        if (Array.isArray(res.data)) {
-          setCustomers(res.data);
-        } else {
-          console.error("Unexpected customer data format:", res.data);
-          setCustomers([]);
-          toast.error("Unexpected customer data format.");
-        }
+        const res = await axiosInstance.get("/api/customers");
+        setCustomers(res.data);
       } catch {
         toast.error("Failed to load customers.");
       }
     };
 
-    fetchCustomers();
-    setFormData((prev) => ({
+    loadCustomers();
+    setForm((prev) => ({
       ...prev,
-      invoiceNumber: generateNextInvoiceNumber(),
+      invoiceNumber: generateInvoiceNumber(),
     }));
   }, []);
 
+  // Load inventory for selected customer
   useEffect(() => {
-    const fetchInventoryByCustomer = async () => {
-      if (!formData.customerId) return;
+    const loadInventory = async () => {
+      if (!form.customerId) return;
       try {
-        const res = await axios.get(`/api/inventory?customerId=${formData.customerId}`);
-        if (Array.isArray(res.data)) {
-          setInventoryList(res.data);
-        } else {
-          console.error("Unexpected inventory data:", res.data);
-          setInventoryList([]);
-          toast.error("Invalid inventory data.");
-        }
+        const res = await axiosInstance.get(`/api/inventory/uninvoiced?customerId=${form.customerId}`);
+        setInventoryList(res.data || []);
       } catch {
-        toast.error("Failed to load inventory for this customer.");
+        toast.error("Failed to load inventory.");
       }
     };
 
-    fetchInventoryByCustomer();
-  }, [formData.customerId]);
+    loadInventory();
+  }, [form.customerId]);
 
+  // Calculate amount and item description
+  useEffect(() => {
+    const selected = inventoryList.find((i) => i._id === form.inventoryId);
+    if (selected) {
+      const pricePerKg = 1.0;
+      const total = selected.weight * pricePerKg;
+      setForm((prev) => ({
+        ...prev,
+        amount: total,
+        items: `${selected.goods} (${selected.type}) – ${selected.weight} kg\nArrival: ${selected.arrivalDate}`,
+      }));
+    }
+  }, [form.inventoryId, inventoryList]);
+
+  // Handle input
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
   ) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    setForm((prev) => ({ ...prev, [name]: value }));
   };
 
+  // Submit invoice
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
 
-    if (!formData.customerId || !formData.invoiceNumber || !formData.amount || !formData.inventoryId || !formData.bankAccount) {
+    if (!form.customerId || !form.inventoryId || !form.dueDate || !form.bankAccount) {
       toast.warning("Please fill in all required fields.");
-      setLoading(false);
       return;
     }
 
+    setLoading(true);
     try {
-      await axios.post("/api/invoices", {
-        ...formData,
-        amount: parseFloat(formData.amount),
+      const res = await axiosInstance.post("/api/invoices", {
+        customerId: form.customerId,
+        invoiceNumber: form.invoiceNumber,
+        dueDate: form.dueDate,
+        status: form.status,
+        items: form.items,
+        amount: Number(form.amount),
+        tax: 25,
+        grandTotal: Number(form.amount) * 1.25,
+        inventoryIds: [form.inventoryId],
+        bankInfo: {
+          accountNumber: form.bankAccount,
+          kidNumber: "123456789", // يمكن توليده لاحقًا أو تركه افتراضيًا
+        },
       });
 
-      toast.success("✅ Invoice created successfully!");
-
-      setFormData({
-        customerId: "",
-        inventoryId: "",
-        invoiceNumber: generateNextInvoiceNumber(),
-        amount: "",
-        status: "Pending",
-        dueDate: "",
-        items: "",
-        bankAccount: "",
-      });
-      setInventoryList([]);
+      toast.success("Invoice created successfully!");
+      navigate(`/invoices/${res.data._id}`);
     } catch {
-      toast.error("❌ Failed to create invoice.");
+      toast.error("Failed to create invoice.");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <InvoiceContainer style={{ maxWidth: "600px", margin: "0 auto" }}>
-      <h1>Create Invoice</h1>
+    <InvoiceContainer>
+      <TopBar>
+        <PageTitle>Create Invoice</PageTitle>
+      </TopBar>
 
-      <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-        <Select
-          name="customerId"
-          value={formData.customerId}
-          onChange={handleChange}
-          required
-        >
-          <option value="">Select Customer</option>
-          {customers.map((customer) => (
-            <option key={customer._id} value={customer._id}>
-              {customer.companyName}
-            </option>
-          ))}
-        </Select>
+      <form onSubmit={handleSubmit}>
+        <FormSection>
+          <FormRow>
+            <label>Customer</label>
+            <Select name="customerId" value={form.customerId} onChange={handleChange} required>
+              <option value="">Select Customer</option>
+              {customers.map((cust) => (
+                <option key={cust._id} value={cust._id}>
+                  {cust.companyName}
+                </option>
+              ))}
+            </Select>
+          </FormRow>
 
-        {formData.customerId && (
-          <Select
-            name="inventoryId"
-            value={formData.inventoryId}
-            onChange={handleChange}
-            required
-          >
-            <option value="">Select Inventory</option>
-            {inventoryList.map((inv) => (
-              <option key={inv._id} value={inv._id}>
-                {inv.goods} – {inv.type} – {inv.weight}kg
-              </option>
-            ))}
-          </Select>
-        )}
+          {form.customerId && (
+            <FormRow>
+              <label>Inventory</label>
+              <Select name="inventoryId" value={form.inventoryId} onChange={handleChange} required>
+                <option value="">Select Inventory</option>
+                {inventoryList.map((inv) => (
+                  <option key={inv._id} value={inv._id}>
+                    {inv.goods} – {inv.type} – {inv.weight} kg
+                  </option>
+                ))}
+              </Select>
+            </FormRow>
+          )}
 
-        <Input
-          type="text"
-          name="invoiceNumber"
-          value={formData.invoiceNumber}
-          onChange={handleChange}
-          readOnly
-        />
+          <FormRow>
+            <label>Invoice Number</label>
+            <Input name="invoiceNumber" value={form.invoiceNumber} readOnly />
+          </FormRow>
 
-        <Input
-          type="number"
-          name="amount"
-          placeholder="Amount"
-          value={formData.amount}
-          onChange={handleChange}
-          required
-        />
+          <FormRow>
+            <label>Bank Account</label>
+            <Input name="bankAccount" value={form.bankAccount} onChange={handleChange} required />
+          </FormRow>
 
-        <Input
-          type="text"
-          name="bankAccount"
-          placeholder="Bank Account Number"
-          value={formData.bankAccount}
-          onChange={handleChange}
-          required
-        />
+          <FormRow>
+            <label>Amount (NOK)</label>
+            <Input
+              type="number"
+              name="amount"
+              value={form.amount}
+              onChange={handleChange}
+              step="0.01"
+              required
+            />
+          </FormRow>
 
-        <Select
-          name="status"
-          value={formData.status}
-          onChange={handleChange}
-          required
-        >
-          <option value="Pending">Pending</option>
-          <option value="Paid">Paid</option>
-          <option value="Overdue">Overdue</option>
-        </Select>
+          <FormRow>
+            <label>Status</label>
+            <Select name="status" value={form.status} onChange={handleChange}>
+              <option value="Pending">Pending</option>
+              <option value="Paid">Paid</option>
+              <option value="Overdue">Overdue</option>
+            </Select>
+          </FormRow>
 
-        <Input
-          type="date"
-          name="dueDate"
-          value={formData.dueDate}
-          onChange={handleChange}
-          required
-        />
+          <FormRow>
+            <label>Due Date</label>
+            <Input type="date" name="dueDate" value={form.dueDate} onChange={handleChange} required />
+          </FormRow>
 
-        <textarea
-          name="items"
-          placeholder="Invoice items or description"
-          value={formData.items}
-          onChange={handleChange}
-          rows={4}
-          required
-          style={{
-            padding: "12px 16px",
-            borderRadius: "10px",
-            border: "1px solid #d1d5db",
-            fontSize: "15px",
-            resize: "vertical",
-            backgroundColor: "#f9fafb",
-          }}
-        />
+          <FormRow>
+            <label>Items / Notes</label>
+            <Textarea name="items" rows={4} value={form.items} onChange={handleChange} />
+          </FormRow>
 
-        <Button type="submit" $variant="primary" $fullWidth>
-          {loading ? "Creating..." : "Create Invoice"}
-        </Button>
+          <Button type="submit" $variant="primary" $fullWidth disabled={loading}>
+            {loading ? "Creating..." : "Create Invoice"}
+          </Button>
+        </FormSection>
       </form>
     </InvoiceContainer>
   );

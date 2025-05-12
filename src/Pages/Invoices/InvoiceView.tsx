@@ -1,15 +1,16 @@
-// src/pages/Invoices/InvoiceView.tsx
+// src/pages/invoices/InvoiceView.tsx
 
 import { InvoiceContainer } from "@/styles/invoiceStyles";
 import { Button } from "@/components/ui/button";
 
+// Customer interface updated to reflect new structure
 interface Customer {
-  name: string;
-  email: string;
+  companyName: string;
+  companyEmail: string;
+  companyPhone: string;
   address: string;
-  postCode: string;
+  zipCode: string;
   city: string;
-  phone: string;
 }
 
 interface InventoryItem {
@@ -22,9 +23,6 @@ interface InventoryItem {
   weight: number;
   sender: {
     name: string;
-    email: string;
-    phone: string;
-    company: string;
   };
 }
 
@@ -34,7 +32,7 @@ interface BankInfo {
 }
 
 interface Invoice {
-  id: number;
+  id: string;
   invoiceNumber: string;
   company: string;
   customer: Customer;
@@ -64,9 +62,10 @@ const InvoiceView: React.FC<Props> = ({ invoice, onBack, onDownload }) => {
 
   return (
     <InvoiceContainer style={{ maxWidth: "1000px", margin: "0 auto", backgroundColor: "#fff", padding: "32px", borderRadius: "12px" }}>
+      {/* Action Buttons */}
       <div style={{ display: "flex", justifyContent: "flex-end", gap: "12px", marginBottom: "24px" }}>
-        <Button onClick={onBack}>← Tilbake</Button>
-        <Button onClick={onDownload}>⬇ Last ned PDF</Button>
+        <Button onClick={onBack}>← Back</Button>
+        <Button onClick={onDownload}>⬇ Download PDF</Button>
       </div>
 
       {/* Invoice Header */}
@@ -79,32 +78,34 @@ const InvoiceView: React.FC<Props> = ({ invoice, onBack, onDownload }) => {
         </div>
         <div>
           <h1 style={{ fontSize: "28px", color: "#dc2626" }}>FAKTURA</h1>
-          <p><strong>Fakturanr:</strong> {invoice.invoiceNumber}</p>
-          <p><strong>Dato:</strong> {new Date(invoice.date).toLocaleDateString("no-NO")}</p>
-          {invoice.dueDate && <p><strong>Forfallsdato:</strong> {new Date(invoice.dueDate).toLocaleDateString("no-NO")}</p>}
+          <p><strong>Invoice #:</strong> {invoice.invoiceNumber}</p>
+          <p><strong>Date:</strong> {new Date(invoice.date).toLocaleDateString("no-NO")}</p>
+          {invoice.dueDate && (
+            <p><strong>Due Date:</strong> {new Date(invoice.dueDate).toLocaleDateString("no-NO")}</p>
+          )}
           <p><strong>Status:</strong> {invoice.status === "Paid" ? "Betalt" : invoice.status}</p>
         </div>
       </div>
 
-      {/* Customer Info */}
+      {/* Customer Information */}
       <div style={{ marginBottom: "28px" }}>
-        <h3>Kundeinformasjon</h3>
-        <p><strong>{invoice.customer.name}</strong></p>
-        <p>{invoice.customer.address}, {invoice.customer.postCode} {invoice.customer.city}</p>
-        <p>Tlf: {invoice.customer.phone}</p>
-        <p>E-post: {invoice.customer.email}</p>
+        <h3>Customer Information</h3>
+        <p><strong>{invoice.customer.companyName}</strong></p>
+        <p>{invoice.customer.address}, {invoice.customer.zipCode} {invoice.customer.city}</p>
+        <p>Phone: {invoice.customer.companyPhone}</p>
+        <p>Email: {invoice.customer.companyEmail}</p>
       </div>
 
-      {/* Product Info */}
+      {/* Invoice Product Info */}
       <div style={{ marginBottom: "32px" }}>
-        <h3>Fakturadetaljer</h3>
+        <h3>Invoice Details</h3>
         <table style={{ width: "100%", borderCollapse: "collapse", marginTop: "12px" }}>
           <thead>
             <tr style={{ backgroundColor: "#f3f4f6" }}>
-              <th style={{ padding: "10px" }}>Produkt</th>
-              <th style={{ padding: "10px" }}>Antall</th>
-              <th style={{ padding: "10px" }}>Enhet</th>
-              <th style={{ padding: "10px" }}>Pris/stk</th>
+              <th style={{ padding: "10px" }}>Product</th>
+              <th style={{ padding: "10px" }}>Quantity</th>
+              <th style={{ padding: "10px" }}>Unit</th>
+              <th style={{ padding: "10px" }}>Price/unit</th>
               <th style={{ padding: "10px" }}>Total</th>
             </tr>
           </thead>
@@ -119,28 +120,25 @@ const InvoiceView: React.FC<Props> = ({ invoice, onBack, onDownload }) => {
           </tbody>
         </table>
         <div style={{ marginTop: "16px", textAlign: "right" }}>
-          <p><strong>MVA ({invoice.tax}%):</strong> {((invoice.total * invoice.tax) / 100).toFixed(2)} kr</p>
-          <p><strong>Totalt inkl. MVA:</strong> {invoice.grandTotal.toFixed(2)} kr</p>
+          <p><strong>VAT ({invoice.tax}%):</strong> {((invoice.total * invoice.tax) / 100).toFixed(2)} kr</p>
+          <p><strong>Total incl. VAT:</strong> {invoice.grandTotal.toFixed(2)} kr</p>
         </div>
       </div>
 
-      {/* Inventory Info */}
+      {/* Inventory Table */}
       <div style={{ marginBottom: "32px" }}>
-        <h3>Vedlagt godsliste</h3>
+        <h3>Attached Inventory</h3>
         <table style={{ width: "100%", borderCollapse: "collapse", marginTop: "10px" }}>
           <thead>
             <tr style={{ backgroundColor: "#f3f4f6" }}>
-              <th style={{ padding: "8px" }}>Ankomst</th>
-              <th style={{ padding: "8px" }}>Kunde</th>
-              <th style={{ padding: "8px" }}>Vare</th>
+              <th style={{ padding: "8px" }}>Arrival</th>
+              <th style={{ padding: "8px" }}>Customer</th>
+              <th style={{ padding: "8px" }}>Goods</th>
               <th style={{ padding: "8px" }}>Type</th>
-              <th style={{ padding: "8px" }}>Antall</th>
-              <th style={{ padding: "8px" }}>Vekt (kg)</th>
-              <th style={{ padding: "8px" }}>Avgang</th>
-              <th style={{ padding: "8px" }}>Sender Navn</th>
-              <th style={{ padding: "8px" }}>Firma</th>
-              <th style={{ padding: "8px" }}>E-post</th>
-              <th style={{ padding: "8px" }}>Telefon</th>
+              <th style={{ padding: "8px" }}>Qty</th>
+              <th style={{ padding: "8px" }}>Weight (kg)</th>
+              <th style={{ padding: "8px" }}>Departure</th>
+              <th style={{ padding: "8px" }}>Sender Name</th>
             </tr>
           </thead>
           <tbody>
@@ -154,23 +152,20 @@ const InvoiceView: React.FC<Props> = ({ invoice, onBack, onDownload }) => {
                 <td style={{ padding: "8px" }}>{item.weight}</td>
                 <td style={{ padding: "8px" }}>{item.departureDate}</td>
                 <td style={{ padding: "8px" }}>{item.sender?.name || "-"}</td>
-                <td style={{ padding: "8px" }}>{item.sender?.company || "-"}</td>
-                <td style={{ padding: "8px" }}>{item.sender?.email || "-"}</td>
-                <td style={{ padding: "8px" }}>{item.sender?.phone || "-"}</td>
               </tr>
             ))}
           </tbody>
         </table>
         <p style={{ marginTop: "8px" }}>
-          <strong>Total antall:</strong> {totalQty} &nbsp; | &nbsp;
-          <strong>Total vekt:</strong> {totalWeight.toFixed(1)} kg
+          <strong>Total Quantity:</strong> {totalQty} &nbsp; | &nbsp;
+          <strong>Total Weight:</strong> {totalWeight.toFixed(1)} kg
         </p>
       </div>
 
       {/* Bank Info */}
       <div style={{ marginBottom: "32px" }}>
-        <h3>Betalingsinformasjon</h3>
-        <p><strong>Konto:</strong> {invoice.bankInfo.accountNumber}</p>
+        <h3>Payment Information</h3>
+        <p><strong>Account Number:</strong> {invoice.bankInfo.accountNumber}</p>
         <p><strong>KID:</strong> {invoice.bankInfo.kidNumber}</p>
       </div>
     </InvoiceContainer>

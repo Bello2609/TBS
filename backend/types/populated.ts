@@ -1,9 +1,11 @@
+import { Types } from "mongoose";
+
 export interface PopulatedCustomer {
-  _id: string;
+  _id: Types.ObjectId; // بدل string
   companyName: string;
 }
 
 export interface PopulatedSender {
-  _id: string;
+  _id: Types.ObjectId; // بدل string
   name: string;
 }

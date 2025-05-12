@@ -1,15 +1,6 @@
-// src/styles/InvoiceStyles.ts
-
+// src/styles/invoiceStyles.ts
 import styled, { keyframes } from "styled-components";
 
-// ✅ Add this styled component if not present
-export const ModalTitle = styled.h2`
-  font-size: 20px;
-  font-weight: 700;
-  margin-bottom: 20px;
-  text-align: center;
-  color: ${({ theme }) => theme.text};
-`;
 /* ========== ANIMATIONS ========== */
 const fadeIn = keyframes`
   from {
@@ -33,7 +24,64 @@ const slideIn = keyframes`
   }
 `;
 
-/* ========== MODAL STYLES ========== */
+/* ========== BUTTONS ========== */
+export const Button = styled.button<{ $variant?: "primary" | "ghost" }>`
+  padding: 10px 20px;
+  border-radius: 8px;
+  border: none;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+
+  background-color: ${({ $variant, theme }) =>
+    $variant === "ghost" ? "transparent" : theme.primary || "#3b82f6"};
+  color: ${({ $variant }) => ($variant === "ghost" ? "#333" : "#fff")};
+
+  &:hover {
+    background-color: ${({ $variant, theme }) =>
+      $variant === "ghost" ? "#e5e7eb" : theme.primaryHover || "#2563eb"};
+  }
+`;
+
+export const AddButton = styled(Button)`
+  background-color: ${({ theme }) => theme.success || "#10b981"};
+  color: #fff;
+
+  &:hover {
+    background-color: ${({ theme }) => theme.successHover || "#059669"};
+  }
+`;
+
+/* ========== PAGE STRUCTURE ========== */
+export const InvoiceContainer = styled.div`
+  padding: 24px;
+  background: ${({ theme }) => theme.cardBackground || "#ffffff"};
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  animation: ${fadeIn} 0.3s ease-in-out;
+
+  @media (max-width: 768px) {
+    padding: 16px;
+  }
+`;
+
+export const TopBar = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+  gap: 12px;
+`;
+
+export const PageTitle = styled.h1`
+  font-size: 24px;
+  font-weight: 700;
+  color: ${({ theme }) => theme.textStrong || "#111"};
+`;
+
+/* ========== MODAL ========== */
 export const ModalOverlay = styled.div`
   position: fixed;
   inset: 0;
@@ -89,6 +137,14 @@ export const ModalContentScrollable = styled(ModalContent)`
   }
 `;
 
+export const ModalTitle = styled.h2`
+  font-size: 20px;
+  font-weight: 700;
+  margin-bottom: 20px;
+  text-align: center;
+  color: ${({ theme }) => theme.text};
+`;
+
 export const CloseButton = styled.button`
   position: absolute;
   top: 16px;
@@ -104,19 +160,6 @@ export const CloseButton = styled.button`
   }
 `;
 
-/* ========== CONTAINERS ========== */
-export const InvoiceContainer = styled.div`
-  padding: 24px;
-  background: ${({ theme }) => theme.cardBackground || "#ffffff"};
-  border-radius: 16px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-  animation: ${fadeIn} 0.3s ease-in-out;
-
-  @media (max-width: 768px) {
-    padding: 16px;
-  }
-`;
-
 /* ========== TABLES ========== */
 export const InvoiceTable = styled.table`
   width: 100%;
@@ -124,11 +167,6 @@ export const InvoiceTable = styled.table`
   border-collapse: collapse;
   border-radius: 8px;
   overflow: hidden;
-`;
-
-export const TableHead = styled.thead`
-  background: linear-gradient(90deg, #5a0ebc, #1e5bbf);
-  color: #fff;
 `;
 
 export const TableRow = styled.tr`
@@ -200,13 +238,90 @@ export const Select = styled.select`
   }
 `;
 
-/* ========== ACTIONS AND CONTROLS ========== */
+export const Textarea = styled.textarea`
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid #d1d5db;
+  border-radius: 10px;
+  font-size: 15px;
+  resize: vertical;
+  background-color: ${({ theme }) => theme.inputBg || "#f9fafb"};
+  color: ${({ theme }) => theme.inputText || "#111827"};
+
+  &:focus {
+    outline: none;
+    border-color: ${({ theme }) => theme.primary || "#3b82f6"};
+    background-color: #fff;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+  }
+
+  &::placeholder {
+    color: #9ca3af;
+  }
+`;
+
+/* ========== UTILITIES ========== */
 export const ActionButtons = styled.div`
   display: flex;
   flex-wrap: wrap;
   gap: 12px;
   margin: 20px 0;
   align-items: center;
+`;
+
+export const FilterButtons = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 12px 0;
+`;
+
+export const FilterButton = styled.button<{ active: boolean }>`
+  padding: 6px 14px;
+  border-radius: 6px;
+  border: 1px solid ${({ theme }) => theme.border || "#ccc"};
+  background: ${({ active, theme }) => (active ? theme.primary : "#f1f1f1")};
+  color: ${({ active }) => (active ? "#fff" : "#333")};
+  cursor: pointer;
+
+  &:hover {
+    background: ${({ active, theme }) => (active ? theme.primary : "#e5e7eb")};
+  }
+`;
+
+export const SearchInput = styled(Input)`
+  max-width: 300px;
+`;
+
+export const IconButton = styled.button`
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: ${({ theme }) => theme.text || "#111"};
+  font-size: 16px;
+
+  &:hover {
+    color: ${({ theme }) => theme.primary};
+  }
+`;
+
+export const StatusBadge = styled.span<{ status: string }>`
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 600;
+  background-color: ${({ status }) =>
+    status === "Paid"
+      ? "#d1fae5"
+      : status === "Overdue"
+      ? "#fee2e2"
+      : "#fef9c3"};
+  color: ${({ status }) =>
+    status === "Paid"
+      ? "#065f46"
+      : status === "Overdue"
+      ? "#991b1b"
+      : "#92400e"};
 `;
 
 /* ========== PAGINATION ========== */
@@ -277,4 +392,15 @@ export const DetailRow = styled.div`
     font-weight: 600;
     min-width: 120px;
   }
+`;
+
+export const FormSection = styled.div`
+  margin-bottom: 24px;
+`;
+
+export const FormRow = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 16px;
 `;

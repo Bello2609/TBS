@@ -1,30 +1,31 @@
-// src/pages/Invoices/InvoiceDetails.tsx
+// src/pages/invoices/InvoiceDetails.tsx
 
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import axios from "axios";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
+import axiosInstance from "@/services/axiosInstance";
+import { useAuth } from "@/context/authContext";
 import { InvoiceContainer } from "@/styles/invoiceStyles";
 import { Button } from "@/components/ui/button";
-import { useAuth } from "@/context/authContext";
 import InvoiceView from "./invoiceView";
 
+// Extend jsPDF to support autoTable
 interface jsPDFWithAutoTable extends jsPDF {
-  lastAutoTable?: {
-    finalY: number;
-  };
+  lastAutoTable?: { finalY: number };
 }
 
+// Define the customer structure
 interface Customer {
-  name: string;
-  email: string;
+  companyName: string;
+  companyEmail: string;
   address: string;
-  postCode: string;
+  zipCode: string;
   city: string;
-  phone: string;
+  companyPhone: string;
 }
 
+// Define inventory item
 interface InventoryItem {
   arrivalDate: string;
   departureDate: string;
@@ -35,14 +36,12 @@ interface InventoryItem {
   weight: number;
   sender: {
     name: string;
-    email: string;
-    phone: string;
-    company: string;
   };
 }
 
+// Define invoice structure
 interface Invoice {
-  id: number;
+  id: string;
   invoiceNumber: string;
   company: string;
   customer: Customer;
@@ -72,19 +71,24 @@ const InvoiceDetails = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // Load invoice from backend
   useEffect(() => {
     const fetchInvoice = async () => {
       try {
-        const response = await axios.get(`/api/invoices/${id}`);
-        const data = response.data;
-        if (user?.role === "customer" && data.customer?.name !== user.name) {
-          setError("Du har ikke tilgang til denne fakturaen.");
+        const res = await axiosInstance.get(`/api/invoices/${id}`);
+        const data = res.data;
+
+        // 🛡️ Restrict access for customers
+        if (
+          user?.role === "customer" &&
+          data.customer?.companyName !== user.name // ✔️ compare against user.name
+        ) {
+          setError("You are not authorized to view this invoice.");
         } else {
-          setInvoice(data);
+          setInvoice({ ...data, id: data._id });
         }
-      } catch (err) {
-        console.error("Error fetching invoice:", err);
-        setError("Kunne ikke hente fakturadetaljer.");
+      } catch {
+        setError("Failed to load invoice.");
       } finally {
         setLoading(false);
       }
@@ -93,55 +97,60 @@ const InvoiceDetails = () => {
     fetchInvoice();
   }, [id, user]);
 
+  // 🧾 Download PDF with 3 pages
   const handleDownloadPDF = () => {
     if (!invoice) return;
 
     const doc = new jsPDF() as jsPDFWithAutoTable;
 
+    // Page 1 - Invoice Info
     doc.setFontSize(18);
-    doc.text("Faktura", 14, 20);
-
+    doc.text("Invoice", 14, 20);
     doc.setFontSize(12);
-    doc.text(`Selskap: ${invoice.company}`, 14, 30);
-    doc.text(`Fakturanr: ${invoice.invoiceNumber}`, 14, 38);
-    doc.text(`Dato: ${new Date(invoice.date).toLocaleDateString("no-NO")}`, 14, 46);
+    doc.text(`Company: ${invoice.company}`, 14, 30);
+    doc.text(`Invoice #: ${invoice.invoiceNumber}`, 14, 38);
+    doc.text(`Date: ${new Date(invoice.date).toLocaleDateString("no-NO")}`, 14, 46);
     if (invoice.dueDate) {
-      doc.text(`Forfallsdato: ${new Date(invoice.dueDate).toLocaleDateString("no-NO")}`, 14, 54);
+      doc.text(`Due Date: ${new Date(invoice.dueDate).toLocaleDateString("no-NO")}`, 14, 54);
     }
-    doc.text(`Kunde: ${invoice.customer.name}`, 14, 62);
-    doc.text(`Adresse: ${invoice.customer.address}, ${invoice.customer.postCode} ${invoice.customer.city}`, 14, 70);
-    doc.text(`Telefon: ${invoice.customer.phone}`, 14, 78);
-    doc.text(`E-post: ${invoice.customer.email}`, 14, 86);
+
+    doc.text(`Customer: ${invoice.customer.companyName}`, 14, 62);
+    doc.text(
+      `Address: ${invoice.customer.address}, ${invoice.customer.zipCode} ${invoice.customer.city}`,
+      14,
+      70
+    );
+    doc.text(`Phone: ${invoice.customer.companyPhone}`, 14, 78);
+    doc.text(`Email: ${invoice.customer.companyEmail}`, 14, 86);
 
     autoTable(doc, {
       startY: 96,
-      head: [["Produkt", "Antall", "Enhet", "Pris/stk", "Total"]],
-      body: [[
-        invoice.products,
-        invoice.quantity.toString(),
-        invoice.unit,
-        `${invoice.unitPrice.toFixed(2)} kr`,
-        `${invoice.total.toFixed(2)} kr`
-      ]]
+      head: [["Product", "Qty", "Unit", "Unit Price", "Total"]],
+      body: [
+        [
+          invoice.products,
+          invoice.quantity,
+          invoice.unit,
+          `${invoice.unitPrice.toFixed(2)} kr`,
+          `${invoice.total.toFixed(2)} kr`,
+        ],
+      ],
     });
 
-    let y = doc.lastAutoTable?.finalY ?? 100;
-    doc.text(`MVA (${invoice.tax}%): ${((invoice.total * invoice.tax) / 100).toFixed(2)} kr`, 14, y + 10);
-    doc.text(`Totalt inkl. MVA: ${invoice.grandTotal.toFixed(2)} kr`, 14, y + 18);
+    const taxAmount = (invoice.total * invoice.tax) / 100;
+    const y = doc.lastAutoTable?.finalY ?? 110;
 
-    if (y + 60 > 270) {
-      doc.addPage();
-      y = 20;
-    } else {
-      y += 30;
-    }
+    doc.text(`VAT (${invoice.tax}%): ${taxAmount.toFixed(2)} kr`, 14, y + 10);
+    doc.text(`Grand Total: ${invoice.grandTotal.toFixed(2)} kr`, 14, y + 18);
 
+    // Page 2 - Inventory
+    doc.addPage();
     doc.setFontSize(14);
-    doc.text("Vedlagt godsliste", 14, y);
+    doc.text("Attached Inventory", 14, 20);
 
     autoTable(doc, {
-      startY: y + 8,
-      head: [["Ankomst", "Kunde", "Vare", "Type", "Antall", "Vekt", "Avgang", "Sender Navn", "Firma", "E-post", "Telefon"]],
+      startY: 28,
+      head: [["Arrival", "Customer", "Goods", "Type", "Qty", "Weight", "Departure", "Sender"]],
       body: invoice.inventoryItems.map((item) => [
         item.arrivalDate,
         item.customer,
@@ -151,33 +160,26 @@ const InvoiceDetails = () => {
         item.weight.toFixed(2),
         item.departureDate,
         item.sender?.name || "-",
-        item.sender?.company || "-",
-        item.sender?.email || "-",
-        item.sender?.phone || "-"
-      ])
+      ]),
     });
 
-    let y2 = doc.lastAutoTable?.finalY ?? y + 60;
-    if (y2 + 30 > 270) {
-      doc.addPage();
-      y2 = 20;
-    }
-
+    // Page 3 - Bank Info
+    doc.addPage();
     doc.setFontSize(14);
-    doc.text("BETALINGSINFORMASJON", 14, y2 + 10);
-
+    doc.text("Payment Information", 14, 20);
     doc.setFontSize(12);
-    doc.text(`Konto: ${invoice.bankInfo.accountNumber}`, 14, y2 + 18);
-    doc.text(`KID: ${invoice.bankInfo.kidNumber}`, 14, y2 + 26);
+    doc.text(`Account Number: ${invoice.bankInfo.accountNumber}`, 14, 30);
+    doc.text(`KID: ${invoice.bankInfo.kidNumber}`, 14, 38);
 
-    doc.save(`Faktura_${invoice.invoiceNumber}.pdf`);
+    doc.save(`Invoice_${invoice.invoiceNumber}.pdf`);
   };
 
+  // 👁️ UI states
   if (!user) {
     return (
       <InvoiceContainer>
         <p style={{ color: "red", textAlign: "center" }}>
-          Du har ikke tilgang til denne siden.
+          You are not authorized to view this page.
         </p>
       </InvoiceContainer>
     );
@@ -186,9 +188,7 @@ const InvoiceDetails = () => {
   if (loading) {
     return (
       <InvoiceContainer>
-        <p style={{ textAlign: "center", padding: "24px" }}>
-          Laster fakturadetaljer...
-        </p>
+        <p style={{ textAlign: "center" }}>Loading invoice details...</p>
       </InvoiceContainer>
     );
   }
@@ -198,7 +198,7 @@ const InvoiceDetails = () => {
       <InvoiceContainer>
         <p style={{ color: "red", textAlign: "center" }}>{error}</p>
         <div style={{ textAlign: "center", marginTop: "16px" }}>
-          <Button onClick={() => navigate("/invoices")}>← Tilbake</Button>
+          <Button onClick={() => navigate("/invoices")}>← Back</Button>
         </div>
       </InvoiceContainer>
     );
@@ -207,13 +207,18 @@ const InvoiceDetails = () => {
   if (!invoice) {
     return (
       <InvoiceContainer>
-        <p style={{ textAlign: "center" }}>Ingen fakturadata funnet.</p>
+        <p style={{ textAlign: "center" }}>No invoice data found.</p>
       </InvoiceContainer>
     );
   }
 
+  // ✅ Render main view
   return (
-    <InvoiceView invoice={invoice} onDownload={handleDownloadPDF} onBack={() => navigate("/invoices")} />
+    <InvoiceView
+      invoice={invoice}
+      onDownload={handleDownloadPDF}
+      onBack={() => navigate("/invoices")}
+    />
   );
 };
 
