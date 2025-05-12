@@ -55,7 +55,6 @@ const CreateInvoice = () => {
   });
   const [loading, setLoading] = useState(false);
 
-  // Generate invoice number
   const generateInvoiceNumber = () => {
     const date = new Date();
     const datePart = date.toISOString().slice(2, 10).replace(/-/g, "");
@@ -63,7 +62,6 @@ const CreateInvoice = () => {
     return `TBS-${datePart}-${randPart}`;
   };
 
-  // Load customers
   useEffect(() => {
     const loadCustomers = async () => {
       try {
@@ -81,7 +79,6 @@ const CreateInvoice = () => {
     }));
   }, []);
 
-  // Load inventory for selected customer
   useEffect(() => {
     const loadInventory = async () => {
       if (!form.customerId) return;
@@ -96,7 +93,6 @@ const CreateInvoice = () => {
     loadInventory();
   }, [form.customerId]);
 
-  // Calculate amount and item description
   useEffect(() => {
     const selected = inventoryList.find((i) => i._id === form.inventoryId);
     if (selected) {
@@ -110,7 +106,6 @@ const CreateInvoice = () => {
     }
   }, [form.inventoryId, inventoryList]);
 
-  // Handle input
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
   ) => {
@@ -118,7 +113,6 @@ const CreateInvoice = () => {
     setForm((prev) => ({ ...prev, [name]: value }));
   };
 
-  // Submit invoice
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -127,21 +121,39 @@ const CreateInvoice = () => {
       return;
     }
 
+    const selectedInventory = inventoryList.find((i) => i._id === form.inventoryId);
+    if (!selectedInventory) {
+      toast.error("Selected inventory not found.");
+      return;
+    }
+
     setLoading(true);
     try {
+      const unitPrice = 1.0;
+      const quantity = selectedInventory.weight;
+      const total = quantity * unitPrice;
+      const taxRate = 0.25;
+
       const res = await axiosInstance.post("/api/invoices", {
         customerId: form.customerId,
         invoiceNumber: form.invoiceNumber,
+        date: new Date().toISOString(),
         dueDate: form.dueDate,
         status: form.status,
-        items: form.items,
-        amount: Number(form.amount),
-        tax: 25,
-        grandTotal: Number(form.amount) * 1.25,
+        items: [
+          {
+            description: `${selectedInventory.goods} (${selectedInventory.type})`,
+            quantity: quantity,
+            unitPrice: unitPrice,
+            total: total,
+          },
+        ],
+        tax: total * taxRate,
+        grandTotal: total + total * taxRate,
         inventoryIds: [form.inventoryId],
         bankInfo: {
           accountNumber: form.bankAccount,
-          kidNumber: "123456789", // يمكن توليده لاحقًا أو تركه افتراضيًا
+          kidNumber: "123456789",
         },
       });
 

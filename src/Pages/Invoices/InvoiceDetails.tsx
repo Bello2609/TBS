@@ -44,7 +44,7 @@ interface Invoice {
   id: string;
   invoiceNumber: string;
   company: string;
-  customer: Customer;
+  customer?: Customer; // Make customer optional for safety
   products: string;
   quantity: number;
   unit: string;
@@ -99,7 +99,7 @@ const InvoiceDetails = () => {
 
   // 🧾 Download PDF with 3 pages
   const handleDownloadPDF = () => {
-    if (!invoice) return;
+    if (!invoice || !invoice.customer) return; // Check for invoice and customer presence
 
     const doc = new jsPDF() as jsPDFWithAutoTable;
 
@@ -110,18 +110,20 @@ const InvoiceDetails = () => {
     doc.text(`Company: ${invoice.company}`, 14, 30);
     doc.text(`Invoice #: ${invoice.invoiceNumber}`, 14, 38);
     doc.text(`Date: ${new Date(invoice.date).toLocaleDateString("no-NO")}`, 14, 46);
+
     if (invoice.dueDate) {
       doc.text(`Due Date: ${new Date(invoice.dueDate).toLocaleDateString("no-NO")}`, 14, 54);
     }
 
-    doc.text(`Customer: ${invoice.customer.companyName}`, 14, 62);
+    // Ensure customer data is present before accessing properties
+    doc.text(`Customer: ${invoice.customer.companyName || "N/A"}`, 14, 62);
     doc.text(
-      `Address: ${invoice.customer.address}, ${invoice.customer.zipCode} ${invoice.customer.city}`,
+      `Address: ${invoice.customer.address || "N/A"}, ${invoice.customer.zipCode || ""} ${invoice.customer.city || ""}`,
       14,
       70
     );
-    doc.text(`Phone: ${invoice.customer.companyPhone}`, 14, 78);
-    doc.text(`Email: ${invoice.customer.companyEmail}`, 14, 86);
+    doc.text(`Phone: ${invoice.customer.companyPhone || "N/A"}`, 14, 78);
+    doc.text(`Email: ${invoice.customer.companyEmail || "N/A"}`, 14, 86);
 
     autoTable(doc, {
       startY: 96,

@@ -15,13 +15,12 @@ interface InvoiceDetailsModalProps {
   onClose: () => void;
 }
 
-// ✅ Inline invoice type for simplicity
 interface Invoice {
   _id: string;
   invoiceNumber: string;
   status: "Paid" | "Pending" | "Overdue";
-  total: number;
-  grandTotal: number;
+  total?: number | null;
+  grandTotal?: number | null;
   dueDate?: string;
   date: string;
   customer: {
@@ -35,7 +34,6 @@ const InvoiceDetailsModal: React.FC<InvoiceDetailsModalProps> = ({ invoiceId, on
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // 🔄 Fetch invoice details
   useEffect(() => {
     const fetchInvoice = async () => {
       try {
@@ -73,6 +71,27 @@ const InvoiceDetailsModal: React.FC<InvoiceDetailsModalProps> = ({ invoiceId, on
     );
   }
 
+  // Helper for displaying customer
+  const renderCustomer = () => {
+    if (typeof invoice.customer === "string") return invoice.customer;
+    if (invoice.customer && typeof invoice.customer === "object") {
+      return invoice.customer.companyName || invoice.customer.name || "N/A";
+    }
+    return "N/A";
+  };
+
+  // Helper for displaying company
+  const renderCompanyName = () => {
+    if (typeof invoice.customer === "object" && invoice.customer !== null) {
+      return invoice.customer.companyName || "N/A";
+    }
+    return "N/A";
+  };
+
+  const formatMoney = (amount: number | null | undefined) => {
+    return typeof amount === "number" ? amount.toFixed(2) : "N/A";
+  };
+
   return (
     <ModalOverlay>
       <ModalContainer>
@@ -81,16 +100,20 @@ const InvoiceDetailsModal: React.FC<InvoiceDetailsModalProps> = ({ invoiceId, on
         <ModalContentScrollable>
           <p><strong>Invoice #:</strong> {invoice.invoiceNumber}</p>
           <p>
-            <strong>Customer:</strong>{" "}
-            {typeof invoice.customer === "string"
-              ? invoice.customer
-              : invoice.customer.companyName || invoice.customer.name || "N/A"}
+            <strong>Customer:</strong> {renderCustomer()}
           </p>
           <p><strong>Status:</strong> {invoice.status}</p>
-          <p><strong>Total:</strong> {invoice.total.toFixed(2)} kr</p>
-          <p><strong>Grand Total:</strong> {invoice.grandTotal.toFixed(2)} kr</p>
+          <p>
+            <strong>Total:</strong> {formatMoney(invoice.total)} kr
+          </p>
+          <p>
+            <strong>Grand Total:</strong> {formatMoney(invoice.grandTotal)} kr
+          </p>
           <p><strong>Due Date:</strong> {invoice.dueDate || "N/A"}</p>
           <p><strong>Date:</strong> {invoice.date}</p>
+          <p>
+            <strong>Company Name:</strong> {renderCompanyName()}
+          </p>
         </ModalContentScrollable>
       </ModalContainer>
     </ModalOverlay>

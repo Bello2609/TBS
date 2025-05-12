@@ -276,16 +276,16 @@ export const FilterButtons = styled.div`
   margin: 12px 0;
 `;
 
-export const FilterButton = styled.button<{ active: boolean }>`
+export const FilterButton = styled.button<{ $active: boolean }>`
   padding: 6px 14px;
   border-radius: 6px;
   border: 1px solid ${({ theme }) => theme.border || "#ccc"};
-  background: ${({ active, theme }) => (active ? theme.primary : "#f1f1f1")};
-  color: ${({ active }) => (active ? "#fff" : "#333")};
+  background: ${({ $active, theme }) => ($active ? theme.primary : "#f1f1f1")};
+  color: ${({ $active }) => ($active ? "#fff" : "#333")};
   cursor: pointer;
 
   &:hover {
-    background: ${({ active, theme }) => (active ? theme.primary : "#e5e7eb")};
+    background: ${({ $active, theme }) => ($active ? theme.primary : "#e5e7eb")};
   }
 `;
 
@@ -305,21 +305,21 @@ export const IconButton = styled.button`
   }
 `;
 
-export const StatusBadge = styled.span<{ status: string }>`
+export const StatusBadge = styled.span<{ $status: string }>`
   padding: 4px 10px;
   border-radius: 20px;
   font-size: 13px;
   font-weight: 600;
-  background-color: ${({ status }) =>
-    status === "Paid"
+  background-color: ${({ $status }) =>
+    $status === "Paid"
       ? "#d1fae5"
-      : status === "Overdue"
+      : $status === "Overdue"
       ? "#fee2e2"
       : "#fef9c3"};
-  color: ${({ status }) =>
-    status === "Paid"
+  color: ${({ $status }) =>
+    $status === "Paid"
       ? "#065f46"
-      : status === "Overdue"
+      : $status === "Overdue"
       ? "#991b1b"
       : "#92400e"};
 `;

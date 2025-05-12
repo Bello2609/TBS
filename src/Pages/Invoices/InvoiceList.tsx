@@ -32,10 +32,8 @@ import { Eye, Trash2 } from "lucide-react";
 import { toast } from "react-toastify";
 import InvoiceDetailsModal from "./invoiceDetailsModal";
 
-// ✅ Status filter options
 type StatusType = "All" | "Paid" | "Pending" | "Overdue";
 
-// ✅ Minimal invoice type for table display
 interface Invoice {
   _id: string;
   invoiceNumber: string;
@@ -63,7 +61,6 @@ const InvoiceList = () => {
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [selectedInvoiceId, setSelectedInvoiceId] = useState<string | null>(null);
 
-  // ✅ Fetch all invoices
   useEffect(() => {
     const fetchInvoices = async () => {
       try {
@@ -76,7 +73,6 @@ const InvoiceList = () => {
     fetchInvoices();
   }, []);
 
-  // ✅ Delete invoice
   const handleDelete = async (id: string) => {
     if (!window.confirm("Are you sure you want to delete this invoice?")) return;
     try {
@@ -88,7 +84,6 @@ const InvoiceList = () => {
     }
   };
 
-  // ✅ Filter and paginate
   const filteredInvoices = invoices
     .filter((inv) => {
       const matchStatus = filteredStatus === "All" || inv.status === filteredStatus;
@@ -109,7 +104,6 @@ const InvoiceList = () => {
   const totalPages = Math.ceil(filteredInvoices.length / itemsPerPage);
   const paginated = filteredInvoices.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
-  // ✅ Export filtered invoices as PDF
   const handleExportPDF = () => {
     const doc = new jsPDF();
     doc.text("Invoices", 14, 20);
@@ -142,7 +136,7 @@ const InvoiceList = () => {
         {["All", "Paid", "Pending", "Overdue"].map((status) => (
           <FilterButton
             key={status}
-            active={filteredStatus === status}
+            $active={filteredStatus === status}
             onClick={() => setFilteredStatus(status as StatusType)}
           >
             {status}
@@ -183,7 +177,7 @@ const InvoiceList = () => {
                 <TableData>{inv.quantity}</TableData>
                 <TableData>{inv.grandTotal.toFixed(2)} kr</TableData>
                 <TableData>
-                  <StatusBadge status={inv.status}>{inv.status}</StatusBadge>
+                  <StatusBadge $status={inv.status}>{inv.status}</StatusBadge>
                 </TableData>
                 <TableData>
                   {inv.dueDate ? format(new Date(inv.dueDate), "dd/MM/yyyy") : "N/A"}
