@@ -1,8 +1,14 @@
-import { Request, Response } from "express";
-import Inventory from "../models/inventory.js"; // Adjust the import path as necessary
-import mongoose from "mongoose";
+// backend/controllers/inventoryController.ts
 
-// ✅ GET /api/inventory
+import { Request, Response } from "express";
+import mongoose from "mongoose";
+import Inventory from "../models/inventory.js";
+import type { PopulatedCustomer, PopulatedSender } from "../types/populated.js";
+
+/**
+ * @desc   Get all inventory items, optionally filtered by customerId
+ * @route  GET /api/inventory
+ */
 export const getAllInventory = async (req: Request, res: Response): Promise<void> => {
   try {
     const { customerId } = req.query;
@@ -17,15 +23,15 @@ export const getAllInventory = async (req: Request, res: Response): Promise<void
       .populate("senderId", "name");
 
     const transformed = items.map((item) => {
-      const customer = item.customerId as unknown as { _id: string; companyName: string };
-      const sender = item.senderId as unknown as { _id: string; name: string };
+      const customer = item.customerId as unknown as PopulatedCustomer;
+      const sender = item.senderId as unknown as PopulatedSender;
 
       return {
         _id: item._id,
-        customerId: customer._id,
-        customerName: customer.companyName,
-        senderId: sender._id,
-        senderName: sender.name,
+        customerId: customer?._id ?? "unknown",
+        customerName: customer?.companyName ?? "unknown",
+        senderId: sender?._id ?? "unknown",
+        senderName: sender?.name ?? "unknown",
         goods: item.goods,
         type: item.type,
         quantity: item.quantity,
@@ -37,12 +43,15 @@ export const getAllInventory = async (req: Request, res: Response): Promise<void
 
     res.status(200).json(transformed);
   } catch (error) {
-    console.error("Error fetching inventory:", error);
+    console.error("❌ Error fetching inventory:", error);
     res.status(500).json({ message: "Failed to get inventory." });
   }
 };
 
-// ✅ GET /api/inventory/:id
+/**
+ * @desc   Get single inventory item by ID
+ * @route  GET /api/inventory/:id
+ */
 export const getInventoryById = async (req: Request, res: Response): Promise<void> => {
   try {
     const item = await Inventory.findById(req.params.id)
@@ -54,15 +63,15 @@ export const getInventoryById = async (req: Request, res: Response): Promise<voi
       return;
     }
 
-    const customer = item.customerId as unknown as { _id: string; companyName: string };
-    const sender = item.senderId as unknown as { _id: string; name: string };
+    const customer = item.customerId as unknown as PopulatedCustomer;
+    const sender = item.senderId as unknown as PopulatedSender;
 
     res.status(200).json({
       _id: item._id,
-      customerId: customer._id,
-      customerName: customer.companyName,
-      senderId: sender._id,
-      senderName: sender.name,
+      customerId: customer?._id ?? "unknown",
+      customerName: customer?.companyName ?? "unknown",
+      senderId: sender?._id ?? "unknown",
+      senderName: sender?.name ?? "unknown",
       goods: item.goods,
       type: item.type,
       quantity: item.quantity,
@@ -71,12 +80,15 @@ export const getInventoryById = async (req: Request, res: Response): Promise<voi
       departureDate: item.departureDate,
     });
   } catch (error) {
-    console.error("Error fetching item:", error);
+    console.error("❌ Error fetching inventory item:", error);
     res.status(500).json({ message: "Failed to fetch inventory item." });
   }
 };
 
-// ✅ POST /api/inventory
+/**
+ * @desc   Create a new inventory item
+ * @route  POST /api/inventory
+ */
 export const createInventory = async (req: Request, res: Response): Promise<void> => {
   try {
     const {
@@ -90,7 +102,7 @@ export const createInventory = async (req: Request, res: Response): Promise<void
       departureDate,
     } = req.body;
 
-    if (!senderId || !customerId) {
+    if (!customerId || !senderId) {
       res.status(400).json({ message: "Customer ID and Sender ID are required." });
       return;
     }
@@ -109,12 +121,15 @@ export const createInventory = async (req: Request, res: Response): Promise<void
     const saved = await newItem.save();
     res.status(201).json(saved);
   } catch (error) {
-    console.error("Error creating inventory:", error);
+    console.error("❌ Error creating inventory:", error);
     res.status(500).json({ message: "Failed to create inventory item." });
   }
 };
 
-// ✅ PUT /api/inventory/:id
+/**
+ * @desc   Update an existing inventory item
+ * @route  PUT /api/inventory/:id
+ */
 export const updateInventory = async (req: Request, res: Response): Promise<void> => {
   try {
     const {
@@ -150,15 +165,19 @@ export const updateInventory = async (req: Request, res: Response): Promise<void
 
     res.status(200).json(updated);
   } catch (error) {
-    console.error("Error updating inventory:", error);
+    console.error("❌ Error updating inventory:", error);
     res.status(500).json({ message: "Failed to update inventory item." });
   }
 };
 
-// ✅ DELETE /api/inventory/:id
+/**
+ * @desc   Delete an inventory item
+ * @route  DELETE /api/inventory/:id
+ */
 export const deleteInventory = async (req: Request, res: Response): Promise<void> => {
   try {
     const deleted = await Inventory.findByIdAndDelete(req.params.id);
+
     if (!deleted) {
       res.status(404).json({ message: "Inventory item not found." });
       return;
@@ -166,7 +185,7 @@ export const deleteInventory = async (req: Request, res: Response): Promise<void
 
     res.status(200).json({ message: "Inventory item deleted." });
   } catch (error) {
-    console.error("Error deleting inventory:", error);
+    console.error("❌ Error deleting inventory:", error);
     res.status(500).json({ message: "Failed to delete inventory item." });
   }
 };

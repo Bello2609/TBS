@@ -1,40 +1,42 @@
+// src/pages/inventory/types.ts
+
 /**
  * Represents a single inventory record.
  */
 export interface InventoryItem {
-  _id?: string;               // MongoDB document ID
-  customerId: string;         // Foreign key reference to Customer
-  customerName: string;       // Display name of the customer (for UI)
-  senderId: string;           // Foreign key reference to Sender
-  senderName: string;         // Name of the sender (for UI only)
-  goods: string;              // Description of goods
-  type: string;               // Type/category of goods
-  quantity: number;           // Quantity of items
-  weight: number;             // Total weight in kg
-  arrivalDate: string;        // ISO format date string
-  departureDate?: string;     // Optional ISO format date string
+  _id?: string;                // MongoDB document ID
+  customerId: string;          // Foreign key reference to Customer
+  customerName: string;        // Display name of the customer (used in table)
+  senderId: string;            // Foreign key reference to Sender
+  senderName: string;          // Name of the sender (used in table)
+  goods: string;               // Description of the goods
+  type: string;                // Category/type of the goods
+  quantity: number;            // Number of units/items
+  weight: number;              // Total weight in kilograms
+  arrivalDate: string;         // Arrival date in ISO format
+  departureDate?: string;      // Optional departure date in ISO format
 }
 
 /**
  * Represents a customer object.
  */
 export interface Customer {
-  _id: string;                // Unique identifier
-  companyName: string;        // Display name for UI (used in Select)
+  _id: string;                 // Unique customer ID
+  companyName: string;         // Company name (used in select dropdowns)
 }
 
 /**
  * Represents a sender object.
  */
 export interface Sender {
-  _id: string;                // Unique identifier
-  name: string;               // Sender's name (used in Select and inventory)
+  _id: string;                 // Unique sender ID
+  name: string;                // Sender name (used in select dropdowns)
 }
 
 /**
- * Used for dropdown/select inputs (e.g., react-select).
+ * Reusable option format for select inputs (e.g., react-select).
  */
 export interface OptionType {
-  value: string;              // Actual value (e.g., _id or name)
-  label: string;              // Display label
+  value: string;               // Internal value (e.g., ID)
+  label: string;               // Label displayed in the UI
 }

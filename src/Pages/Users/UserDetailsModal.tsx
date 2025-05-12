@@ -10,6 +10,7 @@ import {
 import { Button } from "@/components/ui/button";
 import type { User } from "../types/user";
 
+// Extended user type to support customer fields
 interface ExtendedCustomerUser extends User {
   companyEmail?: string;
   orgNumber?: string;
@@ -32,13 +33,17 @@ const UserDetailsModal: React.FC<Props> = ({ user, onClose }) => {
 
   return (
     <>
+      {/* Modal background overlay */}
       <ModalOverlay onClick={onClose} />
+
+      {/* Modal main container */}
       <ModalContainer>
         <ModalContentScrollable style={{ maxWidth: "600px", margin: "auto" }}>
           <h2 style={{ marginBottom: "24px", textAlign: "center" }}>
             User Details
           </h2>
 
+          {/* Main user fields */}
           <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
             {user._id && (
               <DetailRow>
@@ -63,7 +68,7 @@ const UserDetailsModal: React.FC<Props> = ({ user, onClose }) => {
               <span>{user.role || "N/A"}</span>
             </DetailRow>
 
-            {/* ✅ Extra fields for customers */}
+            {/* Additional customer details */}
             {isCustomer && customer && (
               <>
                 <DetailRow>
@@ -79,7 +84,7 @@ const UserDetailsModal: React.FC<Props> = ({ user, onClose }) => {
                   <span>{customer.orgNumber || "N/A"}</span>
                 </DetailRow>
                 <DetailRow>
-                  <strong>Zip Code:</strong>
+                  <strong>ZIP Code:</strong>
                   <span>{customer.zipCode || "N/A"}</span>
                 </DetailRow>
                 <DetailRow>
@@ -106,6 +111,7 @@ const UserDetailsModal: React.FC<Props> = ({ user, onClose }) => {
             )}
           </div>
 
+          {/* Close modal button */}
           <div style={{ textAlign: "center", marginTop: "24px" }}>
             <Button onClick={onClose}>Close</Button>
           </div>

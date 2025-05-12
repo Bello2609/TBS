@@ -29,6 +29,7 @@ const InventoryTableComponent: React.FC<InventoryTableProps> = ({
     <InventoryTable>
       <thead>
         <TableHead>
+          <TableHeader>Customer</TableHeader>
           <TableHeader>Arrival</TableHeader>
           <TableHeader>Departure</TableHeader>
           <TableHeader>Sender</TableHeader>
@@ -42,6 +43,7 @@ const InventoryTableComponent: React.FC<InventoryTableProps> = ({
       <tbody>
         {inventory.map((item) => (
           <TableRow key={item._id ?? `${item.goods}-${item.arrivalDate}`}>
+            <TableCell>{item.customerName || "—"}</TableCell>
             <TableCell>
               {item.arrivalDate
                 ? new Date(item.arrivalDate).toLocaleDateString("nb-NO")

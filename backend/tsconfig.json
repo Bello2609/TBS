@@ -4,10 +4,15 @@
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
     "esModuleInterop": true,
-    
+    "forceConsistentCasingInFileNames": true,
     "skipLibCheck": true,
     "strict": true,
+    "resolveJsonModule": true,
     "outDir": "./dist"
+  },
+  "ts-node": {
+    "esm": true,
+    "experimentalSpecifierResolution": "node"
   },
   "include": ["./**/*.ts"],
   "exclude": ["node_modules", "dist"]
