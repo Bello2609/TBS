@@ -54,19 +54,46 @@ interface Props {
 }
 
 const InvoiceView: React.FC<Props> = ({ invoice, onBack, onDownload }) => {
-  const totalQty = invoice.inventoryItems.reduce((sum, item) => sum + (item.quantity || 0), 0);
-  const totalWeight = invoice.inventoryItems.reduce((sum, item) => sum + (Number(item.weight) || 0), 0);
+  const totalQty = invoice.inventoryItems.reduce(
+    (sum, item) => sum + (item.quantity || 0),
+    0
+  );
+  const totalWeight = invoice.inventoryItems.reduce(
+    (sum, item) => sum + (item.weight || 0),
+    0
+  );
 
   return (
-    <InvoiceContainer style={{ maxWidth: "1000px", margin: "0 auto", backgroundColor: "#fff", padding: "32px", borderRadius: "12px" }}>
+    <InvoiceContainer
+      style={{
+        maxWidth: "1000px",
+        margin: "0 auto",
+        backgroundColor: "#fff",
+        padding: "32px",
+        borderRadius: "12px",
+      }}
+    >
       {/* Action Buttons */}
-      <div style={{ display: "flex", justifyContent: "flex-end", gap: "12px", marginBottom: "24px" }}>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "flex-end",
+          gap: "12px",
+          marginBottom: "24px",
+        }}
+      >
         <Button onClick={onBack}>← Back</Button>
         <Button onClick={onDownload}>⬇ Download PDF</Button>
       </div>
 
-      {/* Invoice Header */}
-      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "32px" }}>
+      {/* Header */}
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          marginBottom: "32px",
+        }}
+      >
         <div>
           <h2>{invoice.company}</h2>
           <p>Stanseveien 33, 0976 Oslo</p>
@@ -75,32 +102,58 @@ const InvoiceView: React.FC<Props> = ({ invoice, onBack, onDownload }) => {
         </div>
         <div>
           <h1 style={{ fontSize: "28px", color: "#dc2626" }}>FAKTURA</h1>
-          <p><strong>Invoice #:</strong> {invoice.invoiceNumber}</p>
-          <p><strong>Date:</strong> {new Date(invoice.date).toLocaleDateString("no-NO")}</p>
-          {invoice.dueDate && <p><strong>Due Date:</strong> {new Date(invoice.dueDate).toLocaleDateString("no-NO")}</p>}
-          <p><strong>Status:</strong> {invoice.status === "Paid" ? "Betalt" : invoice.status}</p>
+          <p>
+            <strong>Invoice #:</strong> {invoice.invoiceNumber}
+          </p>
+          <p>
+            <strong>Date:</strong>{" "}
+            {new Date(invoice.date).toLocaleDateString("no-NO")}
+          </p>
+          {invoice.dueDate && (
+            <p>
+              <strong>Due Date:</strong>{" "}
+              {new Date(invoice.dueDate).toLocaleDateString("no-NO")}
+            </p>
+          )}
+          <p>
+            <strong>Status:</strong>{" "}
+            {invoice.status === "Paid" ? "Betalt" : invoice.status}
+          </p>
         </div>
       </div>
 
-      {/* Customer Info */}
+      {/* Customer */}
       <div style={{ marginBottom: "28px" }}>
         <h3>Customer Information</h3>
         {invoice.customer ? (
           <>
-            <p><strong>{invoice.customer.companyName}</strong></p>
-            <p>{invoice.customer.address}, {invoice.customer.zipCode} {invoice.customer.city}</p>
+            <p>
+              <strong>{invoice.customer.companyName}</strong>
+            </p>
+            <p>
+              {invoice.customer.address}, {invoice.customer.zipCode}{" "}
+              {invoice.customer.city}
+            </p>
             <p>Phone: {invoice.customer.companyPhone}</p>
             <p>Email: {invoice.customer.companyEmail}</p>
           </>
         ) : (
-          <p style={{ color: "red" }}><strong>Customer data not available</strong></p>
+          <p style={{ color: "red" }}>
+            <strong>Customer data not available</strong>
+          </p>
         )}
       </div>
 
-      {/* Product Details */}
+      {/* Invoice Details */}
       <div style={{ marginBottom: "32px" }}>
         <h3>Invoice Details</h3>
-        <table style={{ width: "100%", borderCollapse: "collapse", marginTop: "12px" }}>
+        <table
+          style={{
+            width: "100%",
+            borderCollapse: "collapse",
+            marginTop: "12px",
+          }}
+        >
           <thead>
             <tr style={{ backgroundColor: "#f3f4f6" }}>
               <th style={{ padding: "10px" }}>Product</th>
@@ -115,29 +168,46 @@ const InvoiceView: React.FC<Props> = ({ invoice, onBack, onDownload }) => {
               <td style={{ padding: "10px" }}>{invoice.products}</td>
               <td style={{ padding: "10px" }}>{invoice.totalQuantity}</td>
               <td style={{ padding: "10px" }}>{invoice.unit}</td>
-              <td style={{ padding: "10px" }}>{invoice.unitPrice.toFixed(2)} kr</td>
-              <td style={{ padding: "10px" }}>{invoice.total?.toFixed(2) || "0.00"} kr</td>
+              <td style={{ padding: "10px" }}>
+                {invoice.unitPrice.toFixed(2)} kr
+              </td>
+              <td style={{ padding: "10px" }}>
+                {invoice.total?.toFixed(2) ?? "0.00"} kr
+              </td>
             </tr>
           </tbody>
         </table>
 
-        {/* VAT + Grand Total */}
         <div style={{ marginTop: "16px", textAlign: "right" }}>
-          {typeof invoice.tax === "number" && typeof invoice.grandTotal === "number" ? (
+          {typeof invoice.tax === "number" &&
+          typeof invoice.grandTotal === "number" ? (
             <>
-              <p><strong>VAT (25%):</strong> {invoice.tax.toFixed(2)} kr</p>
-              <p><strong>Total incl. VAT:</strong> {invoice.grandTotal.toFixed(2)} kr</p>
+              <p>
+                <strong>VAT (25%):</strong> {invoice.tax.toFixed(2)} kr
+              </p>
+              <p>
+                <strong>Total incl. VAT:</strong>{" "}
+                {invoice.grandTotal.toFixed(2)} kr
+              </p>
             </>
           ) : (
-            <p style={{ color: "red" }}><strong>Missing tax or total data</strong></p>
+            <p style={{ color: "red" }}>
+              <strong>Missing tax or total data</strong>
+            </p>
           )}
         </div>
       </div>
 
-      {/* Inventory Items */}
+      {/* Inventory Table */}
       <div style={{ marginBottom: "32px" }}>
         <h3>Attached Inventory</h3>
-        <table style={{ width: "100%", borderCollapse: "collapse", marginTop: "10px" }}>
+        <table
+          style={{
+            width: "100%",
+            borderCollapse: "collapse",
+            marginTop: "10px",
+          }}
+        >
           <thead>
             <tr style={{ backgroundColor: "#f3f4f6" }}>
               <th style={{ padding: "8px" }}>Arrival</th>
@@ -151,14 +221,16 @@ const InvoiceView: React.FC<Props> = ({ invoice, onBack, onDownload }) => {
             </tr>
           </thead>
           <tbody>
-            {invoice.inventoryItems.map((item, index) => (
-              <tr key={index}>
+            {invoice.inventoryItems.map((item, idx) => (
+              <tr key={idx}>
                 <td style={{ padding: "8px" }}>{item.arrivalDate}</td>
                 <td style={{ padding: "8px" }}>{item.customer}</td>
                 <td style={{ padding: "8px" }}>{item.goods}</td>
                 <td style={{ padding: "8px" }}>{item.type}</td>
                 <td style={{ padding: "8px" }}>{item.quantity}</td>
-                <td style={{ padding: "8px" }}>{item.weight.toFixed(1)}</td>
+                <td style={{ padding: "8px" }}>
+                  {item.weight?.toFixed(1) ?? "0.0"}
+                </td>
                 <td style={{ padding: "8px" }}>{item.departureDate}</td>
                 <td style={{ padding: "8px" }}>{item.sender?.name || "-"}</td>
               </tr>
@@ -171,11 +243,15 @@ const InvoiceView: React.FC<Props> = ({ invoice, onBack, onDownload }) => {
         </p>
       </div>
 
-      {/* Bank Info */}
+      {/* Payment Info */}
       <div style={{ marginBottom: "32px" }}>
         <h3>Payment Information</h3>
-        <p><strong>Account Number:</strong> {invoice.bankInfo.accountNumber}</p>
-        <p><strong>KID:</strong> {invoice.bankInfo.kidNumber}</p>
+        <p>
+          <strong>Account Number:</strong> {invoice.bankInfo.accountNumber}
+        </p>
+        <p>
+          <strong>KID:</strong> {invoice.bankInfo.kidNumber}
+        </p>
       </div>
     </InvoiceContainer>
   );

@@ -1,3 +1,5 @@
+// src/pages/invoices/InvoiceDetails.tsx
+
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import jsPDF from "jspdf";
@@ -13,7 +15,7 @@ interface jsPDFWithAutoTable extends jsPDF {
   lastAutoTable?: { finalY: number };
 }
 
-// Define the customer structure
+// Customer structure
 interface Customer {
   companyName: string;
   companyEmail: string;
@@ -23,7 +25,7 @@ interface Customer {
   companyPhone: string;
 }
 
-// Define inventory item
+// Inventory structure
 interface InventoryItem {
   arrivalDate: string;
   departureDate: string;
@@ -37,7 +39,7 @@ interface InventoryItem {
   };
 }
 
-// Define invoice structure
+// Invoice structure
 interface Invoice {
   id: string;
   invoiceNumber: string;
@@ -69,6 +71,7 @@ const InvoiceDetails = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // Load invoice
   useEffect(() => {
     const fetchInvoice = async () => {
       try {
@@ -93,13 +96,16 @@ const InvoiceDetails = () => {
     fetchInvoice();
   }, [id, user]);
 
+  // PDF Generator
   const handleDownloadPDF = () => {
     if (!invoice || !invoice.customer) return;
 
     const doc = new jsPDF() as jsPDFWithAutoTable;
 
+    // Page 1
     doc.setFontSize(18);
     doc.text("Invoice", 14, 20);
+
     doc.setFontSize(12);
     doc.text(`Company: ${invoice.company}`, 14, 30);
     doc.text(`Invoice #: ${invoice.invoiceNumber}`, 14, 38);
@@ -109,28 +115,36 @@ const InvoiceDetails = () => {
     }
 
     doc.text(`Customer: ${invoice.customer.companyName}`, 14, 62);
-    doc.text(`Address: ${invoice.customer.address}, ${invoice.customer.zipCode} ${invoice.customer.city}`, 14, 70);
+    doc.text(
+      `Address: ${invoice.customer.address}, ${invoice.customer.zipCode} ${invoice.customer.city}`,
+      14,
+      70
+    );
     doc.text(`Phone: ${invoice.customer.companyPhone}`, 14, 78);
     doc.text(`Email: ${invoice.customer.companyEmail}`, 14, 86);
 
+    // Table 1 - Products
     autoTable(doc, {
       startY: 96,
       head: [["Product", "Qty", "Unit", "Unit Price", "Total"]],
       body: [
         [
-          invoice.products,
-          invoice.totalQuantity.toFixed(2),
-          invoice.unit,
-          `${invoice.unitPrice.toFixed(2)} kr`,
-          `${invoice.total.toFixed(2)} kr`,
+          invoice.products ?? "-",
+          invoice.totalQuantity?.toString() ?? "0",
+          invoice.unit ?? "-",
+          `${invoice.unitPrice?.toFixed(2)} kr`,
+          `${invoice.total?.toFixed(2)} kr`,
         ],
       ],
     });
 
-    const y = doc.lastAutoTable?.finalY ?? 110;
-    doc.text(`VAT (25%): ${invoice.tax.toFixed(2)} kr`, 14, y + 10);
+    const y = doc.lastAutoTable?.finalY ?? 120;
+    const taxAmount = (invoice.total * invoice.tax) / 100;
+
+    doc.text(`VAT (${invoice.tax}%): ${taxAmount.toFixed(2)} kr`, 14, y + 10);
     doc.text(`Grand Total: ${invoice.grandTotal.toFixed(2)} kr`, 14, y + 18);
 
+    // Page 2 - Inventory Table
     doc.addPage();
     doc.setFontSize(14);
     doc.text("Attached Inventory", 14, 20);
@@ -139,17 +153,18 @@ const InvoiceDetails = () => {
       startY: 28,
       head: [["Arrival", "Customer", "Goods", "Type", "Qty", "Weight", "Departure", "Sender"]],
       body: invoice.inventoryItems.map((item) => [
-        item.arrivalDate,
-        item.customer,
-        item.goods,
-        item.type,
-        item.quantity.toString(),
-        item.weight.toFixed(2),
-        item.departureDate,
-        item.sender?.name || "-",
+        item.arrivalDate ?? "-",
+        item.customer ?? "-",
+        item.goods ?? "-",
+        item.type ?? "-",
+        item.quantity?.toString() ?? "0",
+        item.weight?.toFixed(2) ?? "0.00",
+        item.departureDate ?? "-",
+        item.sender?.name ?? "-",
       ]),
     });
 
+    // Page 3 - Bank Info
     doc.addPage();
     doc.setFontSize(14);
     doc.text("Payment Information", 14, 20);
@@ -157,9 +172,11 @@ const InvoiceDetails = () => {
     doc.text(`Account Number: ${invoice.bankInfo.accountNumber}`, 14, 30);
     doc.text(`KID: ${invoice.bankInfo.kidNumber}`, 14, 38);
 
+    // Save
     doc.save(`Invoice_${invoice.invoiceNumber}.pdf`);
   };
 
+  // States
   if (!user) {
     return (
       <InvoiceContainer>
@@ -197,6 +214,7 @@ const InvoiceDetails = () => {
     );
   }
 
+  // View
   return (
     <InvoiceView
       invoice={invoice}
