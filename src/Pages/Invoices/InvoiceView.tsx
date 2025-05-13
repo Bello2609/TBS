@@ -34,9 +34,9 @@ interface Invoice {
   company: string;
   customer?: Customer;
   products: string;
-  quantity: number;
   unit: string;
   unitPrice: number;
+  totalQuantity: number;
   total?: number;
   tax?: number;
   grandTotal?: number;
@@ -54,15 +54,8 @@ interface Props {
 }
 
 const InvoiceView: React.FC<Props> = ({ invoice, onBack, onDownload }) => {
-  // Safer calculations with fallbacks
-  const totalQty = (invoice.inventoryItems || []).reduce(
-    (sum, item) => sum + (item.quantity || 0),
-    0
-  );
-  const totalWeight = (invoice.inventoryItems || []).reduce(
-    (sum, item) => sum + (Number(item.weight) || 0),
-    0
-  );
+  const totalQty = invoice.inventoryItems.reduce((sum, item) => sum + (item.quantity || 0), 0);
+  const totalWeight = invoice.inventoryItems.reduce((sum, item) => sum + (Number(item.weight) || 0), 0);
 
   return (
     <InvoiceContainer style={{ maxWidth: "1000px", margin: "0 auto", backgroundColor: "#fff", padding: "32px", borderRadius: "12px" }}>
@@ -84,14 +77,12 @@ const InvoiceView: React.FC<Props> = ({ invoice, onBack, onDownload }) => {
           <h1 style={{ fontSize: "28px", color: "#dc2626" }}>FAKTURA</h1>
           <p><strong>Invoice #:</strong> {invoice.invoiceNumber}</p>
           <p><strong>Date:</strong> {new Date(invoice.date).toLocaleDateString("no-NO")}</p>
-          {invoice.dueDate && (
-            <p><strong>Due Date:</strong> {new Date(invoice.dueDate).toLocaleDateString("no-NO")}</p>
-          )}
+          {invoice.dueDate && <p><strong>Due Date:</strong> {new Date(invoice.dueDate).toLocaleDateString("no-NO")}</p>}
           <p><strong>Status:</strong> {invoice.status === "Paid" ? "Betalt" : invoice.status}</p>
         </div>
       </div>
 
-      {/* Customer Information */}
+      {/* Customer Info */}
       <div style={{ marginBottom: "28px" }}>
         <h3>Customer Information</h3>
         {invoice.customer ? (
@@ -106,7 +97,7 @@ const InvoiceView: React.FC<Props> = ({ invoice, onBack, onDownload }) => {
         )}
       </div>
 
-      {/* Invoice Product Info */}
+      {/* Product Details */}
       <div style={{ marginBottom: "32px" }}>
         <h3>Invoice Details</h3>
         <table style={{ width: "100%", borderCollapse: "collapse", marginTop: "12px" }}>
@@ -122,43 +113,28 @@ const InvoiceView: React.FC<Props> = ({ invoice, onBack, onDownload }) => {
           <tbody>
             <tr>
               <td style={{ padding: "10px" }}>{invoice.products}</td>
-              <td style={{ padding: "10px" }}>{invoice.quantity}</td>
+              <td style={{ padding: "10px" }}>{invoice.totalQuantity}</td>
               <td style={{ padding: "10px" }}>{invoice.unit}</td>
-              <td style={{ padding: "10px" }}>
-                {(invoice.unitPrice ?? 0).toFixed(2)} kr
-              </td>
-              <td style={{ padding: "10px" }}>
-                {typeof invoice.total === "number" && !isNaN(invoice.total)
-                  ? invoice.total.toFixed(2) + " kr"
-                  : "N/A"}
-              </td>
+              <td style={{ padding: "10px" }}>{invoice.unitPrice.toFixed(2)} kr</td>
+              <td style={{ padding: "10px" }}>{invoice.total?.toFixed(2) || "0.00"} kr</td>
             </tr>
           </tbody>
         </table>
+
+        {/* VAT + Grand Total */}
         <div style={{ marginTop: "16px", textAlign: "right" }}>
-          {typeof invoice.total === "number" &&
-           typeof invoice.tax === "number" &&
-           !isNaN(invoice.total) &&
-           !isNaN(invoice.tax) ? (
+          {typeof invoice.tax === "number" && typeof invoice.grandTotal === "number" ? (
             <>
-              <p>
-                <strong>VAT ({invoice.tax}%):</strong>{" "}
-                {((invoice.total * invoice.tax) / 100).toFixed(2)} kr
-              </p>
-              <p>
-                <strong>Total incl. VAT:</strong>{" "}
-                {typeof invoice.grandTotal === "number" && !isNaN(invoice.grandTotal)
-                  ? invoice.grandTotal.toFixed(2)
-                  : "N/A"} kr
-              </p>
+              <p><strong>VAT (25%):</strong> {invoice.tax.toFixed(2)} kr</p>
+              <p><strong>Total incl. VAT:</strong> {invoice.grandTotal.toFixed(2)} kr</p>
             </>
           ) : (
-            <p style={{ color: "red" }}><strong>Missing total or tax value</strong></p>
+            <p style={{ color: "red" }}><strong>Missing tax or total data</strong></p>
           )}
         </div>
       </div>
 
-      {/* Inventory Table */}
+      {/* Inventory Items */}
       <div style={{ marginBottom: "32px" }}>
         <h3>Attached Inventory</h3>
         <table style={{ width: "100%", borderCollapse: "collapse", marginTop: "10px" }}>
@@ -171,18 +147,18 @@ const InvoiceView: React.FC<Props> = ({ invoice, onBack, onDownload }) => {
               <th style={{ padding: "8px" }}>Qty</th>
               <th style={{ padding: "8px" }}>Weight (kg)</th>
               <th style={{ padding: "8px" }}>Departure</th>
-              <th style={{ padding: "8px" }}>Sender Name</th>
+              <th style={{ padding: "8px" }}>Sender</th>
             </tr>
           </thead>
           <tbody>
-            {(invoice.inventoryItems || []).map((item, index) => (
+            {invoice.inventoryItems.map((item, index) => (
               <tr key={index}>
                 <td style={{ padding: "8px" }}>{item.arrivalDate}</td>
                 <td style={{ padding: "8px" }}>{item.customer}</td>
                 <td style={{ padding: "8px" }}>{item.goods}</td>
                 <td style={{ padding: "8px" }}>{item.type}</td>
                 <td style={{ padding: "8px" }}>{item.quantity}</td>
-                <td style={{ padding: "8px" }}>{(item.weight || 0).toFixed(1)}</td>
+                <td style={{ padding: "8px" }}>{item.weight.toFixed(1)}</td>
                 <td style={{ padding: "8px" }}>{item.departureDate}</td>
                 <td style={{ padding: "8px" }}>{item.sender?.name || "-"}</td>
               </tr>
@@ -191,7 +167,7 @@ const InvoiceView: React.FC<Props> = ({ invoice, onBack, onDownload }) => {
         </table>
         <p style={{ marginTop: "8px" }}>
           <strong>Total Quantity:</strong> {totalQty} &nbsp; | &nbsp;
-          <strong>Total Weight:</strong> {!isNaN(totalWeight) ? totalWeight.toFixed(1) : "0.0"} kg
+          <strong>Total Weight:</strong> {totalWeight.toFixed(1)} kg
         </p>
       </div>
 

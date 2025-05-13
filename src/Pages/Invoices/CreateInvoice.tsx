@@ -75,7 +75,9 @@ const CreateInvoice = () => {
     const loadInventory = async () => {
       if (!form.customerId) return;
       try {
-        const res = await axiosInstance.get(`/api/inventory/uninvoiced?customerId=${form.customerId}`);
+        const res = await axiosInstance.get(
+          `/api/inventory/uninvoiced?customerId=${form.customerId}`
+        );
         setInventoryList(res.data || []);
       } catch {
         toast.error("Failed to load inventory.");
@@ -119,13 +121,16 @@ const CreateInvoice = () => {
       const taxAmount = total * taxRate;
       const grandTotal = total + taxAmount;
 
-      const res = await axiosInstance.post("/api/invoices", {
+      const payload = {
         customerId: form.customerId,
         invoiceNumber: form.invoiceNumber,
         date: new Date().toISOString(),
         dueDate: form.dueDate,
         status: form.status,
-        totalQuantity: quantity, // ✅ جديد
+        totalQuantity: quantity,
+        products: selectedInventory.goods,
+        unit: "kg",
+        unitPrice: unitPrice,
         items: [
           {
             description: `${selectedInventory.goods} (${selectedInventory.type})`,
@@ -141,7 +146,9 @@ const CreateInvoice = () => {
           accountNumber: form.bankAccount,
           kidNumber: "123456789",
         },
-      });
+      };
+
+      const res = await axiosInstance.post("/api/invoices", payload);
 
       toast.success("Invoice created successfully!");
       navigate(`/invoices/${res.data._id}`);

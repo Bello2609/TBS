@@ -57,6 +57,10 @@ export const createInvoice = async (req: Request, res: Response): Promise<void> 
       grandTotal,
       inventoryIds,
       bankInfo,
+      products,
+      unit,
+      unitPrice,
+      totalQuantity,
     } = req.body;
 
     if (!Array.isArray(inventoryIds) || inventoryIds.length === 0) {
@@ -64,17 +68,10 @@ export const createInvoice = async (req: Request, res: Response): Promise<void> 
       return;
     }
 
-    // ✅ Fetch inventory and populate senderId
     const inventories = await Inventory.find({
       _id: { $in: inventoryIds.map((id: string) => new mongoose.Types.ObjectId(id)) },
     }).populate("senderId");
 
-    if (inventories.length === 0) {
-      res.status(404).json({ message: "No matching inventory items found." });
-      return;
-    }
-
-    // ✅ Build inventory snapshot for invoice
     const inventorySnapshots = inventories.map((inv) => ({
       arrivalDate: inv.arrivalDate.toISOString().split("T")[0],
       departureDate: inv.departureDate?.toISOString().split("T")[0] || "-",
@@ -90,18 +87,20 @@ export const createInvoice = async (req: Request, res: Response): Promise<void> 
             : "-",
       },
     }));
-    const totalQuantity = inventories.reduce((sum, inv) => sum + (inv.quantity || 0), 0);
-    // ✅ Save invoice
+
     const invoice = new Invoice({
       customerId,
       invoiceNumber,
       date,
       dueDate,
       status,
+      products,
+      unit,
+      unitPrice,
+      totalQuantity,
       items,
       tax,
       grandTotal,
-      totalQuantity,
       inventoryItems: inventorySnapshots,
       bankInfo,
     });
@@ -113,6 +112,7 @@ export const createInvoice = async (req: Request, res: Response): Promise<void> 
     res.status(500).json({ message: "Failed to create invoice." });
   }
 };
+
 
 // ✅ PUT /api/invoices/:id - Update invoice
 export const updateInvoice = async (req: Request, res: Response): Promise<void> => {

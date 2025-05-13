@@ -1,6 +1,6 @@
 import mongoose, { Document, Schema } from "mongoose";
 
-// ✅ Subdocument schema for bank info
+// Subdocument schema for bank information
 const BankInfoSchema = new Schema(
   {
     accountNumber: { type: String, required: true },
@@ -9,7 +9,7 @@ const BankInfoSchema = new Schema(
   { _id: false }
 );
 
-// ✅ Subdocument schema for inventory snapshot (only sender name)
+// Subdocument schema for inventory snapshots
 const InventorySnapshotSchema = new Schema(
   {
     arrivalDate: { type: String, required: true },
@@ -26,7 +26,7 @@ const InventorySnapshotSchema = new Schema(
   { _id: false }
 );
 
-// ✅ Subdocument schema for invoice line items
+// Subdocument schema for invoice line items
 const InvoiceItemSchema = new Schema(
   {
     description: { type: String, required: true },
@@ -37,13 +37,17 @@ const InvoiceItemSchema = new Schema(
   { _id: false }
 );
 
-// ✅ Invoice document interface
+// Main document interface
 export interface InvoiceDocument extends Document {
   customerId: mongoose.Types.ObjectId;
   invoiceNumber: string;
   date: Date;
   dueDate?: Date;
   status: "Paid" | "Pending" | "Overdue";
+  products: string;
+  unit: string;
+  unitPrice: number;
+  totalQuantity: number;
   items: {
     description: string;
     quantity: number;
@@ -52,7 +56,6 @@ export interface InvoiceDocument extends Document {
   }[];
   tax: number;
   grandTotal: number;
-  totalQuantity: number;
   inventoryItems: {
     arrivalDate: string;
     departureDate: string;
@@ -73,12 +76,12 @@ export interface InvoiceDocument extends Document {
   updatedAt: Date;
 }
 
-// ✅ Main invoice schema
+// Main schema definition
 const invoiceSchema = new Schema<InvoiceDocument>(
   {
     customerId: {
       type: Schema.Types.ObjectId,
-      ref: "Customer", // ✅ يجب أن يكون مطابقًا لاسم موديل الزبون الحقيقي
+      ref: "Customer",
       required: true,
     },
     invoiceNumber: {
@@ -100,16 +103,29 @@ const invoiceSchema = new Schema<InvoiceDocument>(
       default: "Pending",
       required: true,
     },
+    products: {
+      type: String,
+      required: true,
+    },
+    unit: {
+      type: String,
+      required: true,
+      default: "kg",
+    },
+    unitPrice: {
+      type: Number,
+      required: true,
+    },
+    totalQuantity: {
+      type: Number,
+      required: true,
+    },
     items: [InvoiceItemSchema],
     tax: {
       type: Number,
       required: true,
     },
     grandTotal: {
-      type: Number,
-      required: true,
-    },
-    totalQuantity: {
       type: Number,
       required: true,
     },
