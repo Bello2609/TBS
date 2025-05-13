@@ -1,3 +1,5 @@
+// src/pages/invoices/CreateInvoice.tsx
+
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axiosInstance from "@/services/axiosInstance";
@@ -27,33 +29,23 @@ interface Inventory {
   arrivalDate: string;
 }
 
-interface InvoiceForm {
-  customerId: string;
-  inventoryId: string;
-  invoiceNumber: string;
-  amount: number;
-  status: "Pending" | "Paid" | "Overdue";
-  dueDate: string;
-  items: string;
-  bankAccount: string;
-}
-
 const CreateInvoice = () => {
   const navigate = useNavigate();
 
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [inventoryList, setInventoryList] = useState<Inventory[]>([]);
-  const [form, setForm] = useState<InvoiceForm>({
+  const [selectedInventory, setSelectedInventory] = useState<Inventory | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  const [form, setForm] = useState({
     customerId: "",
     inventoryId: "",
     invoiceNumber: "",
-    amount: 0,
-    status: "Pending",
+    status: "Pending" as "Pending" | "Paid" | "Overdue",
     dueDate: "",
-    items: "",
     bankAccount: "",
+    itemsNote: "",
   });
-  const [loading, setLoading] = useState(false);
 
   const generateInvoiceNumber = () => {
     const date = new Date();
@@ -95,15 +87,7 @@ const CreateInvoice = () => {
 
   useEffect(() => {
     const selected = inventoryList.find((i) => i._id === form.inventoryId);
-    if (selected) {
-      const pricePerKg = 1.0;
-      const total = selected.weight * pricePerKg;
-      setForm((prev) => ({
-        ...prev,
-        amount: total,
-        items: `${selected.goods} (${selected.type}) – ${selected.weight} kg\nArrival: ${selected.arrivalDate}`,
-      }));
-    }
+    setSelectedInventory(selected || null);
   }, [form.inventoryId, inventoryList]);
 
   const handleChange = (
@@ -121,7 +105,6 @@ const CreateInvoice = () => {
       return;
     }
 
-    const selectedInventory = inventoryList.find((i) => i._id === form.inventoryId);
     if (!selectedInventory) {
       toast.error("Selected inventory not found.");
       return;
@@ -133,6 +116,8 @@ const CreateInvoice = () => {
       const quantity = selectedInventory.weight;
       const total = quantity * unitPrice;
       const taxRate = 0.25;
+      const taxAmount = total * taxRate;
+      const grandTotal = total + taxAmount;
 
       const res = await axiosInstance.post("/api/invoices", {
         customerId: form.customerId,
@@ -140,6 +125,7 @@ const CreateInvoice = () => {
         date: new Date().toISOString(),
         dueDate: form.dueDate,
         status: form.status,
+        totalQuantity: quantity, // ✅ جديد
         items: [
           {
             description: `${selectedInventory.goods} (${selectedInventory.type})`,
@@ -148,8 +134,8 @@ const CreateInvoice = () => {
             total: total,
           },
         ],
-        tax: total * taxRate,
-        grandTotal: total + total * taxRate,
+        tax: taxAmount,
+        grandTotal: grandTotal,
         inventoryIds: [form.inventoryId],
         bankInfo: {
           accountNumber: form.bankAccount,
@@ -211,18 +197,6 @@ const CreateInvoice = () => {
           </FormRow>
 
           <FormRow>
-            <label>Amount (NOK)</label>
-            <Input
-              type="number"
-              name="amount"
-              value={form.amount}
-              onChange={handleChange}
-              step="0.01"
-              required
-            />
-          </FormRow>
-
-          <FormRow>
             <label>Status</label>
             <Select name="status" value={form.status} onChange={handleChange}>
               <option value="Pending">Pending</option>
@@ -236,10 +210,39 @@ const CreateInvoice = () => {
             <Input type="date" name="dueDate" value={form.dueDate} onChange={handleChange} required />
           </FormRow>
 
-          <FormRow>
-            <label>Items / Notes</label>
-            <Textarea name="items" rows={4} value={form.items} onChange={handleChange} />
-          </FormRow>
+          {selectedInventory && (
+            <>
+              <FormRow>
+                <label>Item Description</label>
+                <Textarea
+                  name="itemsNote"
+                  rows={4}
+                  value={`${selectedInventory.goods} (${selectedInventory.type}) – ${selectedInventory.weight} kg\nArrival: ${selectedInventory.arrivalDate}`}
+                  readOnly
+                />
+              </FormRow>
+
+              <FormRow>
+                <label>Quantity (kg)</label>
+                <Input value={selectedInventory.weight} readOnly />
+              </FormRow>
+
+              <FormRow>
+                <label>Total (excl. VAT)</label>
+                <Input value={(selectedInventory.weight * 1).toFixed(2)} readOnly />
+              </FormRow>
+
+              <FormRow>
+                <label>VAT (25%)</label>
+                <Input value={(selectedInventory.weight * 1 * 0.25).toFixed(2)} readOnly />
+              </FormRow>
+
+              <FormRow>
+                <label>Grand Total (incl. VAT)</label>
+                <Input value={(selectedInventory.weight * 1.25).toFixed(2)} readOnly />
+              </FormRow>
+            </>
+          )}
 
           <Button type="submit" $variant="primary" $fullWidth disabled={loading}>
             {loading ? "Creating..." : "Create Invoice"}

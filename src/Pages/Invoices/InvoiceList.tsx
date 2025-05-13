@@ -1,4 +1,4 @@
-// src/pages/invoices/invoiceList.tsx
+// src/pages/invoices/InvoiceList.tsx
 
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -26,9 +26,8 @@ import {
   PaginationContainer,
   RowsPerPage,
   PageButtons,
-  Button,
 } from "@/styles/invoiceStyles";
-import { Eye, Trash2 } from "lucide-react";
+import { Eye, Trash2, Download } from "lucide-react";
 import { toast } from "react-toastify";
 import InvoiceDetailsModal from "./invoiceDetailsModal";
 
@@ -84,6 +83,25 @@ const InvoiceList = () => {
     }
   };
 
+  const handleDownloadPDF = (inv: Invoice) => {
+    const doc = new jsPDF();
+    doc.text("Invoice", 14, 20);
+    autoTable(doc, {
+      startY: 30,
+      head: [["Invoice #", "Customer", "Status", "Total", "Date"]],
+      body: [[
+        inv.invoiceNumber,
+        typeof inv.customer === "string"
+          ? inv.customer
+          : inv.customer?.companyName || inv.customer?.name || "N/A",
+        inv.status,
+        `${inv.grandTotal.toFixed(2)} kr`,
+        inv.date ? format(new Date(inv.date), "dd/MM/yyyy") : "N/A",
+      ]],
+    });
+    doc.save(`Invoice_${inv.invoiceNumber}.pdf`);
+  };
+
   const filteredInvoices = invoices
     .filter((inv) => {
       const matchStatus = filteredStatus === "All" || inv.status === filteredStatus;
@@ -103,25 +121,6 @@ const InvoiceList = () => {
 
   const totalPages = Math.ceil(filteredInvoices.length / itemsPerPage);
   const paginated = filteredInvoices.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
-
-  const handleExportPDF = () => {
-    const doc = new jsPDF();
-    doc.text("Invoices", 14, 20);
-    autoTable(doc, {
-      startY: 30,
-      head: [["Invoice #", "Customer", "Status", "Total", "Date"]],
-      body: filteredInvoices.map((inv) => [
-        inv.invoiceNumber,
-        typeof inv.customer === "string"
-          ? inv.customer
-          : inv.customer?.companyName || inv.customer?.name || "N/A",
-        inv.status,
-        `${inv.grandTotal.toFixed(2)} kr`,
-        inv.date ? format(new Date(inv.date), "dd/MM/yyyy") : "N/A",
-      ]),
-    });
-    doc.save("invoices.pdf");
-  };
 
   return (
     <InvoiceContainer>
@@ -190,8 +189,11 @@ const InvoiceList = () => {
                     <IconButton onClick={() => setSelectedInvoiceId(inv._id)}>
                       <Eye size={16} />
                     </IconButton>
+                    <IconButton onClick={() => handleDownloadPDF(inv)}>
+                      <Download size={16} />
+                    </IconButton>
                     {user?.role === "admin" && (
-                      <IconButton onClick={() => handleDelete(inv._id!)}>
+                      <IconButton onClick={() => handleDelete(inv._id)}>
                         <Trash2 size={16} />
                       </IconButton>
                     )}
@@ -231,9 +233,6 @@ const InvoiceList = () => {
             </button>
           ))}
         </PageButtons>
-        <Button $variant="ghost" onClick={handleExportPDF}>
-          Export PDF
-        </Button>
       </PaginationContainer>
 
       {selectedInvoiceId && (

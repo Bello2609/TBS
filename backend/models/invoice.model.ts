@@ -1,5 +1,3 @@
-// backend/models/invoice.model.ts
-
 import mongoose, { Document, Schema } from "mongoose";
 
 // ✅ Subdocument schema for bank info
@@ -54,6 +52,7 @@ export interface InvoiceDocument extends Document {
   }[];
   tax: number;
   grandTotal: number;
+  totalQuantity: number;
   inventoryItems: {
     arrivalDate: string;
     departureDate: string;
@@ -79,7 +78,7 @@ const invoiceSchema = new Schema<InvoiceDocument>(
   {
     customerId: {
       type: Schema.Types.ObjectId,
-      ref: "User",
+      ref: "Customer", // ✅ يجب أن يكون مطابقًا لاسم موديل الزبون الحقيقي
       required: true,
     },
     invoiceNumber: {
@@ -107,6 +106,10 @@ const invoiceSchema = new Schema<InvoiceDocument>(
       required: true,
     },
     grandTotal: {
+      type: Number,
+      required: true,
+    },
+    totalQuantity: {
       type: Number,
       required: true,
     },

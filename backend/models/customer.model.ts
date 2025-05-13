@@ -73,3 +73,4 @@ const customerSchema = new Schema<CustomerDocument>(
 // ✅ Export model
 const Customer = mongoose.model<CustomerDocument>("Customer", customerSchema);
 export default Customer;
+

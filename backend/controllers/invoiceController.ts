@@ -5,7 +5,7 @@ import mongoose from "mongoose";
 import Invoice from "../models/invoice.model.js";
 import Inventory from "../models/inventory.model.js";
 
-// ✅ GET /api/invoices - Get all invoices (optionally filter by customerId)
+// ✅ GET /api/invoices - Get all invoices (with customer data)
 export const getAllInvoices = async (req: Request, res: Response): Promise<void> => {
   try {
     const { customerId } = req.query;
@@ -14,7 +14,9 @@ export const getAllInvoices = async (req: Request, res: Response): Promise<void>
       ? { customerId: new mongoose.Types.ObjectId(customerId as string) }
       : {};
 
-    const invoices = await Invoice.find(filter).sort({ date: -1 });
+    const invoices = await Invoice.find(filter)
+      .populate("customerId", "companyName name email phone") // ✅ Populate relevant fields
+      .sort({ date: -1 });
 
     res.status(200).json(invoices);
   } catch (error) {
@@ -23,10 +25,11 @@ export const getAllInvoices = async (req: Request, res: Response): Promise<void>
   }
 };
 
-// ✅ GET /api/invoices/:id - Get single invoice by ID
+// ✅ GET /api/invoices/:id - Get single invoice by ID (with full customer info)
 export const getInvoiceById = async (req: Request, res: Response): Promise<void> => {
   try {
-    const invoice = await Invoice.findById(req.params.id);
+    const invoice = await Invoice.findById(req.params.id)
+      .populate("customerId", "companyName companyEmail companyPhone address zipCode city");
 
     if (!invoice) {
       res.status(404).json({ message: "Invoice not found." });
@@ -87,7 +90,7 @@ export const createInvoice = async (req: Request, res: Response): Promise<void> 
             : "-",
       },
     }));
-
+    const totalQuantity = inventories.reduce((sum, inv) => sum + (inv.quantity || 0), 0);
     // ✅ Save invoice
     const invoice = new Invoice({
       customerId,
@@ -98,6 +101,7 @@ export const createInvoice = async (req: Request, res: Response): Promise<void> 
       items,
       tax,
       grandTotal,
+      totalQuantity,
       inventoryItems: inventorySnapshots,
       bankInfo,
     });
