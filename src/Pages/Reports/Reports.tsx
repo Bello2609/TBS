@@ -34,9 +34,14 @@ const Reports = () => {
         console.log("API Response:", response.data);
 
         setReportData(response.data);
-      } catch (err: any) {
-        console.error("API Fetch Error:", err.message || err);
-        setError(err.message || "An unexpected error occurred.");
+      } catch (err: unknown) {
+        if (err instanceof Error) {
+          console.error("API Fetch Error:", err.message);
+          setError(err.message);
+        } else {
+          console.error("API Fetch Error:", err);
+          setError("An unexpected error occurred.");
+        }
       } finally {
         setLoading(false);
       }

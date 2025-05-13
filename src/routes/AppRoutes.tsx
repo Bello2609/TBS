@@ -37,7 +37,7 @@ import InvoiceReports from "@/pages/invoices/invoiceReports";
 import InvoiceStats from "@/pages/invoices/invoiceStats";
 
 // 🛡️ Protected Route wrapper
-import ProtectedRoute from "@/components/ProtectedRoute";
+import ProtectedRoute from "@/components/protectedRoute";
 
 const AppRoutes: React.FC = () => {
   return (

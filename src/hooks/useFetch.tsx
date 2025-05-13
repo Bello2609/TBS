@@ -2,9 +2,9 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 
 // Custom hook for fetching data from an API
-const useFetch = (url: string) => {
+function useFetch<T = unknown>(url: string) {
   // State for storing data
-  const [data, setData] = useState<any>(null);
+  const [data, setData] = useState<T | null>(null);
   // State for tracking loading status
   const [loading, setLoading] = useState<boolean>(true);
   // State for handling errors
@@ -44,6 +44,6 @@ const useFetch = (url: string) => {
   }, [url]);
 
   return { data, loading, error };
-};
+}
 
 export default useFetch;

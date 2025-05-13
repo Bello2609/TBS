@@ -1,13 +1,16 @@
 import jsPDF from "jspdf";
-import "jspdf-autotable";
+import autoTable from "jspdf-autotable";
 import * as XLSX from "xlsx";
-import { saveAs } from "file-saver";
 
 // Export to PDF
-
-export const exportToPDF = (data: any[], title: string) => {
+export const exportToPDF = <T extends Record<string, unknown>>(data: T[], title: string) => {
+  if (data.length === 0) return;
   const doc = new jsPDF();
-  const tableData = data.map((item) => Object.values(item));
+  const tableData: (string | number | boolean | null)[][] = data.map((item) =>
+    Object.values(item).map((v) =>
+      typeof v === "string" || typeof v === "number" || typeof v === "boolean" ? v : v === null ? "" : JSON.stringify(v)
+    )
+  );
 
   doc.text(title, 10, 10);
   autoTable(doc, { head: [Object.keys(data[0])], body: tableData });
@@ -15,7 +18,7 @@ export const exportToPDF = (data: any[], title: string) => {
   doc.save(`${title}.pdf`);
 };
 
-export const exportToExcel = (data: any[], title: string) => {
+export const exportToExcel = <T extends Record<string, unknown>>(data: T[], title: string) => {
   const worksheet = XLSX.utils.json_to_sheet(data);
   const workbook = XLSX.utils.book_new();
 
