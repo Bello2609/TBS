@@ -112,9 +112,9 @@ const Home: React.FC = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 1 }}
         >
-          <h1>Transport av sjømat siden 2001</h1>
+          <h1>Velkommen til Terminal og Bud Service AS</h1>
           <p>
-            Vi er spesialister i transport, lagring og håndtering av sjømat.
+            
           </p>
         </motion.div>
       </HeroSection>
@@ -123,9 +123,9 @@ const Home: React.FC = () => {
       <Section ref={aboutRef}>
         <h2>Om Oss</h2>
         <p>
-          Terminal og Bud Service AS er en pålitelig partner for kjøling og
-          logistikk av fersk sjømat. Vi tilbyr lagring i moderne kjølerom og
-          rask distribusjon til våre kunder.
+          en pålitelig partner innen terminal arbeid og logistikk i hjertet av Oslo Fiskehallen. Vi spesialiserer oss i mottak, sortering og distribusjon av sjømat, og sørger for at ferske råvarer som fisk, lange, sei og andre sjømatprodukter blir håndtert med presisjon og kvalitet.
+          Med lang erfaring i bransjen og et dedikert team, sørger vi for at varene våre når kundene i perfekt stand, enten det er grossister, restauranter eller andre aktører i næringskjeden. Vi setter kvalitet, effektivitet og god service i fokus for å sikre en smidig og pålitelig logistikk flyt.
+          Ta kontakt med oss for mer informasjon om hvordan vi kan bistå din bedrift!
         </p>
       </Section>
 
@@ -174,9 +174,10 @@ const Home: React.FC = () => {
       {/* Footer with contact info */}
       <Footer>
         <p>© 2025 TBS - All rights reserved</p>
-        <p>Adresse: Oslo Fiskehallen</p>
-        <p>Telefonnummer: +47 123 45 678</p>
-        <p>Organisasjonsnummer: 987654321MVA</p>
+        <p>Adresse: Oslo Akershusstranda 23 0150 Oslo</p>
+        <p>Telefonnummer: +47 90 82 38 00</p>
+        <p>E-post: <a href="mailto:Tbs.fiskehallen@gmail.com">Tbs.fiskehallen@gmail.com</a></p>
+        <p>Organisasjonsnummer: 983 983 286</p>
       </Footer>
     </Container>
   );
