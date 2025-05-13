@@ -95,7 +95,7 @@ const InvoiceView: React.FC<Props> = ({ invoice, onBack, onDownload }) => {
         }}
       >
         <div>
-          <h2>{invoice.company}</h2>
+          <h2>{invoice.company || "TBS AS"}</h2>
           <p>Stanseveien 33, 0976 Oslo</p>
           <p>Email: firmapost@tbs.no</p>
           <p>Org.nr: 916 411 258</p>

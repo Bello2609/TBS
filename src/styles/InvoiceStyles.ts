@@ -263,10 +263,10 @@ export const Textarea = styled.textarea`
 /* ========== UTILITIES ========== */
 export const ActionButtons = styled.div`
   display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-  margin: 20px 0;
+  justify-content: flex-start;
+  gap: 10px;
   align-items: center;
+  padding: 8px 0;
 `;
 
 export const FilterButtons = styled.div`
@@ -294,14 +294,29 @@ export const SearchInput = styled(Input)`
 `;
 
 export const IconButton = styled.button`
-  background: transparent;
-  border: none;
+  background: ${({ theme }) => theme.buttonBg || "#f9fafb"};
+  border: 1px solid ${({ theme }) => theme.border || "#e5e7eb"};
+  border-radius: 10px;
+  padding: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
   cursor: pointer;
-  color: ${({ theme }) => theme.text || "#111"};
-  font-size: 16px;
+
+  svg {
+    width: 18px;
+    height: 18px;
+    color: ${({ theme }) => theme.text || "#111"};
+  }
 
   &:hover {
-    color: ${({ theme }) => theme.primary};
+    background: ${({ theme }) => theme.hover || "#f3f4f6"};
+    border-color: ${({ theme }) => theme.primary || "#3b82f6"};
+
+    svg {
+      color: ${({ theme }) => theme.primary || "#3b82f6"};
+    }
   }
 `;
 

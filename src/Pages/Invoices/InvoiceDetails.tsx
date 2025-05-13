@@ -1,21 +1,28 @@
-// src/pages/invoices/InvoiceDetails.tsx
-
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import axiosInstance from "@/services/axiosInstance";
 import { useAuth } from "@/context/authContext";
-import { InvoiceContainer } from "@/styles/invoiceStyles";
-import { Button } from "@/components/ui/button";
-import InvoiceView from "./invoiceView";
+import {
+  InvoiceContainer,
+  PageTitle,
+  InvoiceInfo,
+  DetailRow,
+  TableData,
+  InvoiceTable,
+  TableRow,
+  TableHeader,
+  Button,
+} from "@/styles/invoiceStyles";
 
-// Extend jsPDF to support autoTable
+// 👇 تعريف مخصص لدعم autoTable + finalY
 interface jsPDFWithAutoTable extends jsPDF {
-  lastAutoTable?: { finalY: number };
+  lastAutoTable?: {
+    finalY: number;
+  };
 }
 
-// Customer structure
 interface Customer {
   companyName: string;
   companyEmail: string;
@@ -25,7 +32,6 @@ interface Customer {
   companyPhone: string;
 }
 
-// Inventory structure
 interface InventoryItem {
   arrivalDate: string;
   departureDate: string;
@@ -39,11 +45,9 @@ interface InventoryItem {
   };
 }
 
-// Invoice structure
 interface Invoice {
   id: string;
   invoiceNumber: string;
-  company: string;
   customer?: Customer;
   products: string;
   unit: string;
@@ -56,6 +60,12 @@ interface Invoice {
   date: string;
   dueDate?: string;
   inventoryItems: InventoryItem[];
+  items: {
+    description: string;
+    quantity: number;
+    unitPrice: number;
+    total: number;
+  }[];
   bankInfo: {
     accountNumber: string;
     kidNumber: string;
@@ -68,10 +78,8 @@ const InvoiceDetails = () => {
   const { user } = useAuth();
 
   const [invoice, setInvoice] = useState<Invoice | null>(null);
-  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Load invoice
   useEffect(() => {
     const fetchInvoice = async () => {
       try {
@@ -88,63 +96,54 @@ const InvoiceDetails = () => {
         }
       } catch {
         setError("Failed to load invoice.");
-      } finally {
-        setLoading(false);
       }
     };
-
     fetchInvoice();
   }, [id, user]);
 
-  // PDF Generator
   const handleDownloadPDF = () => {
     if (!invoice || !invoice.customer) return;
 
     const doc = new jsPDF() as jsPDFWithAutoTable;
 
-    // Page 1
+    // Page 1 - Invoice Summary
     doc.setFontSize(18);
     doc.text("Invoice", 14, 20);
 
     doc.setFontSize(12);
-    doc.text(`Company: ${invoice.company}`, 14, 30);
-    doc.text(`Invoice #: ${invoice.invoiceNumber}`, 14, 38);
-    doc.text(`Date: ${new Date(invoice.date).toLocaleDateString("no-NO")}`, 14, 46);
+    doc.text(`Invoice #: ${invoice.invoiceNumber}`, 14, 30);
+    doc.text(`Date: ${new Date(invoice.date).toLocaleDateString("no-NO")}`, 14, 38);
     if (invoice.dueDate) {
-      doc.text(`Due Date: ${new Date(invoice.dueDate).toLocaleDateString("no-NO")}`, 14, 54);
+      doc.text(`Due Date: ${new Date(invoice.dueDate).toLocaleDateString("no-NO")}`, 14, 46);
     }
 
-    doc.text(`Customer: ${invoice.customer.companyName}`, 14, 62);
+    doc.text(`Customer: ${invoice.customer.companyName}`, 14, 58);
     doc.text(
       `Address: ${invoice.customer.address}, ${invoice.customer.zipCode} ${invoice.customer.city}`,
       14,
-      70
+      66
     );
-    doc.text(`Phone: ${invoice.customer.companyPhone}`, 14, 78);
-    doc.text(`Email: ${invoice.customer.companyEmail}`, 14, 86);
+    doc.text(`Phone: ${invoice.customer.companyPhone}`, 14, 74);
+    doc.text(`Email: ${invoice.customer.companyEmail}`, 14, 82);
 
-    // Table 1 - Products
     autoTable(doc, {
-      startY: 96,
-      head: [["Product", "Qty", "Unit", "Unit Price", "Total"]],
-      body: [
-        [
-          invoice.products ?? "-",
-          invoice.totalQuantity?.toString() ?? "0",
-          invoice.unit ?? "-",
-          `${invoice.unitPrice?.toFixed(2)} kr`,
-          `${invoice.total?.toFixed(2)} kr`,
-        ],
-      ],
+      startY: 92,
+      head: [["Description", "Qty", "Unit Price", "Total"]],
+      body: invoice.items.map((item) => [
+        item.description,
+        item.quantity.toString(),
+        `${item.unitPrice.toFixed(2)} kr`,
+        `${item.total.toFixed(2)} kr`,
+      ]),
     });
 
-    const y = doc.lastAutoTable?.finalY ?? 120;
+    const y = (doc.lastAutoTable?.finalY ?? 110) + 10;
     const taxAmount = (invoice.total * invoice.tax) / 100;
 
-    doc.text(`VAT (${invoice.tax}%): ${taxAmount.toFixed(2)} kr`, 14, y + 10);
-    doc.text(`Grand Total: ${invoice.grandTotal.toFixed(2)} kr`, 14, y + 18);
+    doc.text(`VAT (${invoice.tax}%): ${taxAmount.toFixed(2)} kr`, 14, y);
+    doc.text(`Grand Total: ${invoice.grandTotal.toFixed(2)} kr`, 14, y + 10);
 
-    // Page 2 - Inventory Table
+    // Page 2 - Inventory
     doc.addPage();
     doc.setFontSize(14);
     doc.text("Attached Inventory", 14, 20);
@@ -153,14 +152,14 @@ const InvoiceDetails = () => {
       startY: 28,
       head: [["Arrival", "Customer", "Goods", "Type", "Qty", "Weight", "Departure", "Sender"]],
       body: invoice.inventoryItems.map((item) => [
-        item.arrivalDate ?? "-",
-        item.customer ?? "-",
-        item.goods ?? "-",
-        item.type ?? "-",
-        item.quantity?.toString() ?? "0",
-        item.weight?.toFixed(2) ?? "0.00",
-        item.departureDate ?? "-",
-        item.sender?.name ?? "-",
+        item.arrivalDate,
+        item.customer,
+        item.goods,
+        item.type,
+        item.quantity.toString(),
+        item.weight.toFixed(2),
+        item.departureDate,
+        item.sender.name,
       ]),
     });
 
@@ -172,28 +171,8 @@ const InvoiceDetails = () => {
     doc.text(`Account Number: ${invoice.bankInfo.accountNumber}`, 14, 30);
     doc.text(`KID: ${invoice.bankInfo.kidNumber}`, 14, 38);
 
-    // Save
     doc.save(`Invoice_${invoice.invoiceNumber}.pdf`);
   };
-
-  // States
-  if (!user) {
-    return (
-      <InvoiceContainer>
-        <p style={{ color: "red", textAlign: "center" }}>
-          You are not authorized to view this page.
-        </p>
-      </InvoiceContainer>
-    );
-  }
-
-  if (loading) {
-    return (
-      <InvoiceContainer>
-        <p style={{ textAlign: "center" }}>Loading invoice details...</p>
-      </InvoiceContainer>
-    );
-  }
 
   if (error) {
     return (
@@ -209,18 +188,95 @@ const InvoiceDetails = () => {
   if (!invoice) {
     return (
       <InvoiceContainer>
-        <p style={{ textAlign: "center" }}>No invoice data found.</p>
+        <p style={{ textAlign: "center" }}>Loading...</p>
       </InvoiceContainer>
     );
   }
 
-  // View
   return (
-    <InvoiceView
-      invoice={invoice}
-      onDownload={handleDownloadPDF}
-      onBack={() => navigate("/invoices")}
-    />
+    <InvoiceContainer>
+      <PageTitle>Invoice Details</PageTitle>
+
+      <InvoiceInfo>
+        <DetailRow><strong>Invoice #</strong><span>{invoice.invoiceNumber}</span></DetailRow>
+        <DetailRow><strong>Status</strong><span>{invoice.status}</span></DetailRow>
+        <DetailRow><strong>Date</strong><span>{new Date(invoice.date).toLocaleDateString("no-NO")}</span></DetailRow>
+        <DetailRow><strong>Due Date</strong><span>{invoice.dueDate ? new Date(invoice.dueDate).toLocaleDateString("no-NO") : "-"}</span></DetailRow>
+      </InvoiceInfo>
+
+      <InvoiceInfo>
+        <PageTitle>Customer</PageTitle>
+        <DetailRow><strong>Company</strong><span>{invoice.customer?.companyName}</span></DetailRow>
+        <DetailRow><strong>Phone</strong><span>{invoice.customer?.companyPhone}</span></DetailRow>
+        <DetailRow><strong>Email</strong><span>{invoice.customer?.companyEmail}</span></DetailRow>
+        <DetailRow><strong>Address</strong><span>{invoice.customer?.address}, {invoice.customer?.zipCode} {invoice.customer?.city}</span></DetailRow>
+      </InvoiceInfo>
+
+      <InvoiceInfo>
+        <PageTitle>Products</PageTitle>
+        <InvoiceTable>
+          <thead>
+            <TableRow>
+              <TableHeader>Description</TableHeader>
+              <TableHeader>Qty</TableHeader>
+              <TableHeader>Unit Price</TableHeader>
+              <TableHeader>Total</TableHeader>
+            </TableRow>
+          </thead>
+          <tbody>
+            {invoice.items.map((item, idx) => (
+              <TableRow key={idx}>
+                <TableData>{item.description}</TableData>
+                <TableData>{item.quantity}</TableData>
+                <TableData>{item.unitPrice.toFixed(2)} kr</TableData>
+                <TableData>{item.total.toFixed(2)} kr</TableData>
+              </TableRow>
+            ))}
+          </tbody>
+        </InvoiceTable>
+      </InvoiceInfo>
+
+      <InvoiceInfo>
+        <PageTitle>Inventory Items</PageTitle>
+        <InvoiceTable>
+          <thead>
+            <TableRow>
+              <TableHeader>Arrival</TableHeader>
+              <TableHeader>Goods</TableHeader>
+              <TableHeader>Type</TableHeader>
+              <TableHeader>Qty</TableHeader>
+              <TableHeader>Weight</TableHeader>
+              <TableHeader>Departure</TableHeader>
+              <TableHeader>Sender</TableHeader>
+            </TableRow>
+          </thead>
+          <tbody>
+            {invoice.inventoryItems.map((item, idx) => (
+              <TableRow key={idx}>
+                <TableData>{item.arrivalDate}</TableData>
+                <TableData>{item.goods}</TableData>
+                <TableData>{item.type}</TableData>
+                <TableData>{item.quantity}</TableData>
+                <TableData>{item.weight.toFixed(2)} kg</TableData>
+                <TableData>{item.departureDate}</TableData>
+                <TableData>{item.sender.name}</TableData>
+              </TableRow>
+            ))}
+          </tbody>
+        </InvoiceTable>
+      </InvoiceInfo>
+
+      <InvoiceInfo>
+        <PageTitle>Bank Info</PageTitle>
+        <DetailRow><strong>Account Number</strong><span>{invoice.bankInfo.accountNumber}</span></DetailRow>
+        <DetailRow><strong>KID</strong><span>{invoice.bankInfo.kidNumber}</span></DetailRow>
+      </InvoiceInfo>
+
+      <div style={{ marginTop: "24px", display: "flex", justifyContent: "space-between" }}>
+        <Button onClick={() => navigate("/invoices")}>← Back</Button>
+        <Button onClick={handleDownloadPDF}>Download PDF</Button>
+      </div>
+    </InvoiceContainer>
   );
 };
 

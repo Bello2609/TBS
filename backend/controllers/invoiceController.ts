@@ -2,7 +2,7 @@
 
 import { Request, Response } from "express";
 import mongoose from "mongoose";
-import Invoice from "../models/invoice.model.js";
+import Invoice, { InvoiceDocument } from "../models/invoice.model.js";
 import Inventory from "../models/inventory.model.js";
 
 // ✅ GET /api/invoices - Get all invoices (with customer data)
@@ -15,15 +15,30 @@ export const getAllInvoices = async (req: Request, res: Response): Promise<void>
       : {};
 
     const invoices = await Invoice.find(filter)
-      .populate("customerId", "companyName name email phone") // ✅ Populate relevant fields
-      .sort({ date: -1 });
+      .populate("customerId", "companyName name email phone") // Populate customer
+      .sort({ date: -1 })
+      .lean(); // make it a plain object for performance
 
-    res.status(200).json(invoices);
+    // ✅ Prepare modified invoices array
+    const modified = invoices.map((inv: InvoiceDocument) => {
+      const quantity = Array.isArray(inv.inventoryItems)
+        ? inv.inventoryItems.reduce((sum: number, item: InvoiceDocument["inventoryItems"][0]) => sum + (item.quantity || 0), 0)
+        : 0;
+
+      return {
+        ...inv,
+        quantity,
+        customer: inv.customerId || "N/A", // Rename customerId => customer
+      };
+    });
+
+    res.status(200).json(modified);
   } catch (error) {
     console.error("Error fetching invoices:", error);
     res.status(500).json({ message: "Failed to get invoices." });
   }
 };
+
 
 // ✅ GET /api/invoices/:id - Get single invoice by ID (with full customer info)
 export const getInvoiceById = async (req: Request, res: Response): Promise<void> => {
