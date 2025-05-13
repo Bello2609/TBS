@@ -18,9 +18,9 @@ import { Button } from "@/components/ui/button";
 
 // Invoice interface
 interface Invoice {
-  id: number;
+  id: number; // Ensure id is always a number
   invoiceNumber: string;
-  customer: string;
+  customer: string; // <--- اجعلها string فقط
   amount: number;
   status: "Paid" | "Pending" | "Overdue";
   dateIssued: string;
@@ -73,9 +73,38 @@ const Dashboard: React.FC = () => {
         totalRevenue: 0,
       });
 
-      const invoices = Array.isArray(invoicesRes.data) ? invoicesRes.data : [];
+      // تحويل بيانات الفواتير لتناسب الواجهة
+      const invoices = Array.isArray(invoicesRes.data)
+        ? invoicesRes.data.map((inv: { 
+            _id?: string; 
+            id?: number; 
+            invoiceNumber: string; 
+            customer?: { companyName: string }; 
+            customerName?: string; 
+            customerId?: { companyName: string }; 
+            grandTotal?: number; 
+            amount: number; 
+            status: "Paid" | "Pending" | "Overdue"; 
+            date?: string; 
+            dateIssued?: string; 
+          }) => ({
+            id: typeof inv._id === "number" ? inv._id : typeof inv.id === "number" ? inv.id : 0, // Ensure id is a number
+            invoiceNumber: inv.invoiceNumber,
+            customer:
+              inv.customer?.companyName ||
+              inv.customerName ||
+              (typeof inv.customerId === "object" && inv.customerId.companyName
+                ? inv.customerId.companyName
+                : "") ||
+              "", // <--- القيمة الافتراضية string فارغ
+            amount: inv.grandTotal || inv.amount,
+            status: inv.status,
+            dateIssued: inv.date || inv.dateIssued || "", // Default to an empty string if undefined
+          }))
+        : [];
       setRecentInvoices(invoices);
 
+      // ...بقية الكود كما هو
       const monthly: { [month: string]: number } = {};
       invoices.forEach((inv: Invoice) => {
         const month = new Date(inv.dateIssued).toLocaleString("default", {

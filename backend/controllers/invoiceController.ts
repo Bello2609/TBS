@@ -51,7 +51,13 @@ export const getInvoiceById = async (req: Request, res: Response): Promise<void>
       return;
     }
 
-    res.status(200).json(invoice);
+    const invoiceObj = invoice.toObject();
+
+    // Assign customerId to customer and remove customerId
+    ((invoiceObj as unknown) as Record<string, unknown>).customer = invoiceObj.customerId;
+    delete ((invoiceObj as unknown) as Record<string, unknown>).customerId;
+
+    res.status(200).json(invoiceObj);
   } catch (error) {
     console.error("Error fetching invoice:", error);
     res.status(500).json({ message: "Failed to fetch invoice." });
@@ -103,6 +109,13 @@ export const createInvoice = async (req: Request, res: Response): Promise<void> 
       },
     }));
 
+    // يمكنك تعريف نوع مؤقت داخل الدالة أو أعلى الملف
+    type InvoiceItem = {
+      unitPrice?: number;
+      total?: number;
+      [key: string]: unknown;
+    };
+
     const invoice = new Invoice({
       customerId,
       invoiceNumber,
@@ -111,11 +124,15 @@ export const createInvoice = async (req: Request, res: Response): Promise<void> 
       status,
       products,
       unit,
-      unitPrice,
+      unitPrice: typeof unitPrice === "number" ? unitPrice.toFixed(2) : "0.00",
       totalQuantity,
-      items,
-      tax,
-      grandTotal,
+      items: items.map((item: InvoiceItem) => ({
+        ...item,
+        unitPrice: typeof item.unitPrice === "number" ? item.unitPrice.toFixed(2) : "0.00",
+        total: typeof item.total === "number" ? item.total.toFixed(2) : "0.00",
+      })),
+      tax: typeof tax === "number" ? tax.toFixed(2) : "0.00",
+      grandTotal: typeof grandTotal === "number" ? grandTotal.toFixed(2) : "0.00",
       inventoryItems: inventorySnapshots,
       bankInfo,
     });

@@ -86,6 +86,7 @@ const InvoiceDetails = () => {
       try {
         const res = await axiosInstance.get(`/api/invoices/${id}`);
         const data = res.data;
+        console.log("Invoice data:", data); // أضف هذا السطر
 
         if (
           user?.role === "customer" &&
@@ -140,9 +141,9 @@ const InvoiceDetails = () => {
         head: [["Description", "Quantity", "Unit Price (NOK)", "Total (NOK)"]],
         body: invoice.items.map((item) => [
           item.description,
-          item.quantity.toString(),
-          item.unitPrice.toFixed(2),
-          item.total.toFixed(2)
+          item.quantity?.toString() ?? "0",
+          typeof item.unitPrice === "number" ? `${item.unitPrice.toFixed(2)} kr` : "0.00 kr",
+          typeof item.total === "number" ? `${item.total.toFixed(2)} kr` : "0.00 kr",
         ]),
         styles: { fontSize: 10 },
         headStyles: { fillColor: [41, 128, 185] }
@@ -152,10 +153,19 @@ const InvoiceDetails = () => {
       const finalY = doc.lastAutoTable?.finalY ?? 110;
 
       // Calculate totals
-      const taxAmount = invoice.tax;
-      doc.text(`Subtotal: ${invoice.total.toFixed(2)} NOK`, 140, finalY + 10);
-      doc.text(`VAT (25%): ${taxAmount.toFixed(2)} NOK`, 140, finalY + 18);
-      doc.text(`Total: ${invoice.grandTotal.toFixed(2)} NOK`, 140, finalY + 26);
+      const taxAmount = typeof invoice.tax === "number" && typeof invoice.total === "number"
+        ? (invoice.total * invoice.tax) / 100
+        : 0;
+      doc.text(
+        `VAT (${invoice.tax ?? 0}%): ${taxAmount.toFixed(2)} kr`,
+        14,
+        finalY + 10
+      );
+      doc.text(
+        `Grand Total: ${typeof invoice.grandTotal === "number" ? invoice.grandTotal.toFixed(2) : "0.00"} kr`,
+        14,
+        finalY + 18
+      );
 
       // Payment details
       doc.addPage();
@@ -222,10 +232,10 @@ const InvoiceDetails = () => {
 
       <InvoiceInfo>
         <PageTitle>Customer</PageTitle>
-        <DetailRow><strong>Company</strong><span>{invoice.customer?.companyName}</span></DetailRow>
-        <DetailRow><strong>Phone</strong><span>{invoice.customer?.companyPhone}</span></DetailRow>
-        <DetailRow><strong>Email</strong><span>{invoice.customer?.companyEmail}</span></DetailRow>
-        <DetailRow><strong>Address</strong><span>{invoice.customer?.address}, {invoice.customer?.zipCode} {invoice.customer?.city}</span></DetailRow>
+        <DetailRow><strong>Company</strong><span>{invoice.customer?.companyName || "-"}</span></DetailRow>
+        <DetailRow><strong>Phone</strong><span>{invoice.customer?.companyPhone || "-"}</span></DetailRow>
+        <DetailRow><strong>Email</strong><span>{invoice.customer?.companyEmail || "-"}</span></DetailRow>
+        <DetailRow><strong>Address</strong><span>{invoice.customer?.address || "-"}, {invoice.customer?.zipCode || "-"} {invoice.customer?.city || "-"}</span></DetailRow>
       </InvoiceInfo>
 
       <InvoiceInfo>

@@ -15,6 +15,7 @@ import invoiceRoutes from "./routes/invoiceRoutes.js";
 import customerRoutes from "./routes/customerRoutes.js";
 import dashboardRoutes from "./routes/dashboardRoutes.js";
 import senderRoutes from "./routes/senderRoutes.js";
+import notificationRoutes from "./routes/notificationRoutes.js";
 
 // ✅ Initialize environment
 dotenv.config();
@@ -41,6 +42,7 @@ connectDB()
     app.use("/api/customers", customerRoutes);
     app.use("/api/dashboard", dashboardRoutes);
     app.use("/api/senders", senderRoutes);
+    app.use("/api/notifications", notificationRoutes);
 
     // ✅ Catch-all fallback
     app.use("*", (_req, res) => {
