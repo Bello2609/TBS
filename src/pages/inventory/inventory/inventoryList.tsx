@@ -6,6 +6,7 @@ import { toast } from "react-toastify";
 import InventoryFilter from "./components/inventoryFilter";
 import InventoryTableComponent from "./components/inventoryTable";
 import InventoryModal from "./components/inventoryModal";
+import InventoryDetailsModal from "./components/inventoryDetailsModal";
 import {
   InventoryContainer,
   TopBar,
@@ -20,20 +21,12 @@ const InventoryList: React.FC = () => {
   const [filteredInventory, setFilteredInventory] = useState<InventoryItem[]>([]);
 
   const [editItem, setEditItem] = useState<InventoryItem | null>(null);
+  const [selectedItem, setSelectedItem] = useState<InventoryItem | null>(null);
   const [selectedCustomer, setSelectedCustomer] = useState<OptionType | null>(null);
   const [newSender, setNewSender] = useState("");
   const [modalVisible, setModalVisible] = useState(false);
 
-  const [form, setForm] = useState<{
-    customerId: string;
-    senderId: string;
-    goods: string;
-    type: string;
-    quantity: number;
-    weight: number;
-    arrivalDate: string;
-    departureDate: string;
-  }>({
+  const [form, setForm] = useState({
     customerId: "",
     senderId: "",
     goods: "",
@@ -44,28 +37,35 @@ const InventoryList: React.FC = () => {
     departureDate: "",
   });
 
-  // Fetch inventory records from backend
+  // ✅ Fetch inventory and enrich with customerName
   const fetchInventory = async () => {
     try {
-      const res = await axiosInstance.get("/api/inventory");
-      setInventory(res.data);
-      setFilteredInventory(res.data);
-    } catch {
+      const [inventoryRes, customerRes] = await Promise.all([
+        axiosInstance.get("/api/inventory"),
+        axiosInstance.get("/api/customers"),
+      ]);
+
+      const inventoryData: InventoryItem[] = inventoryRes.data;
+      const customerList: Customer[] = customerRes.data;
+
+      setCustomers(customerList);
+
+      const enriched = inventoryData.map((inv) => {
+        const customer = customerList.find((c) => c._id === inv.customerId);
+        return {
+          ...inv,
+          customerName: customer?.companyName || "Unknown", // ✅ inject customerName
+        };
+      });
+
+      setInventory(enriched);
+      setFilteredInventory(enriched);
+    } catch (error) {
       toast.error("Failed to fetch inventory.");
+      console.error("❌ fetchInventory error:", error);
     }
   };
 
-  // Fetch customers from /api/customers
-  const fetchCustomers = async () => {
-    try {
-      const res = await axiosInstance.get("/api/customers");
-      setCustomers(res.data);
-    } catch {
-      toast.error("Failed to fetch customers.");
-    }
-  };
-
-  // Fetch senders from /api/senders
   const fetchSenders = async () => {
     try {
       const res = await axiosInstance.get("/api/senders");
@@ -75,7 +75,6 @@ const InventoryList: React.FC = () => {
     }
   };
 
-  // Reset form to initial state
   const resetForm = () => {
     setForm({
       customerId: "",
@@ -90,12 +89,10 @@ const InventoryList: React.FC = () => {
     setNewSender("");
   };
 
-  // Generic field change handler
   const handleFormChange = (field: string, value: string | number) => {
     setForm((prev) => ({ ...prev, [field]: value }));
   };
 
-  // Start creating a new inventory entry
   const handleAddNew = () => {
     if (!selectedCustomer) {
       toast.error("Please select a customer before adding inventory.");
@@ -108,7 +105,6 @@ const InventoryList: React.FC = () => {
     setModalVisible(true);
   };
 
-  // Start editing an existing inventory entry
   const handleEdit = (item: InventoryItem) => {
     setEditItem(item);
     setForm({
@@ -124,7 +120,6 @@ const InventoryList: React.FC = () => {
     setModalVisible(true);
   };
 
-  // Delete an inventory item
   const handleDelete = async (id: string) => {
     try {
       await axiosInstance.delete(`/api/inventory/${id}`);
@@ -135,7 +130,6 @@ const InventoryList: React.FC = () => {
     }
   };
 
-  // Save new or edited inventory
   const handleSave = async () => {
     try {
       if (!form.customerId || !form.senderId) {
@@ -158,7 +152,6 @@ const InventoryList: React.FC = () => {
     }
   };
 
-  // Add new sender
   const handleAddSender = async () => {
     if (!newSender.trim()) {
       toast.warning("Sender name cannot be empty.");
@@ -176,19 +169,15 @@ const InventoryList: React.FC = () => {
     }
   };
 
-  // Filter inventory by selected customer
   const handleFilter = (customer: OptionType | null) => {
     setSelectedCustomer(customer);
-
     const filtered = inventory.filter((item) =>
       customer ? item.customerId === customer.value : true
     );
-
     setFilteredInventory(filtered);
   };
 
   useEffect(() => {
-    fetchCustomers();
     fetchSenders();
     fetchInventory();
   }, []);
@@ -215,6 +204,7 @@ const InventoryList: React.FC = () => {
         inventory={filteredInventory}
         onEdit={handleEdit}
         onDelete={handleDelete}
+        onView={(item) => setSelectedItem(item)}
       />
 
       {modalVisible && (
@@ -234,6 +224,13 @@ const InventoryList: React.FC = () => {
           onChange={handleFormChange}
           onClose={() => setModalVisible(false)}
           onSave={handleSave}
+        />
+      )}
+
+      {selectedItem && (
+        <InventoryDetailsModal
+          item={selectedItem}
+          onClose={() => setSelectedItem(null)}
         />
       )}
     </InventoryContainer>

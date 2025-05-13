@@ -10,26 +10,29 @@ import {
   ActionButtons,
   EditButton,
   DeleteButton,
+  ViewButton,
 } from "@/styles/inventoryStyles";
 import { InventoryItem } from "../types";
-import { Pencil, Trash2 } from "lucide-react";
+import { Pencil, Trash2, Eye } from "lucide-react";
 
 interface InventoryTableProps {
   inventory: InventoryItem[];
   onEdit: (item: InventoryItem) => void;
   onDelete: (id: string) => void;
+  onView: (item: InventoryItem) => void;
 }
 
 const InventoryTableComponent: React.FC<InventoryTableProps> = ({
   inventory,
   onEdit,
   onDelete,
+  onView,
 }) => {
   return (
     <InventoryTable>
       <thead>
         <TableHead>
-          <TableHeader>Customer</TableHeader>
+          <TableHeader>Company</TableHeader>
           <TableHeader>Arrival</TableHeader>
           <TableHeader>Departure</TableHeader>
           <TableHeader>Sender</TableHeader>
@@ -61,6 +64,9 @@ const InventoryTableComponent: React.FC<InventoryTableProps> = ({
             <TableCell>{item.weight}</TableCell>
             <TableCell>
               <ActionButtons>
+                <ViewButton title="View" onClick={() => onView(item)}>
+                  <Eye size={16} />
+                </ViewButton>
                 <EditButton title="Edit" onClick={() => onEdit(item)}>
                   <Pencil size={16} />
                 </EditButton>

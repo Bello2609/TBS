@@ -20,7 +20,7 @@ const inventorySchema = new Schema<InventoryDocument>(
   {
     customerId: {
       type: Schema.Types.ObjectId,
-      ref: "User", // Use "User" if customers are stored in User model
+      ref: "Customer", // Use "User" if customers are stored in User model
       required: true,
     },
     senderId: {

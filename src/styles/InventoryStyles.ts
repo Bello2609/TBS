@@ -276,3 +276,29 @@ export const CancelButton = styled.button`
     background-color: ${({ theme }) => theme.dangerHover || "#dc2626"};
   }
 `;
+export const ViewButton = styled(IconButton)`
+  background-color: #dbeafe;
+  color: #1e3a8a;
+
+  &:hover {
+    background-color: #bfdbfe;
+  }
+`;
+export const ModalSection = styled.section`
+  padding: 1rem;
+  border-bottom: 1px solid #eee;
+`;
+
+export const ModalField = styled.div`
+  margin-bottom: 0.75rem;
+`;
+
+export const CloseButton = styled.button`
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  cursor: pointer;
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+`;
