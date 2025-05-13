@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import axiosInstance from "@/services/axiosInstance";
@@ -15,13 +16,6 @@ import {
   TableHeader,
   Button,
 } from "@/styles/invoiceStyles";
-
-// 👇 تعريف مخصص لدعم autoTable + finalY
-interface jsPDFWithAutoTable extends jsPDF {
-  lastAutoTable?: {
-    finalY: number;
-  };
-}
 
 interface Customer {
   companyName: string;
@@ -72,6 +66,13 @@ interface Invoice {
   };
 }
 
+// Add this interface for jsPDF with autoTable
+interface PDFWithAutoTable extends jsPDF {
+  lastAutoTable?: {
+    finalY: number;
+  };
+}
+
 const InvoiceDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -104,74 +105,89 @@ const InvoiceDetails = () => {
   const handleDownloadPDF = () => {
     if (!invoice || !invoice.customer) return;
 
-    const doc = new jsPDF() as jsPDFWithAutoTable;
+    try {
+      // Create PDF document in portrait mode
+      const doc = new jsPDF({
+        orientation: "portrait",
+        unit: "mm",
+        format: "a4"
+      }) as PDFWithAutoTable;
 
-    // Page 1 - Invoice Summary
-    doc.setFontSize(18);
-    doc.text("Invoice", 14, 20);
+      // Company header
+      doc.setFontSize(18);
+      doc.text("TBS Norway AS", 14, 20);
+      
+      // Invoice details
+      doc.setFontSize(12);
+      doc.text("INVOICE", 14, 30);
+      doc.text(`Invoice #: ${invoice.invoiceNumber}`, 14, 38);
+      doc.text(`Date: ${new Date(invoice.date).toLocaleDateString("no-NO")}`, 14, 46);
+      if (invoice.dueDate) {
+        doc.text(`Due Date: ${new Date(invoice.dueDate).toLocaleDateString("no-NO")}`, 14, 54);
+      }
 
-    doc.setFontSize(12);
-    doc.text(`Invoice #: ${invoice.invoiceNumber}`, 14, 30);
-    doc.text(`Date: ${new Date(invoice.date).toLocaleDateString("no-NO")}`, 14, 38);
-    if (invoice.dueDate) {
-      doc.text(`Due Date: ${new Date(invoice.dueDate).toLocaleDateString("no-NO")}`, 14, 46);
+      // Customer details
+      doc.text("Bill To:", 14, 66);
+      doc.text(invoice.customer.companyName, 14, 74);
+      doc.text(invoice.customer.address, 14, 82);
+      doc.text(`${invoice.customer.zipCode} ${invoice.customer.city}`, 14, 90);
+      doc.text(`Phone: ${invoice.customer.companyPhone}`, 14, 98);
+      doc.text(`Email: ${invoice.customer.companyEmail}`, 14, 106);
+
+      // Products table
+      autoTable(doc, {
+        startY: 116,
+        head: [["Description", "Quantity", "Unit Price (NOK)", "Total (NOK)"]],
+        body: invoice.items.map((item) => [
+          item.description,
+          item.quantity.toString(),
+          item.unitPrice.toFixed(2),
+          item.total.toFixed(2)
+        ]),
+        styles: { fontSize: 10 },
+        headStyles: { fillColor: [41, 128, 185] }
+      });
+
+      // Get the final Y position after the table
+      const finalY = doc.lastAutoTable?.finalY ?? 110;
+
+      // Calculate totals
+      const taxAmount = invoice.tax;
+      doc.text(`Subtotal: ${invoice.total.toFixed(2)} NOK`, 140, finalY + 10);
+      doc.text(`VAT (25%): ${taxAmount.toFixed(2)} NOK`, 140, finalY + 18);
+      doc.text(`Total: ${invoice.grandTotal.toFixed(2)} NOK`, 140, finalY + 26);
+
+      // Payment details
+      doc.addPage();
+      doc.setFontSize(14);
+      doc.text("Payment Information", 14, 20);
+      doc.setFontSize(12);
+      doc.text("Bank Details:", 14, 30);
+      doc.text(`Account Number: ${invoice.bankInfo.accountNumber}`, 14, 38);
+      doc.text(`KID Number: ${invoice.bankInfo.kidNumber}`, 14, 46);
+
+      // Inventory details
+      doc.text("Inventory Details", 14, 60);
+      autoTable(doc, {
+        startY: 70,
+        head: [["Arrival", "Goods", "Type", "Weight (kg)", "Sender"]],
+        body: invoice.inventoryItems.map((item) => [
+          new Date(item.arrivalDate).toLocaleDateString("no-NO"),
+          item.goods,
+          item.type,
+          item.weight.toFixed(2),
+          item.sender.name
+        ]),
+        styles: { fontSize: 10 },
+        headStyles: { fillColor: [41, 128, 185] }
+      });
+
+      // Save the PDF
+      doc.save(`TBS_Invoice_${invoice.invoiceNumber}.pdf`);
+    } catch (error) {
+      console.error("PDF generation error:", error);
+      toast.error("Failed to generate PDF. Please try again.");
     }
-
-    doc.text(`Customer: ${invoice.customer.companyName}`, 14, 58);
-    doc.text(
-      `Address: ${invoice.customer.address}, ${invoice.customer.zipCode} ${invoice.customer.city}`,
-      14,
-      66
-    );
-    doc.text(`Phone: ${invoice.customer.companyPhone}`, 14, 74);
-    doc.text(`Email: ${invoice.customer.companyEmail}`, 14, 82);
-
-    autoTable(doc, {
-      startY: 92,
-      head: [["Description", "Qty", "Unit Price", "Total"]],
-      body: invoice.items.map((item) => [
-        item.description,
-        item.quantity.toString(),
-        `${item.unitPrice.toFixed(2)} kr`,
-        `${item.total.toFixed(2)} kr`,
-      ]),
-    });
-
-    const y = (doc.lastAutoTable?.finalY ?? 110) + 10;
-    const taxAmount = (invoice.total * invoice.tax) / 100;
-
-    doc.text(`VAT (${invoice.tax}%): ${taxAmount.toFixed(2)} kr`, 14, y);
-    doc.text(`Grand Total: ${invoice.grandTotal.toFixed(2)} kr`, 14, y + 10);
-
-    // Page 2 - Inventory
-    doc.addPage();
-    doc.setFontSize(14);
-    doc.text("Attached Inventory", 14, 20);
-
-    autoTable(doc, {
-      startY: 28,
-      head: [["Arrival", "Customer", "Goods", "Type", "Qty", "Weight", "Departure", "Sender"]],
-      body: invoice.inventoryItems.map((item) => [
-        item.arrivalDate,
-        item.customer,
-        item.goods,
-        item.type,
-        item.quantity.toString(),
-        item.weight.toFixed(2),
-        item.departureDate,
-        item.sender.name,
-      ]),
-    });
-
-    // Page 3 - Bank Info
-    doc.addPage();
-    doc.setFontSize(14);
-    doc.text("Payment Information", 14, 20);
-    doc.setFontSize(12);
-    doc.text(`Account Number: ${invoice.bankInfo.accountNumber}`, 14, 30);
-    doc.text(`KID: ${invoice.bankInfo.kidNumber}`, 14, 38);
-
-    doc.save(`Invoice_${invoice.invoiceNumber}.pdf`);
   };
 
   if (error) {

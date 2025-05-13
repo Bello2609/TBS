@@ -84,23 +84,39 @@ const InvoiceList = () => {
   };
 
   const handleDownloadPDF = (inv: Invoice) => {
-    const doc = new jsPDF();
-    doc.text("Invoice", 14, 20);
-    autoTable(doc, {
-      startY: 30,
-      head: [["Invoice #", "Customer", "Status", "Total", "Date"]],
-      body: [[
-        inv.invoiceNumber,
-        typeof inv.customer === "string"
-          ? inv.customer
-          : inv.customer?.companyName || inv.customer?.name || "N/A",
-        inv.status,
-        `${inv.grandTotal.toFixed(2)} kr`,
-        inv.date ? format(new Date(inv.date), "dd/MM/yyyy") : "N/A",
-      ]],
-    });
-    doc.save(`Invoice_${inv.invoiceNumber}.pdf`);
-  };
+  const doc = new jsPDF();
+
+  doc.setFontSize(18);
+  doc.text("Invoice Summary", 14, 20);
+
+  doc.setFontSize(12);
+  doc.text(`Invoice #: ${inv.invoiceNumber}`, 14, 30);
+  doc.text(`Date: ${inv.date ? format(new Date(inv.date), "dd/MM/yyyy") : "N/A"}`, 14, 38);
+  if (inv.dueDate) {
+    doc.text(`Due Date: ${format(new Date(inv.dueDate), "dd/MM/yyyy")}`, 14, 46);
+  }
+
+  const customerName =
+    typeof inv.customer === "string"
+      ? inv.customer
+      : inv.customer?.companyName || inv.customer?.name || "N/A";
+
+  doc.text(`Customer: ${customerName}`, 14, 54);
+
+  autoTable(doc, {
+    startY: 64,
+    head: [["Invoice #", "Customer", "Status", "Total"]],
+    body: [[
+      inv.invoiceNumber,
+      customerName,
+      inv.status,
+      `${inv.grandTotal.toFixed(2)} kr`
+    ]],
+  });
+
+  doc.save(`Invoice_${inv.invoiceNumber}.pdf`);
+};
+
 
   const filteredInvoices = invoices
     .filter((inv) => {
