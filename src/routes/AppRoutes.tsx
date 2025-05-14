@@ -4,40 +4,40 @@ import React from "react";
 import { Routes, Route } from "react-router-dom";
 
 // 🌐 Public pages
-import Home from "@/pages/home/home";
-import Login from "@/pages/auth/login";
-import NotFound from "@/pages/notFound/notFound";
-import Unauthorized from "@/pages/unauthorized";
+import Home from "@/Pages/Home/Home";
+import Login from "@/Pages/Auth/Login";
+import NotFound from "@/Pages/NotFound/NotFound";
+import Unauthorized from "@/pages/Unauthorized";
 
 // 🔐 Core Protected pages
-import Dashboard from "@/pages/dashboard/dashboard";
+import Dashboard from "@/Pages/Dashboard/Dashboard";
 import InventoryList from "@/pages/inventory/inventory/inventoryList";
-import Reports from "@/pages/reports/reports";
-import Notifications from "@/pages/notifications/notifications";
+import Reports from "@/Pages/Reports/Reports";
+import Notifications from "@/Pages/Notifications/Notifications";
 
 // 👥 User Management
-import UserManagement from "@/pages/users/userManagement";
-import CreateUser from "@/pages/users/createUser";
-import EditUser from "@/pages/users/editUser";
+import UserManagement from "@/Pages/Users/UserManagement";
+import CreateUser from "@/Pages/Users/CreateUser";
+import EditUser from "@/Pages/Users/EditUser";
 
 // ⚙️ Settings & Security
-import Settings from "@/pages/settings/settings";
-import SecuritySettings from "@/pages/settings/security/securitySettings";
-import Enable2FA from "@/pages/settings/security/enable2FA";
-import ActivityLogs from "@/pages/settings/security/activityLogs";
-import ChangePassword from "@/pages/settings/security/changePassword";
+import Settings from "@/Pages/Settings/Settings";
+import SecuritySettings from "@/Pages/Settings/Security/SecuritySettings";
+import Enable2FA from "@/Pages/Settings/Security/Enable2FA";
+import ActivityLogs from "@/Pages/Settings/Security/ActivityLogs";
+import ChangePassword from "@/Pages/Settings/Security/ChangePassword";
 
 // 📄 Invoice Management
-import InvoiceList from "@/pages/invoices/invoiceList";
-import CreateInvoice from "@/pages/invoices/createInvoice";
-import EditInvoice from "@/pages/invoices/editInvoice";
-import InvoiceDetails from "@/pages/invoices/invoiceDetails";
-import InvoiceExport from "@/pages/invoices/invoiceExport";
-import InvoiceReports from "@/pages/invoices/invoiceReports";
-import InvoiceStats from "@/pages/invoices/invoiceStats";
+import InvoiceList from "@/Pages/Invoices/InvoiceList";
+import CreateInvoice from "@/Pages/Invoices/CreateInvoice";
+import EditInvoice from "@/Pages/Invoices/EditInvoice";
+import InvoiceDetails from "@/Pages/Invoices/InvoiceDetails";
+import InvoiceExport from "@/Pages/Invoices/InvoiceExport";
+import InvoiceReports from "@/Pages/Invoices/InvoiceReports";
+import InvoiceStats from "@/Pages/Invoices/InvoiceStats";
 
 // 🛡️ Protected Route wrapper
-import ProtectedRoute from "@/components/protectedRoute";
+import ProtectedRoute from "@/components/ui/ProtectedRoute";
 
 const AppRoutes: React.FC = () => {
   return (
