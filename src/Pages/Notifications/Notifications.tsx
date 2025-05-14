@@ -10,9 +10,9 @@ import {
   NotificationMessage,
   NotificationTime,
   MarkAsReadButton,
-} from "@/styles/notificationStyles";
-import { Button } from "@/components/ui/button";
-import { useAuth } from "@/context/authContext";
+} from "@/styles/NotificationStyles";
+import { Button } from "@/components/ui/Button";
+import { useAuth } from "@/context/AuthContext";
 
 // Type for notifications
 interface Notification {

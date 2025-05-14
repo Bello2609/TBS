@@ -5,11 +5,11 @@ import { useParams, useNavigate } from "react-router-dom";
 import {
   UserContainer,
   DetailRow,
-} from "@/styles/userStyles";
-import { Input, Select } from "@/styles/invoiceStyles";
-import { Button } from "@/components/ui/button";
+} from "@/styles/UserStyles";
+import { Input, Select } from "@/styles/InvoiceStyles";
+import { Button } from "@/components/ui/Button";
 import { toast } from "react-toastify";
-import type { User, UserRole } from "../types/user";
+import type { User, UserRole } from "../types/User";
 import axiosInstance from "@/services/axiosInstance";
 
 const EditUser = () => {

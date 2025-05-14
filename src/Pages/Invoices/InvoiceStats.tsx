@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { Invoice } from "../types/invoice";
-import { InvoiceContainer } from "@/styles/invoiceStyles";
+import { Invoice } from "../types/Invoice";
+import { InventoryContainer } from "@/styles/InventoryStyles";
 
 const InvoiceStats = () => {
   const [invoices, setInvoices] = useState<Invoice[]>([]);
@@ -32,20 +32,20 @@ const InvoiceStats = () => {
 
   if (loading) {
     return (
-      <InvoiceContainer>
+      <InventoryContainer>
         <p>Laster statistikk...</p>
-      </InvoiceContainer>
+      </InventoryContainer>
     );
   }
 
   return (
-    <InvoiceContainer>
+    <InventoryContainer>
       <h1>Fakturastatistikk</h1>
       <p><strong>Total omsetning:</strong> {totalRevenue.toFixed(2)} kr</p>
       <p><strong>Gjennomsnitt per faktura:</strong> {average.toFixed(2)} kr</p>
       <p><strong>Antall fakturaer:</strong> {invoices.length}</p>
       <p><strong>Unike kunder:</strong> {uniqueCustomers.size}</p>
-    </InvoiceContainer>
+    </InventoryContainer>
   );
 };
 

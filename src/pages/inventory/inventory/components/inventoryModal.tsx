@@ -12,7 +12,7 @@ import {
   SaveButton,
   CancelButton,
   AddButton,
-} from "@/styles/inventoryStyles";
+} from "@/styles/InventoryStyles";
 
 import Select, { SingleValue } from "react-select";
 import { OptionType } from "../types";

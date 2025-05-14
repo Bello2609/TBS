@@ -1,6 +1,6 @@
 import { useState } from "react";
 import axios from "axios";
-import { SecurityContainer, SecurityForm, Input, SubmitButton } from "../../../styles/securityStyles";
+import { SecurityContainer, SecurityForm, Input, SubmitButton } from "../../../styles/SecurityStyles";
 
 const Enable2FA = () => {
   const [phoneNumber, setPhoneNumber] = useState("");

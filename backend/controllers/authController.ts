@@ -3,6 +3,7 @@ import bcrypt from "bcryptjs";
 import mongoose from "mongoose";
 import User, { UserDocument } from "../models/user.model.js";
 import { generateToken } from "../utils/generateToken.js";
+import { Notify } from "../utils/Notification.js";
 
 // POST /api/auth/login
 export const loginUser = async (req: Request, res: Response): Promise<void> => {
@@ -37,6 +38,12 @@ export const loginUser = async (req: Request, res: Response): Promise<void> => {
 
     // ✅ Generate token
     const token = generateToken(userId, typedUser.role);
+    const data_for_notification = { 
+      userId: userId,
+      action: "User Login",
+      message: "A user has login",
+     }
+    await Notify(data_for_notification);
 
     // ✅ Respond with user data and token
     res.status(200).json({

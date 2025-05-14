@@ -4,6 +4,8 @@ import { Request, Response } from "express";
 import mongoose from "mongoose";
 import Inventory from "../models/inventory.model.js";
 import type { PopulatedCustomer, PopulatedSender } from "../types/populated.js";
+import { Notify } from "../utils/Notification.js";
+import GetLoggedInUser from "../utils/GetLoggedInUser.js";
 
 // ✅ Get all inventory items, optionally filtered by customerId
 export const getAllInventory = async (req: Request, res: Response): Promise<void> => {
@@ -168,6 +170,18 @@ export const createInventory = async (req: Request, res: Response): Promise<void
     });
 
     const saved = await newItem.save();
+    let authHeader = req.headers.authorization;
+    if (!authHeader){
+      res.status(401).json({ message: 'No authorization header provided' });
+      return 
+    }
+    let token = GetLoggedInUser(authHeader);
+    const data_for_notification = { 
+      userId: token,
+      action: "Inventory created",
+      message: "An inventory has been created",
+     }
+    await Notify(data_for_notification);
     res.status(201).json(saved);
   } catch (error) {
     console.error("❌ Error creating inventory:", error);
@@ -210,7 +224,18 @@ export const updateInventory = async (req: Request, res: Response): Promise<void
       res.status(404).json({ message: "Inventory item not found." });
       return;
     }
-
+    let authHeader = req.headers.authorization;
+    if (!authHeader){
+      res.status(401).json({ message: 'No authorization header provided' });
+      return 
+    }
+    let token = GetLoggedInUser(authHeader);
+    const data_for_notification = { 
+      userId: token,
+      action: "Inventory Updated",
+      message: "An Inventory was updated",
+     }
+    await Notify(data_for_notification);
     res.status(200).json(updated);
   } catch (error) {
     console.error("❌ Error updating inventory:", error);
@@ -227,7 +252,18 @@ export const deleteInventory = async (req: Request, res: Response): Promise<void
       res.status(404).json({ message: "Inventory item not found." });
       return;
     }
-
+    let authHeader = req.headers.authorization;
+    if (!authHeader){
+      res.status(401).json({ message: 'No authorization header provided' });
+      return 
+    }
+    let token = GetLoggedInUser(authHeader);
+    const data_for_notification = { 
+      userId: token,
+      action: "Customer Updated",
+      message: "A customer was updated",
+     }
+    await Notify(data_for_notification);
     res.status(200).json({ message: "Inventory item deleted." });
   } catch (error) {
     console.error("❌ Error deleting inventory:", error);

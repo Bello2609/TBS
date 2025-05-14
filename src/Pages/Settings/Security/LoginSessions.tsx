@@ -13,7 +13,7 @@ import {
   LogoutButton,
   SessionListTitle,
   ActiveBadge,
-} from "../../../styles/securityStyles";
+} from "../../../styles/SecurityStyles";
 
 interface Session {
   id: string;

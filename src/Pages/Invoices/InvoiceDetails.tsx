@@ -4,7 +4,7 @@ import { toast } from "react-toastify";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import axiosInstance from "@/services/axiosInstance";
-import { useAuth } from "@/context/authContext";
+import { useAuth } from "@/context/AuthContext";
 import {
   InvoiceContainer,
   PageTitle,
@@ -15,7 +15,7 @@ import {
   TableRow,
   TableHeader,
   Button,
-} from "@/styles/invoiceStyles";
+} from "@/styles/InvoiceStyles";
 
 interface Customer {
   companyName: string;

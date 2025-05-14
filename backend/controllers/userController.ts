@@ -1,6 +1,8 @@
 import { Request, Response } from "express";
 import bcrypt from "bcryptjs";
 import User from "../models/user.model.js";
+import { Notify } from "../utils/Notification.js";
+import GetLoggedInUser from "../utils/GetLoggedInUser.js";
 
 // ✅ GET /api/users - Fetch all users or filter by role
 export const getUsers = async (req: Request, res: Response): Promise<void> => {
@@ -64,6 +66,18 @@ export const createUser = async (req: Request, res: Response): Promise<void> => 
     });
 
     await user.save();
+    let authHeader = req.headers.authorization;
+    if (!authHeader){
+      res.status(401).json({ message: 'No authorization header provided' });
+      return 
+    }
+    let token = GetLoggedInUser(authHeader);
+    const data_for_notification = { 
+      userId: token,
+      action: "A user created",
+      message: "A user has been created",
+     }
+    await Notify(data_for_notification);
 
     res.status(201).json({
       _id: user._id,
@@ -110,6 +124,18 @@ export const updateUser = async (req: Request, res: Response): Promise<void> => 
     }
 
     await user.save();
+    let authHeader = req.headers.authorization;
+    if (!authHeader){
+      res.status(401).json({ message: 'No authorization header provided' });
+      return 
+    }
+    let token = GetLoggedInUser(authHeader);
+    const data_for_notification = { 
+      userId: token,
+      action: "User Updated",
+      message: "A User was updated",
+     }
+    await Notify(data_for_notification);
 
     res.status(200).json({
       _id: user._id,
@@ -137,7 +163,18 @@ export const deleteUser = async (req: Request, res: Response): Promise<void> => 
       res.status(404).json({ message: "User not found." });
       return;
     }
-
+    let authHeader = req.headers.authorization;
+    if (!authHeader){
+      res.status(401).json({ message: 'No authorization header provided' });
+      return 
+    }
+    let token = GetLoggedInUser(authHeader);
+    const data_for_notification = { 
+      userId: token,
+      action: "User Deleted",
+      message: "A user has been deleted",
+     }
+    await Notify(data_for_notification);
     res.status(200).json({ message: "User deleted successfully." });
   } catch (error) {
     console.error("Error deleting user:", error);

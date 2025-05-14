@@ -3,15 +3,16 @@ import mongoose, { Schema, Document } from "mongoose";
 export interface NotificationDocument extends Document {
   userId: mongoose.Types.ObjectId;
   message: string;
-  read: boolean;
-  createdAt: Date;
+  action: string;
 }
 
 const NotificationSchema = new Schema<NotificationDocument>({
   userId: { type: Schema.Types.ObjectId, ref: "User", required: true },
   message: { type: String, required: true },
-  read: { type: Boolean, default: false },
-  createdAt: { type: Date, default: Date.now },
-});
+  action: { type: String, required: true },
+}, {
+  timestamps: true
+}
+);
 
-export default mongoose.model<NotificationDocument>("Notification", NotificationSchema);
+export const Notification =  mongoose.model<NotificationDocument>("Notification", NotificationSchema);

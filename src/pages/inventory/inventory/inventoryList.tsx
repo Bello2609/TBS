@@ -11,7 +11,7 @@ import {
   InventoryContainer,
   TopBar,
   AddButton,
-} from "@/styles/inventoryStyles";
+} from "@/styles/InventoryStyles";
 import { Customer, InventoryItem, OptionType, Sender } from "./types";
 
 const InventoryList: React.FC = () => {

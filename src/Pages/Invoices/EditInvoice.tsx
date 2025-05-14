@@ -7,8 +7,8 @@ import {
   InvoiceContainer,
   Input,
   Select,
-} from "../../styles/invoiceStyles";
-import { Button } from "../../components/ui/button";
+} from "../../styles/InvoiceStyles";
+import { Button } from "../../components/ui/Button";
 import { toast } from "react-toastify";
 
 // Interfaces

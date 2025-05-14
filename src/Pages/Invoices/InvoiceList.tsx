@@ -6,7 +6,7 @@ import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { format } from "date-fns";
 import axiosInstance from "@/services/axiosInstance";
-import { useAuth } from "@/context/authContext";
+import { useAuth } from "@/context/AuthContext";
 import {
   InvoiceContainer,
   TopBar,
@@ -26,10 +26,10 @@ import {
   PaginationContainer,
   RowsPerPage,
   PageButtons,
-} from "@/styles/invoiceStyles";
+} from "@/styles/InvoiceStyles";
 import { Eye, Trash2, Download } from "lucide-react";
 import { toast } from "react-toastify";
-import InvoiceDetailsModal from "./invoiceDetailsModal";
+import InvoiceDetailsModal from "./InvoiceDetailsModal";
 
 type StatusType = "All" | "Paid" | "Pending" | "Overdue";
 

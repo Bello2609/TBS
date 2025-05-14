@@ -9,7 +9,7 @@ import {
     Tooltip,
     CartesianGrid
   } from "recharts";
-  import AnimatedCard from "../../../components/ui/animatedCard";
+  import AnimatedCard from "../../../components/ui/AnimatedCard";
   
   interface RevenueChartProps {
     data: { month: string; revenue: number }[];

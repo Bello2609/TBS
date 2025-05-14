@@ -7,7 +7,7 @@ import { Bell } from "lucide-react";
 import {
   BellContainer,
   NotificationBadge
-} from "@/styles/notificationStyles";
+} from "@/styles/NotificationStyles";
 
 const NotificationBell: React.FC = () => {
   const [unreadCount, setUnreadCount] = useState(0);

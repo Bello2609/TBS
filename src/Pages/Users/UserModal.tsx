@@ -2,11 +2,11 @@
 
 import React from "react";
 import styled from "styled-components";
-import { ModalOverlay } from "@/styles/invoiceStyles";
-import { ModalContentScrollable } from "@/styles/userStyles";
-import CreateUser from "./createUser";
-import { useAuth } from "@/context/authContext";
-import type { User } from "../types/user";
+import { ModalOverlay } from "@/styles/InvoiceStyles";
+import { ModalContentScrollable } from "@/styles/UserStyles";
+import CreateUser from "./CreateUser";
+import { useAuth } from "@/context/AuthContext";
+import type { User } from "../types/User";
 
 interface UserModalProps {
   mode: "create" | "edit";

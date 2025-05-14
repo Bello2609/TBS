@@ -1,5 +1,5 @@
 import React from "react";
-import { FilterRow } from "@/styles/inventoryStyles";
+import { FilterRow } from "@/styles/InventoryStyles";
 import { OptionType } from "../types";
 import DateInput from "@/components/dateInput";
 import Select, { SingleValue } from "react-select";

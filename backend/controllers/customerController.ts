@@ -1,9 +1,13 @@
 import { Request, Response } from "express";
 import Customer from "../models/customer.model.js";
 import User from "../models/user.model.js";
+import { Notify } from "../utils/Notification.js";
+import GetLoggedInUser from "../utils/GetLoggedInUser.js";
+
 
 // ✅ GET /api/customers - List all customers with user info
 export const getAllCustomers = async (req: Request, res: Response): Promise<void> => {
+
   try {
     const customers = await Customer.aggregate([
       {
@@ -69,6 +73,7 @@ export const getCustomerById = async (req: Request, res: Response): Promise<void
 
 // ✅ POST /api/customers - Create a new customer
 export const createCustomer = async (req: Request, res: Response): Promise<void> => {
+
   try {
     const {
       userId,
@@ -117,6 +122,18 @@ export const createCustomer = async (req: Request, res: Response): Promise<void>
     });
 
     const saved = await newCustomer.save();
+    let authHeader = req.headers.authorization;
+    if (!authHeader){
+      res.status(401).json({ message: 'No authorization header provided' });
+      return 
+    }
+    let token = GetLoggedInUser(authHeader);
+    const data_for_notification = { 
+      userId: token,
+      action: "Customer created",
+      message: `A new customer has been  created`
+     }
+    await Notify(data_for_notification);
     res.status(201).json(saved);
   } catch (error) {
     console.error("Error creating customer:", error);
@@ -136,6 +153,18 @@ export const updateCustomer = async (req: Request, res: Response): Promise<void>
       res.status(404).json({ message: "Customer not found." });
       return;
     }
+    let authHeader = req.headers.authorization;
+    if (!authHeader){
+      res.status(401).json({ message: 'No authorization header provided' });
+      return 
+    }
+    let token = GetLoggedInUser(authHeader);
+    const data_for_notification = { 
+      userId: token,
+      action: "Customer Updated",
+      message: "A customer was updated",
+     }
+    await Notify(data_for_notification);
 
     res.status(200).json(updated);
   } catch (error) {
@@ -152,7 +181,18 @@ export const deleteCustomer = async (req: Request, res: Response): Promise<void>
       res.status(404).json({ message: "Customer not found." });
       return;
     }
-
+    let authHeader = req.headers.authorization;
+    if (!authHeader){
+      res.status(401).json({ message: 'No authorization header provided' });
+      return 
+    }
+    let token = GetLoggedInUser(authHeader);
+    const data_for_notification = { 
+      userId: token,
+      action: "Customer Updated",
+      message: "A customer was deleted",
+     }
+    await Notify(data_for_notification);
     res.status(200).json({ message: "Customer deleted successfully." });
   } catch (error) {
     console.error("Error deleting customer:", error);

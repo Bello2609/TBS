@@ -4,6 +4,8 @@ import { Request, Response } from "express";
 import mongoose from "mongoose";
 import Invoice, { InvoiceDocument } from "../models/invoice.model.js";
 import Inventory from "../models/inventory.model.js";
+import { Notify } from "../utils/Notification.js";
+import GetLoggedInUser from "../utils/GetLoggedInUser.js";
 
 // ✅ GET /api/invoices - Get all invoices (with customer data)
 export const getAllInvoices = async (req: Request, res: Response): Promise<void> => {
@@ -109,7 +111,6 @@ export const createInvoice = async (req: Request, res: Response): Promise<void> 
       },
     }));
 
-    // يمكنك تعريف نوع مؤقت داخل الدالة أو أعلى الملف
     type InvoiceItem = {
       unitPrice?: number;
       total?: number;
@@ -138,6 +139,18 @@ export const createInvoice = async (req: Request, res: Response): Promise<void> 
     });
 
     const saved = await invoice.save();
+    let authHeader = req.headers.authorization;
+    if (!authHeader){
+      res.status(401).json({ message: 'No authorization header provided' });
+      return 
+    }
+    let token = GetLoggedInUser(authHeader);
+    const data_for_notification = { 
+      userId: token,
+      action: "Invoice created",
+      message: "An invoice was created",
+     }
+    await Notify(data_for_notification);
     res.status(201).json(saved);
   } catch (error) {
     console.error("Error creating invoice:", error);
@@ -153,11 +166,22 @@ export const updateInvoice = async (req: Request, res: Response): Promise<void> 
       new: true,
     });
 
-    if (!updated) {
+    if (!updated){
       res.status(404).json({ message: "Invoice not found." });
       return;
     }
-
+    let authHeader = req.headers.authorization;
+    if (!authHeader){
+      res.status(401).json({ message: 'No authorization header provided' });
+      return 
+    }
+    let token = GetLoggedInUser(authHeader);
+    const data_for_notification = { 
+      userId: token,
+      action: "Invoice Updated",
+      message: "An invoice was updated",
+     }
+    await Notify(data_for_notification);
     res.status(200).json(updated);
   } catch (error) {
     console.error("Error updating invoice:", error);
@@ -174,6 +198,18 @@ export const deleteInvoice = async (req: Request, res: Response): Promise<void> 
       res.status(404).json({ message: "Invoice not found." });
       return;
     }
+    let authHeader = req.headers.authorization;
+    if (!authHeader){
+      res.status(401).json({ message: 'No authorization header provided' });
+      return 
+    }
+    let token = GetLoggedInUser(authHeader);
+    const data_for_notification = { 
+      userId: token,
+      action: "Invoice deleted",
+      message: "An invoice  was deleted",
+     }
+    await Notify(data_for_notification);
 
     res.status(200).json({ message: "Invoice deleted successfully." });
   } catch (error) {

@@ -7,8 +7,8 @@ import {
   ModalContentScrollable,
   Input,
   Select,
-} from "@/styles/invoiceStyles";
-import { Button } from "@/components/ui/button";
+} from "@/styles/InvoiceStyles";
+import { Button } from "@/components/ui/Button";
 
 // ✅ Customer interface
 interface Customer {

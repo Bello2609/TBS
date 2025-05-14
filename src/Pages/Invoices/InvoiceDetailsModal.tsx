@@ -8,7 +8,7 @@ import {
   ModalTitle,
   ModalContentScrollable,
   CloseButton,
-} from "@/styles/invoiceStyles";
+} from "@/styles/InvoiceStyles";
 
 interface InvoiceDetailsModalProps {
   invoiceId: string;

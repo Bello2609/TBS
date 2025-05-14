@@ -4,8 +4,8 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
-import { Button } from "@/components/ui/button";
-import { Invoice } from "../types/invoice";
+import { Button } from "@/components/ui/Button";
+import { Invoice } from "../types/Invoice";
 
 const InvoiceExport = () => {
   const [invoices, setInvoices] = useState<Invoice[]>([]);

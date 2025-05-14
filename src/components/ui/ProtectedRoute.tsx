@@ -1,6 +1,6 @@
 import React from "react";
 import { Navigate, Outlet } from "react-router-dom";
-import { useAuth } from "../../context/authContext";
+import { useAuth } from "../../context/AuthContext";
 
 // Define the local user roles again (no import to avoid circular issues)
 type UserRole = "admin" | "employee" | "customer";

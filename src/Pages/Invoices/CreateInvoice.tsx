@@ -11,7 +11,7 @@ import {
   Input,
   Select,
   Button,
-} from "@/styles/invoiceStyles";
+} from "@/styles/InvoiceStyles";
 
 interface Customer {
   _id: string;

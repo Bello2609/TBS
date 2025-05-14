@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-import { useAuth } from "../../context/authContext";
+import { useAuth } from "../../context/AuthContext";
 
 
 import {
@@ -10,7 +10,7 @@ import {
   Form,
   Input,
   SubmitButton,
-} from "../../styles/loginStyles";
+} from "../../styles/LoginStyles";
 import axios from "axios";
 const Login: React.FC = () => {
   const navigate = useNavigate();

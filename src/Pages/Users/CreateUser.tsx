@@ -2,13 +2,13 @@
 
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { DetailRow } from "@/styles/userStyles";
-import { Input, Select } from "@/styles/invoiceStyles";
-import { Button } from "@/components/ui/button";
+import { DetailRow } from "@/styles/UserStyles";
+import { Input, Select } from "@/styles/InvoiceStyles";
+import { Button } from "@/components/ui/Button";
 import { toast } from "react-toastify";
-import { useAuth } from "@/context/authContext";
+import { useAuth } from "@/context/AuthContext";
 import axiosInstance from "@/services/axiosInstance";
-import type { User, UserRole } from "../types/user";
+import type { User, UserRole } from "../types/User";
 
 interface CreateUserProps {
   mode: "create" | "edit";

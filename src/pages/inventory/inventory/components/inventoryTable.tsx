@@ -11,7 +11,7 @@ import {
   EditButton,
   DeleteButton,
   ViewButton,
-} from "@/styles/inventoryStyles";
+} from "@/styles/InventoryStyles";
 import { InventoryItem } from "../types";
 import { Pencil, Trash2, Eye } from "lucide-react";
 

@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { Invoice } from "../types/invoice";
-import { InvoiceContainer } from "@/styles/invoiceStyles";
+import { Invoice } from "../types/Invoice";
+import { InvoiceContainer } from "@/styles/InvoiceStyles";
 
 const InvoiceReports = () => {
   const [invoices, setInvoices] = useState<Invoice[]>([]);

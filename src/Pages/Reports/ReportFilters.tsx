@@ -2,7 +2,7 @@ import {
     FilterContainer,
     FilterInput,
     ApplyFilterButton
-  } from "../../styles/reportStyles";
+  } from "../../styles/ReportStyles";
   import { useState } from "react";
   
   interface ReportFiltersProps {

@@ -22,12 +22,12 @@ import {
   ViewButton,
   EditButton,
   DeleteButton,
-} from "@/styles/userStyles";
+} from "@/styles/UserStyles";
 
-import UserModal from "./userModal";
-import UserDetailsModal from "./userDetailsModal";
-import type { User } from "../types/user";
-import { useAuth } from "@/context/authContext";
+import UserModal from "./UserModal";
+import UserDetailsModal from "./UserDetailsModal";
+import type { User } from "../types/User";
+import { useAuth } from "@/context/AuthContext";
 import axiosInstance from "@/services/axiosInstance";
 
 const UserManagement = () => {

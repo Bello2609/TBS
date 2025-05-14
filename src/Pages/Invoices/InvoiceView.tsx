@@ -1,5 +1,5 @@
-import { InvoiceContainer } from "@/styles/invoiceStyles";
-import { Button } from "@/components/ui/button";
+import { InvoiceContainer } from "@/styles/InvoiceStyles";
+import { Button } from "@/components/ui/Button";
 
 interface Customer {
   companyName: string;

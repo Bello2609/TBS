@@ -15,7 +15,7 @@ import {
   UserRole,
   AvatarCircle,
   UserMeta,
-} from "../styles/sidebarStyles";
+} from "../styles/SidebarStyles";
 
 import {
   Home,
@@ -31,7 +31,7 @@ import {
 
 import { motion } from "framer-motion";
 import { useLocation, useNavigate } from "react-router-dom";
-import { useAuth } from "../context/authContext";
+import { useAuth } from "../context/AuthContext";
 
 const AnimatedLogo: React.FC = () => (
   <motion.div

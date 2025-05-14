@@ -6,7 +6,7 @@ import {
   ModalContainer,
   ModalContentScrollable,
   ModalTitle,
-} from "@/styles/inventoryStyles";
+} from "@/styles/InventoryStyles";
 import { InventoryItem } from "../types";
 
 interface InventoryDetailsModalProps {
