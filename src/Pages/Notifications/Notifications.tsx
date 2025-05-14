@@ -13,13 +13,14 @@ import {
 } from "@/styles/NotificationStyles";
 import { Button } from "@/components/ui/Button";
 import { useAuth } from "@/context/AuthContext";
+import axiosInstance from "@/services/axiosInstance";
 
 // Type for notifications
 interface Notification {
-  id: number;
+  id: string,
+  action: string,
   message: string;
-  createdAt?: string;
-  type?: string;
+
 }
 
 const Notifications = () => {
@@ -32,7 +33,7 @@ const Notifications = () => {
   useEffect(() => {
     const fetchNotifications = async () => {
       try {
-        const res = await axios.get("/api/notifications");
+        const res = await axiosInstance.get("/notifications/getNotification");
         if (Array.isArray(res.data)) {
           setNotifications(res.data);
         } else {
@@ -49,14 +50,14 @@ const Notifications = () => {
     fetchNotifications();
   }, []);
 
-  const markAsRead = async (id: number) => {
-    try {
-      await axios.post(`/api/notifications/mark-as-read/${id}`);
-      setNotifications((prev) => prev.filter((n) => n.id !== id));
-    } catch {
-      setError("Failed to mark as read.");
-    }
-  };
+  // const markAsRead = async (id: number) => {
+  //   try {
+  //     await axios.post(`/api/notifications/mark-as-read/${id}`);
+  //     setNotifications((prev) => prev.filter((n) => n.id !== id));
+  //   } catch {
+  //     setError("Failed to mark as read.");
+  //   }
+  // };
 
   const markAllAsRead = async () => {
     try {
@@ -106,16 +107,12 @@ const Notifications = () => {
             {notifications.map((n) => (
               <NotificationItem key={n.id}>
                 <NotificationMessage>
+                  <p>{n.action}</p>
                   <p>{n.message}</p>
-                  {n.createdAt && (
-                    <NotificationTime>
-                      {new Date(n.createdAt).toLocaleString()}
-                    </NotificationTime>
-                  )}
                 </NotificationMessage>
-                <MarkAsReadButton onClick={() => markAsRead(n.id)}>
+                {/* <MarkAsReadButton onClick={() => markAsRead(n.id)}>
                   Mark as Read
-                </MarkAsReadButton>
+                </MarkAsReadButton> */}
               </NotificationItem>
             ))}
           </NotificationList>

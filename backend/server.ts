@@ -24,10 +24,7 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// ✅ Connect to MongoDB
-connectDB()
-  .then(() => {
-    console.log("✅ Connected to MongoDB");
+
 
     // ✅ Middleware
     app.use(cors());
@@ -49,13 +46,17 @@ connectDB()
       res.status(404).json({ message: "API route not found" });
     });
 
+// ✅ Connect to MongoDB
+connectDB()
+  .then(() => {
+    console.log("✅ Connected to MongoDB");
     // ✅ Start server
     app.listen(PORT, () => {
-      console.log(`🚀 Server running on http://localhost:${PORT}`);
+      console.log(`Server running on http://localhost:${PORT}`);
     });
   })
   .catch((error: unknown) => {
     const err = error as Error;
-    console.error("❌ Failed to connect to MongoDB:", err.message);
+    console.error("Failed to connect to MongoDB:", err.message);
     process.exit(1);
   });
