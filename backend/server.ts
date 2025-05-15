@@ -7,15 +7,15 @@ import morgan from "morgan";
 import cors from "cors";
 
 // ✅ Config & Routes
-import connectDB from "./config/db.js";
-import authRoutes from "./routes/authRoutes.js";
-import userRoutes from "./routes/userRoutes.js";
-import inventoryRoutes from "./routes/inventoryRoutes.js";
-import invoiceRoutes from "./routes/invoiceRoutes.js";
-import customerRoutes from "./routes/customerRoutes.js";
-import dashboardRoutes from "./routes/dashboardRoutes.js";
-import senderRoutes from "./routes/senderRoutes.js";
-import notificationRoutes from "./routes/notificationRoutes.js";
+import connectDB from "./config/db";
+import authRoutes from "./routes/authRoutes";
+import userRoutes from "./routes/userRoutes";
+import inventoryRoutes from "./routes/inventoryRoutes";
+import invoiceRoutes from "./routes/invoiceRoutes";
+import customerRoutes from "./routes/customerRoutes";
+import dashboardRoutes from "./routes/dashboardRoutes";
+import senderRoutes from "./routes/senderRoutes";
+import notificationRoutes from "./routes/notificationRoutes";
 
 // ✅ Initialize environment
 dotenv.config();
