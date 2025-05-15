@@ -33,7 +33,7 @@ const Notifications = () => {
   useEffect(() => {
     const fetchNotifications = async () => {
       try {
-        const res = await axiosInstance.get("/notifications/getNotification");
+        const res = await axiosInstance.get("/api/notifications/getNotification");
         if (Array.isArray(res.data)) {
           setNotifications(res.data);
         } else {
@@ -46,7 +46,7 @@ const Notifications = () => {
         setLoading(false);
       }
     };
-
+      
     fetchNotifications();
   }, []);
 
