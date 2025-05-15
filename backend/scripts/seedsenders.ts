@@ -3,7 +3,7 @@
 // node --loader ts-node/esm scripts/seedSenders.ts
 import mongoose from "mongoose";
 import dotenv from "dotenv";
-import Sender from "../models/sender.model.js"; // ✅ Must include .js when using ESM
+import Sender from "../models/sender.model"; // ✅ Must include  when using ESM
 
 dotenv.config();
 

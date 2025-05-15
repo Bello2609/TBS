@@ -1,6 +1,6 @@
 import express from "express";
-import { getAllSenders, createSender } from "../controllers/senderController.js"; // Ensure this path is correct
-import { protect } from "../middlewares/authMiddleware.js"; // Ensure this middleware is imported correctly
+import { getAllSenders, createSender } from "../controllers/senderController"; // Ensure this path is correct
+import { protect } from "../middlewares/authMiddleware"; // Ensure this middleware is imported correctly
 
 const router = express.Router();
 

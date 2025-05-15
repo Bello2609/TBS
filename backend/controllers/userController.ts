@@ -1,8 +1,8 @@
 import { Request, Response } from "express";
 import bcrypt from "bcryptjs";
-import User from "../models/user.model.js";
-import { Notify } from "../utils/Notification.js";
-import GetLoggedInUser from "../utils/GetLoggedInUser.js";
+import User from "../models/user.model";
+import { Notify } from "../utils/Notification";
+import GetLoggedInUser from "../utils/GetLoggedInUser";
 
 // ✅ GET /api/users - Fetch all users or filter by role
 export const getUsers = async (req: Request, res: Response): Promise<void> => {

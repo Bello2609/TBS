@@ -8,7 +8,7 @@ import {
   updateInventory,
   deleteInventory,
   getUninvoicedInventory, 
-} from "../controllers/inventoryController.js";
+} from "../controllers/inventoryController";
 
 const router = express.Router();
 

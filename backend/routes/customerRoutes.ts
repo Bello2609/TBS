@@ -7,7 +7,7 @@ import {
   createCustomer,
   updateCustomer,
   deleteCustomer,
-} from "../controllers/customerController.js"; // تأكد أن هذا الملف من نوع TypeScript أو تم تحويله لـ .js بعد البناء
+} from "../controllers/customerController"; 
 
 const router = Router();
 

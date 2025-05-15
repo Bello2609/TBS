@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import Invoice from "../models/invoice.model.js";
+import Invoice from "../models/invoice.model";
 
 
 // ✅ Return dashboard statistics

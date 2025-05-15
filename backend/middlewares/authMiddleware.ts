@@ -2,7 +2,7 @@
 
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
-import User, { UserDocument } from "../models/user.model.js";
+import User, { UserDocument } from "../models/user.model";
 
 // ✅ Extend Express Request to include authenticated user
 export interface AuthRequest extends Request {

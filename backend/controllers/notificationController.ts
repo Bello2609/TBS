@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
-import { Notification } from "../models/notification.model.js";
-import GetLoggedInUser from "../utils/GetLoggedInUser.js";
+import { Notification } from "../models/notification.model";
+import GetLoggedInUser from "../utils/GetLoggedInUser";
 
 export const getNotifications = async (req: Request, res: Response) => {
   try {

@@ -1,8 +1,8 @@
 // backend/routes/dashboardRoutes.ts
 
 import express from "express";
-import { getDashboardStats, getRecentInvoices } from "../controllers/dashboardController.js";
-import { protect } from "../middlewares/authMiddleware.js"; // ✅ Import token verification middleware
+import { getDashboardStats, getRecentInvoices } from "../controllers/dashboardController";
+import { protect } from "../middlewares/authMiddleware"; // ✅ Import token verification middleware
 
 const router = express.Router();
 

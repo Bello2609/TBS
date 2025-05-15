@@ -2,10 +2,10 @@
 
 import { Request, Response } from "express";
 import mongoose from "mongoose";
-import Invoice, { InvoiceDocument } from "../models/invoice.model.js";
-import Inventory from "../models/inventory.model.js";
-import { Notify } from "../utils/Notification.js";
-import GetLoggedInUser from "../utils/GetLoggedInUser.js";
+import Invoice, { InvoiceDocument } from "../models/invoice.model";
+import Inventory from "../models/inventory.model";
+import { Notify } from "../utils/Notification";
+import GetLoggedInUser from "../utils/GetLoggedInUser";
 
 // ✅ GET /api/invoices - Get all invoices (with customer data)
 export const getAllInvoices = async (req: Request, res: Response): Promise<void> => {

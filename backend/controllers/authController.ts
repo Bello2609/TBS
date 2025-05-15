@@ -1,9 +1,9 @@
 import { Request, Response } from "express";
 import bcrypt from "bcryptjs";
 import mongoose from "mongoose";
-import User, { UserDocument } from "../models/user.model.js";
-import { generateToken } from "../utils/generateToken.js";
-import { Notify } from "../utils/Notification.js";
+import User, { UserDocument } from "../models/user.model";
+import { generateToken } from "../utils/generateToken";
+import { Notify } from "../utils/Notification";
 
 // POST /api/auth/login
 export const loginUser = async (req: Request, res: Response): Promise<void> => {

@@ -7,7 +7,7 @@ import {
   createInvoice,
   updateInvoice,
   deleteInvoice,
-} from "../controllers/invoiceController.js";
+} from "../controllers/invoiceController";
 
 const router = Router();
 

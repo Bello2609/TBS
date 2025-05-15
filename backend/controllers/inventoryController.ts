@@ -2,10 +2,10 @@
 
 import { Request, Response } from "express";
 import mongoose from "mongoose";
-import Inventory from "../models/inventory.model.js";
-import type { PopulatedCustomer, PopulatedSender } from "../types/populated.js";
-import { Notify } from "../utils/Notification.js";
-import GetLoggedInUser from "../utils/GetLoggedInUser.js";
+import Inventory from "../models/inventory.model";
+import type { PopulatedCustomer, PopulatedSender } from "../types/populated";
+import { Notify } from "../utils/Notification";
+import GetLoggedInUser from "../utils/GetLoggedInUser";
 
 // ✅ Get all inventory items, optionally filtered by customerId
 export const getAllInventory = async (req: Request, res: Response): Promise<void> => {

@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
-import Sender from "../models/sender.model.js"; // Ensure this path is correct
-import { Notify } from "../utils/Notification.js";
-import GetLoggedInUser from "../utils/GetLoggedInUser.js";
+import Sender from "../models/sender.model"; 
+import { Notify } from "../utils/Notification";
+import GetLoggedInUser from "../utils/GetLoggedInUser";
 
 // GET /api/senders - Return all senders
 export const getAllSenders = async (_req: Request, res: Response): Promise<void> => {

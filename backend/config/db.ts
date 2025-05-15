@@ -10,7 +10,7 @@ const MONGO_URI = process.env.MONGO_URI;
 
 const connectDB = async (): Promise<void> => {
   if (!MONGO_URI) {
-    const errMsg = "❌ MONGO_URI is not defined in the .env file";
+    const errMsg = "MONGO_URI is not defined in the .env file";
     console.error(errMsg);
     throw new Error(errMsg);
   }
@@ -20,7 +20,7 @@ const connectDB = async (): Promise<void> => {
     const conn = await mongoose.connect(MONGO_URI);
     console.log(`✅ MongoDB Connected: ${conn.connection.host}`);
   } catch (error) {
-    let errorMessage = "❌ MongoDB connection failed";
+    let errorMessage = "MongoDB connection failed";
     if (error instanceof Error) {
       errorMessage += `: ${error.message}`;
     } else {

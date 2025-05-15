@@ -1,8 +1,8 @@
 // scripts/seedCustomers.ts
 import mongoose from "mongoose";
 import dotenv from "dotenv";
-import Customer from "../models/customer.model.js";
-import User from "../models/user.model.js"; // ✅ Add this
+import Customer from "../models/customer.model";
+import User from "../models/user.model"; // ✅ Add this
 
 dotenv.config();
 

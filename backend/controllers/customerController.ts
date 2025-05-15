@@ -1,8 +1,8 @@
 import { Request, Response } from "express";
-import Customer from "../models/customer.model.js";
-import User from "../models/user.model.js";
-import { Notify } from "../utils/Notification.js";
-import GetLoggedInUser from "../utils/GetLoggedInUser.js";
+import Customer from "../models/customer.model";
+import User from "../models/user.model";
+import { Notify } from "../utils/Notification";
+import GetLoggedInUser from "../utils/GetLoggedInUser";
 
 
 // ✅ GET /api/customers - List all customers with user info
