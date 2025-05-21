@@ -15,13 +15,9 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ allowedRoles }) => {
 
   // Not authenticated: redirect to login
   if (!isAuthenticated || !user) {
-    return <Navigate to="/auth/login" replace />;
-  }
-
-  // Authenticated but role not allowed: redirect to home
-  if (allowedRoles && !allowedRoles.includes(user.role)) {
     return <Navigate to="/" replace />;
   }
+
 
   // Authenticated and authorized: render children
   return <Outlet />;

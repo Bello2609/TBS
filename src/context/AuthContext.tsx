@@ -3,10 +3,10 @@
 import React, { createContext, useContext, useState, ReactNode } from "react";
 import { attachToken } from "@/services/axiosInstance"; // 🔗 Inject token into axios
 
-// ✅ Define allowed user roles
+//  Define allowed user roles
 export type UserRole = "admin" | "employee" | "customer";
 
-// ✅ Define user object structure
+//  Define user object structure
 export interface User {
   id: string;
   username: string;
@@ -16,7 +16,7 @@ export interface User {
   token: string;
 }
 
-// ✅ Define the structure of the context
+//  Define the structure of the context
 interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
@@ -24,23 +24,23 @@ interface AuthContextType {
   logout: () => void;
 }
 
-// ✅ Create the context
+//  Create the context
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// ✅ Provide the context to the app
+// Provide the context to the app
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
 
-  // ✅ Login: store user and attach token
+  // Login: store user and attach token
   const login = (userData: User) => {
     setUser(userData);
     attachToken(userData.token); // 🔐 Inject token for secure requests
   };
 
-  // ✅ Logout: clear user and detach token
+  //  Logout: clear user and detach token
   const logout = () => {
     setUser(null);
-    attachToken(null); // ❌ Remove token from headers
+    attachToken(null); // Remove token from headers
   };
 
   const isAuthenticated = !!user;
@@ -52,7 +52,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   );
 };
 
-// ✅ Hook to access the auth context
+//  Hook to access the auth context
 export const useAuth = (): AuthContextType => {
   const context = useContext(AuthContext);
   if (!context) {

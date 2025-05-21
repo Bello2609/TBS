@@ -4,7 +4,6 @@ import React from "react";
 import { Routes, Route } from "react-router-dom";
 
 // 🌐 Public pages
-import Home from "@/Pages/Home/Home";
 import Login from "@/Pages/Auth/Login";
 import NotFound from "@/Pages/NotFound/NotFound";
 import Unauthorized from "@/pages/Unauthorized";
@@ -43,8 +42,7 @@ const AppRoutes: React.FC = () => {
   return (
     <Routes>
       {/* 🌐 Public Routes */}
-      <Route path="/" element={<Home />} />
-      <Route path="/auth/login" element={<Login />} />
+      <Route path="/" element={<Login />} />
       <Route path="/unauthorized" element={<Unauthorized />} />
 
       {/* 🛡️ Admin-Only Routes */}
